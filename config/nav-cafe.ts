@@ -24,10 +24,6 @@ export const navCafe = {
           title: "Category",
           url: "/product/category",
         },
-        {
-          title: "Variant",
-          url: "/product/variant",
-        },
       ],
     },
     {
