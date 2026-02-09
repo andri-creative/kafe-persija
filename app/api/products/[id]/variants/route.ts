@@ -1,147 +1,132 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { saveImage } from "@/lib/upload";
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { uploadVariantImage } from "@/lib/path-img";
 
-// GET all variants for a product
-export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
+// GET: Get all variants for a product
+export async function GET(
+  request: NextRequest,
+  context: { params: { id: string } },
+) {
   try {
-    const { id } = await context.params;
-    const productId = Number(id);
+    const params = await context.params;
+    const productId = parseInt(params.id);
 
-    const variants = await prisma.productVariant.findMany({
+    // Check if product exists
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
+
+    if (!product) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    }
+
+    const variants = await prisma.product_variants.findMany({
       where: { product_id: productId },
-      include: { images: true },
-      orderBy: { created_at: "desc" },
+      include: {
+        product_variant_images: true,
+      },
+      orderBy: {
+        created_at: "asc",
+      },
     });
 
     return NextResponse.json(variants);
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching variants:", error);
     return NextResponse.json(
-      { message: "Failed to fetch variants" },
+      { error: "Failed to fetch variants" },
       { status: 500 },
     );
   }
 }
 
-// POST create a variant
-export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
+// POST: Add new variant to product
+export async function POST(
+  request: NextRequest,
+  context: { params: { id: string } },
+) {
   try {
-    const { id } = await context.params;
-    const productId = Number(id);
-    const formData = await req.formData();
+    const params = await context.params;
+    const productId = parseInt(params.id);
+    const formData = await request.formData();
+    const created_by = 1;
 
-    const desc = formData.get("desc") as string | null;
-    const price = formData.get("price") as string | null;
-    const imageFile = formData.get("image") as File | null;
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
 
-    if (!price)
+    if (!product) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    }
+
+    // Parse data
+    const desc = formData.get("desc") as string;
+    const price = formData.get("price") as string;
+    const imageFile = formData.get("image") as File;
+
+    // Validation
+    if (!desc || !price) {
       return NextResponse.json(
-        { message: "Price is required" },
+        { error: "Deskripsi dan harga harus diisi" },
         { status: 400 },
       );
+    }
 
-    const variant = await prisma.productVariant.create({
+    if (Number(price) <= 0) {
+      return NextResponse.json(
+        { error: "Harga harus lebih dari 0" },
+        { status: 400 },
+      );
+    }
+
+    // Upload image if exists
+    let imagePath = null;
+    if (imageFile && imageFile.size > 0) {
+      imagePath = await uploadVariantImage(imageFile);
+    }
+
+    // Create variant
+    const variant = await prisma.product_variants.create({
       data: {
         product_id: productId,
-        desc: desc || undefined,
-        price: Number(price),
-        created_by: 1, // dummy admin id, ganti dengan auth user id
+        desc,
+        price: parseInt(price),
+        created_by,
       },
     });
 
-    // Upload image jika ada
-    if (imageFile && imageFile.size > 0) {
-      const imagePath = await saveImage(imageFile, "images/variants");
-      await prisma.productVariantImage.create({
+    // Create variant image record
+    if (imagePath) {
+      await prisma.product_variant_images.create({
         data: {
           product_variant_id: variant.id,
           image: imagePath,
-          created_by: 1,
+          created_by,
         },
       });
     }
 
-    const createdVariant = await prisma.productVariant.findUnique({
+    // Get complete variant data
+    const completeVariant = await prisma.product_variants.findUnique({
       where: { id: variant.id },
-      include: { images: true },
-    });
-
-    return NextResponse.json(createdVariant, { status: 201 });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { message: "Failed to create variant" },
-      { status: 500 },
-    );
-  }
-}
-
-// PUT update variant
-export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
-  try {
-    const { id } = await context.params;
-    const productId = Number(id);
-    const variantId = Number(new URL(req.url).searchParams.get("variant_id"));
-
-    const formData = await req.formData();
-    const desc = formData.get("desc") as string | null;
-    const price = formData.get("price") as string | null;
-    const imageFile = formData.get("image") as File | null;
-
-    const variant = await prisma.productVariant.update({
-      where: { id: variantId },
-      data: {
-        desc: desc || undefined,
-        price: price ? Number(price) : undefined,
+      include: {
+        product_variant_images: true,
       },
     });
 
-    // Upload new image jika ada
-    if (imageFile && imageFile.size > 0) {
-      const imagePath = await saveImage(imageFile, "images/variants");
-      await prisma.productVariantImage.create({
-        data: {
-          product_variant_id: variant.id,
-          image: imagePath,
-          created_by: 1,
-        },
-      });
-    }
-
-    const updatedVariant = await prisma.productVariant.findUnique({
-      where: { id: variant.id },
-      include: { images: true },
+    return NextResponse.json({
+      success: true,
+      message: "Variant created successfully",
+      data: completeVariant,
     });
-
-    return NextResponse.json(updatedVariant);
   } catch (error) {
-    console.error(error);
+    console.error("Error creating variant:", error);
     return NextResponse.json(
-      { message: "Failed to update variant" },
-      { status: 500 },
-    );
-  }
-}
-
-// DELETE variant
-export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
-  try {
-    const variantId = Number(new URL(req.url).searchParams.get("variant_id"));
-
-    // Hapus images dulu
-    await prisma.productVariantImage.deleteMany({
-      where: { product_variant_id: variantId },
-    });
-
-    // Hapus variant
-    await prisma.productVariant.delete({ where: { id: variantId } });
-
-    return NextResponse.json({ message: "Variant deleted successfully" });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { message: "Failed to delete variant" },
+      {
+        success: false,
+        error: "Failed to create variant",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 },
     );
   }

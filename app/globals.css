@@ -1,10 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-
-.nav-item {
-  @apply flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-muted;
-}
-
+@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 

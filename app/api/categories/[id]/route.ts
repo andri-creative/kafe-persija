@@ -1,106 +1,48 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { saveImage } from "@/lib/upload";
-import fs from "fs";
-import path from "path"
+import { NextRequest, NextResponse } from "next/server";
+import {
+  getCategoryById,
+  updateCategory,
+  deleteCategory,
+} from "@/services/category.service";
 
+type Params = {
+  params: { id: string };
+};
 
-// GET CATEGORY BY ID
-export async function GET(req: Request,  context: { params: Promise<{ id: string }> }) {
+/* =====================
+   GET BY ID
+===================== */
+export async function GET(_: NextRequest, { params }: Params) {
   try {
-const { id } = await context.params;
-  const categoryId = Number(id);
+    const category = await getCategoryById(params.id);
+    return NextResponse.json(category);
+  } catch {
+    return NextResponse.json({ error: "Category not found" }, { status: 404 });
+  }
+}
 
-  const category = await prisma.productCategory.findUnique({
-    where: { id: categoryId },
-  });
-
-    if (!category) {
-      return NextResponse.json(
-        { message: "Category not found" },
-        { status: 404 },
-      );
-    }
+/* =====================
+   UPDATE
+===================== */
+export async function PUT(req: NextRequest, { params }: Params) {
+  try {
+    const body = await req.json();
+    const category = await updateCategory(params.id, body);
 
     return NextResponse.json(category);
-  } catch (error) {
-    return NextResponse.json(
-      { message: "Failed to fetch category" },
-      { status: 500 },
-    );
+  } catch {
+    return NextResponse.json({ error: "Category not found" }, { status: 404 });
   }
 }
 
-// UPDATE CATEGORY
-export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
+/* =====================
+   DELETE
+===================== */
+export async function DELETE(_: NextRequest, { params }: Params) {
   try {
-    const { id } = await context.params;
-    const categoryId = Number(id);
-
-    const formData = await req.formData();
-
-    const name = formData.get("name") as string;
-    const imageFile = formData.get("image") as File | null;
-
-    const category = await prisma.productCategory.findUnique({
-      where: { id: categoryId },
-    });
-
-    if (!category) {
-      return NextResponse.json(
-        { message: "Category not found" },
-        { status: 404 }
-      );
-    }
-
-    let imagePath = category.image;
-
-    if (imageFile && imageFile.size > 0) {
-      if (category.image) {
-        const oldPath = path.join(
-          process.cwd(),
-          "public",
-          category.image
-        );
-        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-      }
-
-      imagePath = await saveImage(imageFile, "images/categories");
-    }
-
-    const updated = await prisma.productCategory.update({
-      where: { id: categoryId },
-      data: {
-        name,
-        image: imagePath,
-      },
-    });
-
-    return NextResponse.json(updated);
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { message: "Failed to update category" },
-      { status: 500 }
-    );
-  }
-}
-
-// DELETE CATEGORY
-export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
-  try {
-    const { id } = await context.params;
-    const categoryId = Number(id);
-
-    await prisma.productCategory.delete({
-      where: { id: categoryId },
-    });
-
-    return NextResponse.json({ message: "Category deleted" });
-  } catch (error) {
-    return NextResponse.json(
-      { message: "Failed to delete category" },
-      { status: 500 },
-    );
+    await deleteCategory(params.id);
+    return NextResponse.json({ message: "Category deleted successfully" });
+  } catch {
+    return NextResponse.json({ error: "Category not found" }, { status: 404 });
   }
 }
