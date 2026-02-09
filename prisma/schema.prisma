@@ -11,11 +11,12 @@ model user {
   id              Int               @id @default(autoincrement())
   nickname        String
   email           String            @unique
+  password        String?
   picture         String?
   auth_token      String?
   point           Int               @default(0)
   type            String
-  status          String
+  status          String            @default("active")
   created_at      DateTime          @default(now())
   updated_at      DateTime          @updatedAt
   promo_usage_trx promo_usage_trx[]
@@ -27,7 +28,7 @@ model user {
 
 model role {
   id            Int             @id @default(autoincrement())
-  name          String          @unique
+  name          String          @unique @default("customer")
   description   String?
   created_at    DateTime        @default(now())
   updated_at    DateTime        @updatedAt
@@ -66,6 +67,9 @@ model product_variants {
   product_id             Int
   desc                   String?
   price                  Int
+  status                 Boolean @default(false)
+  stok                   Int
+  size                   String?
   created_at             DateTime                 @default(now())
   created_by             Int
   product_variant_images product_variant_images[]

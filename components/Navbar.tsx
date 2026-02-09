@@ -27,14 +27,12 @@ export default function Navbar() {
 
   const handleLoginSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Add your login logic here
     console.log("Login submitted");
     setLoginOpen(false);
   };
 
   const handleRegisterSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Add your register logic here
     console.log("Register submitted");
     setRegisterOpen(false);
   };
