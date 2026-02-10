@@ -18,7 +18,6 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontalIcon } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
-// Type untuk product sesuai dengan database schema
 type Product = {
   id: number;
   name: string;
@@ -35,6 +34,7 @@ type Product = {
     id: number;
     desc: string | null;
     price: number;
+    status: boolean;
     product_variant_images: {
       image: string;
     }[];
@@ -384,27 +384,34 @@ export default function ProductPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="space-y-1">
-                        {product.product_variants.slice(0, 2).map((variant) => (
-                          <div key={variant.id} className="text-sm">
-                            <span className="text-gray-600">
-                              {variant.desc || "Standard"}:
-                            </span>{" "}
-                            <span className="font-medium">
-                              {formatPrice(variant.price)}
-                            </span>
-                          </div>
-                        ))}
-                        {product.product_variants.length > 2 && (
-                          <div className="text-xs text-gray-500">
-                            +{product.product_variants.length - 2} varian
-                            lainnya
-                          </div>
-                        )}
-                        {product.product_variants.length === 0 && (
-                          <div className="text-xs text-gray-500 italic">
-                            Belum ada varian
-                          </div>
-                        )}
+                        {(() => {
+                          const activeVariants = product.product_variants.filter((v: any) => v.status === false);
+                          return (
+                            <>
+                              {activeVariants.slice(0, 2).map((variant) => (
+                                <div key={variant.id} className="text-sm">
+                                  <span className="text-gray-600">
+                                    {variant.desc || "Standard"}:
+                                  </span>{" "}
+                                  <span className="font-medium">
+                                    {formatPrice(variant.price)}
+                                  </span>
+                                </div>
+                              ))}
+                              {activeVariants.length > 2 && (
+                                <div className="text-xs text-gray-500">
+                                  +{activeVariants.length - 2} varian
+                                  lainnya
+                                </div>
+                              )}
+                              {activeVariants.length === 0 && (
+                                <div className="text-xs text-gray-500 italic">
+                                  Belum ada varian aktif
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
                     </td>
                     <td className="px-6 py-4 flex items-center flex-col gap-2">

@@ -3,11 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldDescription,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -45,8 +41,10 @@ type VariantFormData = {
   id?: number;
   desc: string;
   price: string;
-  imageFile?: File | null;
-  imagePreview?: string;
+  stok: string;
+  size: string;
+  imageFiles: File[];
+  imagePreviews: string[];
 };
 
 export default function CreateProductPage() {
@@ -76,7 +74,14 @@ export default function CreateProductPage() {
 
   // State untuk variants
   const [variants, setVariants] = useState<VariantFormData[]>([
-    { desc: "", price: "" },
+    {
+      desc: "",
+      price: "",
+      stok: "0",
+      size: "",
+      imageFiles: [],
+      imagePreviews: [],
+    },
   ]);
 
   // Ref untuk file input
@@ -101,62 +106,100 @@ export default function CreateProductPage() {
     index: number,
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Validasi tipe file
-    if (!file.type.startsWith("image/")) {
-      toast.error("Hanya file gambar yang diizinkan (JPG, PNG, GIF)");
-      return;
-    }
-
-    // Validasi ukuran file (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Ukuran file maksimal 5MB");
-      return;
-    }
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
     const newVariants = [...variants];
-    newVariants[index] = {
-      ...newVariants[index],
-      imageFile: file,
-      imagePreview: URL.createObjectURL(file),
-    };
-    setVariants(newVariants);
-  };
+    const currentVariant = newVariants[index];
 
-  // Hapus gambar
-  const handleRemoveImage = (index: number) => {
-    const newVariants = [...variants];
-    if (newVariants[index].imagePreview) {
-      URL.revokeObjectURL(newVariants[index].imagePreview!);
-    }
+    // Convert FileList to Array
+    const fileArray = Array.from(files);
+
+    // Validasi
+    const validFiles: File[] = [];
+
+    fileArray.forEach((file) => {
+      // Validasi tipe file
+      if (!file.type.startsWith("image/")) {
+        toast.error(`File ${file.name} bukan gambar`);
+        return;
+      }
+
+      // Validasi ukuran file (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`File ${file.name} melebihi 5MB`);
+        return;
+      }
+
+      validFiles.push(file);
+    });
+
+    if (validFiles.length === 0) return;
+
+    // Append files and previews
+    const newImageFiles = [...currentVariant.imageFiles, ...validFiles];
+    const newImagePreviews = [
+      ...currentVariant.imagePreviews,
+      ...validFiles.map((file) => URL.createObjectURL(file)),
+    ];
+
     newVariants[index] = {
-      ...newVariants[index],
-      imageFile: null,
-      imagePreview: undefined,
+      ...currentVariant,
+      imageFiles: newImageFiles,
+      imagePreviews: newImagePreviews,
     };
+
     setVariants(newVariants);
 
-    // Reset file input
+    // Reset input
     if (fileInputRefs.current[index]) {
       fileInputRefs.current[index]!.value = "";
     }
   };
 
+  // Hapus gambar spesifik
+  const handleRemoveImage = (variantIndex: number, imageIndex: number) => {
+    const newVariants = [...variants];
+    const variant = newVariants[variantIndex];
+
+    // Revoke URL for memory cleanup
+    URL.revokeObjectURL(variant.imagePreviews[imageIndex]);
+
+    const newImageFiles = variant.imageFiles.filter((_, i) => i !== imageIndex);
+    const newImagePreviews = variant.imagePreviews.filter(
+      (_, i) => i !== imageIndex,
+    );
+
+    newVariants[variantIndex] = {
+      ...variant,
+      imageFiles: newImageFiles,
+      imagePreviews: newImagePreviews,
+    };
+
+    setVariants(newVariants);
+  };
+
   // Tambah variant baru
   const addVariant = () => {
-    setVariants([...variants, { desc: "", price: "" }]);
+    setVariants([
+      ...variants,
+      {
+        desc: "",
+        price: "",
+        stok: "0",
+        size: "",
+        imageFiles: [],
+        imagePreviews: [],
+      },
+    ]);
     fileInputRefs.current.push(null);
   };
 
   // Hapus variant
   const removeVariant = (index: number) => {
     if (variants.length > 1) {
-      // Clean up URL object
-      if (variants[index].imagePreview) {
-        URL.revokeObjectURL(variants[index].imagePreview);
-      }
+      // Clean up URL objects
+      variants[index].imagePreviews.forEach((url) => URL.revokeObjectURL(url));
 
       const newVariants = variants.filter((_, i) => i !== index);
       setVariants(newVariants);
@@ -171,7 +214,7 @@ export default function CreateProductPage() {
     setSelectedCategories((prev) =>
       prev.includes(categoryName)
         ? prev.filter((c) => c !== categoryName)
-        : [...prev, categoryName]
+        : [...prev, categoryName],
     );
   };
 
@@ -209,7 +252,7 @@ export default function CreateProductPage() {
       formData.append("name", productName);
       formData.append("description", description);
       formData.append("status", status);
-      
+
       // Append multiple categories
       selectedCategories.forEach((category) => {
         formData.append("categories", category);
@@ -219,9 +262,13 @@ export default function CreateProductPage() {
       variants.forEach((variant, index) => {
         formData.append(`variants[${index}][desc]`, variant.desc);
         formData.append(`variants[${index}][price]`, variant.price);
-        if (variant.imageFile) {
-          formData.append(`variants[${index}][image]`, variant.imageFile);
-        }
+        formData.append(`variants[${index}][stok]`, variant.stok);
+        formData.append(`variants[${index}][size]`, variant.size);
+
+        // Append images
+        variant.imageFiles.forEach((file) => {
+          formData.append(`variants[${index}][images]`, file); // Changed key to 'images' to imply array
+        });
       });
 
       console.log("Mengirim data ke API...");
@@ -244,9 +291,7 @@ export default function CreateProductPage() {
 
       // Clean up semua URL object
       variants.forEach((variant) => {
-        if (variant.imagePreview) {
-          URL.revokeObjectURL(variant.imagePreview);
-        }
+        variant.imagePreviews.forEach((url) => URL.revokeObjectURL(url));
       });
 
       // Reset form setelah submit
@@ -254,7 +299,16 @@ export default function CreateProductPage() {
       setDescription("");
       setStatus("active");
       setSelectedCategories([]);
-      setVariants([{ desc: "", price: "" }]);
+      setVariants([
+        {
+          desc: "",
+          price: "",
+          stok: "0",
+          size: "",
+          imageFiles: [],
+          imagePreviews: [],
+        },
+      ]);
       fileInputRefs.current = [null];
 
       // Redirect ke halaman list product setelah 1.5 detik
@@ -383,7 +437,9 @@ export default function CreateProductPage() {
                           <DropdownMenuCheckboxItem
                             key={category.id}
                             checked={selectedCategories.includes(category.name)}
-                            onCheckedChange={() => toggleCategory(category.name)}
+                            onCheckedChange={() =>
+                              toggleCategory(category.name)
+                            }
                           >
                             {category.name}
                           </DropdownMenuCheckboxItem>
@@ -436,23 +492,38 @@ export default function CreateProductPage() {
                     </div>
 
                     <div className="space-y-3">
-                      <Field>
-                        <FieldLabel>
-                          Deskripsi Varian{" "}
-                          <span className="text-red-500">*</span>
-                        </FieldLabel>
-                        <Input
-                          placeholder="Contoh: Kopi Hitam Es"
-                          value={variant.desc}
-                          onChange={(e) =>
-                            handleVariantChange(index, "desc", e.target.value)
-                          }
-                          required
-                        />
-                        <FieldDescription>
-                          Contoh: Kopi Hitam Panas, Teh Tarik Es, Large Size
-                        </FieldDescription>
-                      </Field>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <Field>
+                          <FieldLabel>
+                            Deskripsi Varian{" "}
+                            <span className="text-red-500">*</span>
+                          </FieldLabel>
+                          <Input
+                            placeholder="Contoh: Kopi Hitam Es"
+                            value={variant.desc}
+                            onChange={(e) =>
+                              handleVariantChange(index, "desc", e.target.value)
+                            }
+                            required
+                          />
+                          <FieldDescription>
+                            Contoh: Kopi Hitam Panas, Teh Tarik Es, Large Size
+                          </FieldDescription>
+                        </Field>
+                        <Field>
+                          <FieldLabel>
+                            Size{" "}
+                            <span className="text-gray-400">(Opsional)</span>
+                          </FieldLabel>
+                          <Input
+                            placeholder="Contoh: Large, 500ml"
+                            value={variant.size}
+                            onChange={(e) =>
+                              handleVariantChange(index, "size", e.target.value)
+                            }
+                          />
+                        </Field>
+                      </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <Field>
@@ -476,55 +547,87 @@ export default function CreateProductPage() {
                         </Field>
 
                         <Field>
-                          <FieldLabel>Gambar (Opsional)</FieldLabel>
-                          <div className="space-y-2">
-                            {variant.imagePreview ? (
-                              <div className="relative">
-                                <div className="border rounded-lg overflow-hidden">
-                                  <img
-                                    src={variant.imagePreview}
-                                    alt="Preview"
-                                    className="w-full h-32 object-cover"
-                                  />
-                                </div>
-                                <Button
-                                  type="button"
-                                  variant="destructive"
-                                  size="sm"
-                                  className="absolute top-2 right-2 h-6 w-6 p-0"
-                                  onClick={() => handleRemoveImage(index)}
-                                >
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            ) : (
-                              <div
-                                className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50 transition-colors"
-                                onClick={() =>
-                                  fileInputRefs.current[index]?.click()
-                                }
-                              >
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  className="hidden"
-                                  ref={(el) => {
-                                    fileInputRefs.current[index] = el;
-                                  }}
-                                  onChange={(e) => handleImageUpload(index, e)}
-                                />
-                                <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                                <p className="text-sm text-gray-600">
-                                  Upload Gambar
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  JPG, PNG, GIF • Max 5MB
-                                </p>
-                              </div>
-                            )}
-                          </div>
+                          <FieldLabel>
+                            Stok <span className="text-red-500">*</span>
+                          </FieldLabel>
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            value={variant.stok}
+                            onChange={(e) =>
+                              handleVariantChange(index, "stok", e.target.value)
+                            }
+                            required
+                            min="0"
+                          />
                         </Field>
                       </div>
+
+                      <Field>
+                        <FieldLabel>Gambar (Opsional - Bisa banyak)</FieldLabel>
+                        <div className="space-y-4">
+                          {/* Image Grid */}
+                          {variant.imagePreviews.length > 0 && (
+                            <div className="grid grid-cols-3 gap-2">
+                              {variant.imagePreviews.map(
+                                (preview, imgIndex) => (
+                                  <div
+                                    key={imgIndex}
+                                    className="relative group"
+                                  >
+                                    <div className="border rounded-lg overflow-hidden h-24 w-full">
+                                      <img
+                                        src={preview}
+                                        alt={`Preview ${imgIndex + 1}`}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                    <Button
+                                      type="button"
+                                      variant="destructive"
+                                      size="icon"
+                                      className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      onClick={() =>
+                                        handleRemoveImage(index, imgIndex)
+                                      }
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                ),
+                              )}
+                            </div>
+                          )}
+
+                          {/* Upload Button */}
+                          <div
+                            className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50 transition-colors"
+                            onClick={() =>
+                              fileInputRefs.current[index]?.click()
+                            }
+                          >
+                            <input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              className="hidden"
+                              ref={(el) => {
+                                fileInputRefs.current[index] = el;
+                              }}
+                              onChange={(e) => handleImageUpload(index, e)}
+                            />
+                            <Upload className="h-6 w-6 text-gray-400 mx-auto mb-2" />
+                            <p className="text-sm text-gray-600">
+                              {variant.imagePreviews.length > 0
+                                ? "Tambah Gambar Lain"
+                                : "Upload Gambar"}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              JPG, PNG, GIF • Max 5MB
+                            </p>
+                          </div>
+                        </div>
+                      </Field>
                     </div>
                   </div>
                 ))}
