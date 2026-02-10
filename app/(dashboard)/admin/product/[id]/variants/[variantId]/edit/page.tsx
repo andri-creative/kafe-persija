@@ -29,6 +29,8 @@ type Variant = {
   id: number;
   desc: string | null;
   price: number;
+  stok: number | null;
+  size: string | null;
   created_at: string;
   product_variant_images: {
     id: number;
@@ -56,9 +58,12 @@ export default function ProductVariantEditPage() {
   const [formData, setFormData] = useState({
     desc: "",
     price: "",
-    imageFile: null as File | null,
-    imagePreview: "",
-    removeImage: false,
+    stok: "",
+    size: "",
+    imageFiles: [] as File[],
+    imagePreviews: [] as string[],
+    existingImages: [] as { id: number; image: string }[],
+    removedImageIds: [] as number[],
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -85,9 +90,12 @@ export default function ProductVariantEditPage() {
       setFormData({
         desc: data.desc || "",
         price: data.price.toString(),
-        imageFile: null,
-        imagePreview: data.product_variant_images?.[0]?.image || "",
-        removeImage: false,
+        stok: data.stok?.toString() || "0",
+        size: data.size || "",
+        imageFiles: [],
+        imagePreviews: [],
+        existingImages: data.product_variant_images || [],
+        removedImageIds: [],
       });
     } catch (error) {
       console.error("Error fetching variant:", error);
@@ -98,43 +106,53 @@ export default function ProductVariantEditPage() {
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
-    // Validasi
-    if (!file.type.startsWith("image/")) {
-      toast.error("Hanya file gambar yang diizinkan");
-      return;
-    }
+    const fileArray = Array.from(files);
+    const validFiles: File[] = [];
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Ukuran file maksimal 5MB");
-      return;
-    }
-
-    setFormData({
-      ...formData,
-      imageFile: file,
-      imagePreview: URL.createObjectURL(file), // Create new preview
-      removeImage: false, // Ensure we are not removing the image if uploading new one
+    fileArray.forEach(file => {
+        if (!file.type.startsWith("image/")) {
+            toast.error(`File ${file.name} bukan gambar`);
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+             toast.error(`File ${file.name} terlalu besar (max 5MB)`);
+             return;
+        }
+        validFiles.push(file);
     });
+
+    if (validFiles.length === 0) return;
+
+    setFormData(prev => ({
+      ...prev,
+      imageFiles: [...prev.imageFiles, ...validFiles],
+      imagePreviews: [...prev.imagePreviews, ...validFiles.map(file => URL.createObjectURL(file))]
+    }));
+    
+    // Reset input
+    if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+    }
   };
 
-  const handleRemoveImage = () => {
-    // Revoke object URL if it was created locally
-    if (formData.imageFile && formData.imagePreview) {
-      URL.revokeObjectURL(formData.imagePreview);
-    }
-
-    setFormData({
-      ...formData,
-      imageFile: null,
-      imagePreview: "",
-      removeImage: true,
-    });
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+  const handleRemoveImage = (type: "new" | "existing", index: number) => {
+    if (type === "new") {
+        URL.revokeObjectURL(formData.imagePreviews[index]);
+        setFormData(prev => ({
+            ...prev,
+            imageFiles: prev.imageFiles.filter((_, i) => i !== index),
+            imagePreviews: prev.imagePreviews.filter((_, i) => i !== index)
+        }));
+    } else {
+        const imageToRemove = formData.existingImages[index];
+        setFormData(prev => ({
+            ...prev,
+            existingImages: prev.existingImages.filter((_, i) => i !== index),
+            removedImageIds: [...prev.removedImageIds, imageToRemove.id]
+        }));
     }
   };
 
@@ -157,13 +175,17 @@ export default function ProductVariantEditPage() {
       const submitData = new FormData();
       submitData.append("desc", formData.desc);
       submitData.append("price", formData.price);
+      submitData.append("stok", formData.stok);
+      submitData.append("size", formData.size);
       
-      if (formData.imageFile) {
-        submitData.append("image", formData.imageFile);
-      }
+      // New images
+      formData.imageFiles.forEach((file) => {
+        submitData.append("images", file);
+      });
       
-      if (formData.removeImage) {
-        submitData.append("removeImage", "true");
+      // Removed images
+      if (formData.removedImageIds.length > 0) {
+        submitData.append("removedImageIds", formData.removedImageIds.join(","));
       }
 
       const response = await fetch(`/api/variants/${variantId}`, {
@@ -179,7 +201,6 @@ export default function ProductVariantEditPage() {
 
       toast.success("Varian berhasil diperbarui");
       
-      // Delay redirect slightly to show toast
       setTimeout(() => {
         router.push(`/admin/product/${productId}/variants`);
       }, 1000);
@@ -300,6 +321,30 @@ export default function ProductVariantEditPage() {
                   min="0"
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="stok">Stok</Label>
+                <Input
+                  id="stok"
+                  type="number"
+                  placeholder="0"
+                  value={formData.stok}
+                  onChange={(e) => setFormData({ ...formData, stok: e.target.value })}
+                  disabled={saving}
+                  min="0"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="size">Size (Opsional)</Label>
+                <Input
+                  id="size"
+                  placeholder="Contoh: Large, 350ml"
+                  value={formData.size}
+                  onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+                  disabled={saving}
+                />
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -314,57 +359,74 @@ export default function ProductVariantEditPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col items-center gap-4">
-                {formData.imagePreview ? (
-                  <div className="relative w-full aspect-square border rounded-lg overflow-hidden bg-gray-50">
-                    <img
-                      src={formData.imagePreview}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-md"
-                      onClick={handleRemoveImage}
-                      disabled={saving}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div
-                    className="w-full aspect-square border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+              <div className="flex flex-col gap-4">
+                {/* Existing Images */}
+                {(formData.existingImages.length > 0 || formData.imagePreviews.length > 0) && (
+                    <div className="grid grid-cols-3 gap-2">
+                        {formData.existingImages.map((img, index) => (
+                            <div key={`existing-${index}`} className="relative aspect-square border rounded-lg overflow-hidden bg-gray-50 group">
+                                <img
+                                    src={img.image}
+                                    alt="Existing"
+                                    className="w-full h-full object-cover"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="icon"
+                                    className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={() => handleRemoveImage("existing", index)}
+                                    disabled={saving}
+                                >
+                                    <X className="h-3 w-3" />
+                                </Button>
+                            </div>
+                        ))}
+                        {formData.imagePreviews.map((preview, index) => (
+                            <div key={`new-${index}`} className="relative aspect-square border rounded-lg overflow-hidden bg-gray-50 group">
+                                <img
+                                    src={preview}
+                                    alt="New Preview"
+                                    className="w-full h-full object-cover"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="icon"
+                                    className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={() => handleRemoveImage("new", index)}
+                                    disabled={saving}
+                                >
+                                    <X className="h-3 w-3" />
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                
+                <div
+                    className="w-full border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
                     onClick={() => fileInputRef.current?.click()}
                   >
                     <input
                       type="file"
                       accept="image/*"
+                      multiple
                       className="hidden"
                       ref={fileInputRef}
                       onChange={handleImageUpload}
                       disabled={saving}
                     />
-                    <div className="p-4 bg-gray-100 rounded-full mb-3">
+                    <div className="p-3 bg-gray-100 rounded-full mb-2">
                       <Upload className="h-6 w-6 text-gray-500" />
                     </div>
                     <p className="text-sm font-medium text-gray-700">
-                      Klik untuk upload
+                      {(formData.existingImages.length > 0 || formData.imagePreviews.length > 0) ? "Tambah Gambar Lain" : "Upload Gambar"}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
-                      Maksimal 5MB
+                      Maksimal 5MB per file
                     </p>
                   </div>
-                )}
-                
-                {/* Fallback info when no image is selected */}
-                {!formData.imagePreview && (
-                  <div className="flex items-center gap-2 text-sm text-gray-500 w-full p-2 bg-gray-50 rounded border">
-                    <ImageIcon className="h-4 w-4" />
-                    <span>Gambar default produk akan digunakan jika kosong</span>
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>

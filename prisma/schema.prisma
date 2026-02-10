@@ -67,8 +67,8 @@ model product_variants {
   product_id             Int
   desc                   String?
   price                  Int
-  status                 Boolean @default(false)
-  stok                   Int
+  status                 Boolean                  @default(false)
+  stok                   Int?                     @default(0)
   size                   String?
   created_at             DateTime                 @default(now())
   created_by             Int

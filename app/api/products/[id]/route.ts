@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { deleteVariantImage, uploadVariantImage } from "@/lib/path-img";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 // GET: Get product by ID
 export async function GET(
@@ -58,7 +60,12 @@ export async function PUT(
     const params = await context.params;
     const productId = parseInt(params.id);
     const formData = await request.formData();
-    const updated_by = 1; 
+    
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user?.id) {
+       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const updated_by = parseInt(session.user.id);
 
     // Check if product exists
     const existingProduct = await prisma.product.findUnique({
@@ -150,18 +157,30 @@ export async function PUT(
       const idStr = formData.get(`variants[${index}][id]`) as string;
       const desc = formData.get(`variants[${index}][desc]`) as string;
       const priceStr = formData.get(`variants[${index}][price]`) as string;
-      const imageFile = formData.get(`variants[${index}][image]`) as File;
-      const removeImage = formData.get(`variants[${index}][removeImage]`) === "true";
+      const stokStr = formData.get(`variants[${index}][stok]`) as string;
+      const size = formData.get(`variants[${index}][size]`) as string;
+      
+      // Removed images IDs (comma separated string)
+      const removedImageIdsStr = formData.get(`variants[${index}][removedImageIds]`) as string;
+
+      // Handle multiple new images
+      // Check for 'images' (new convention) 
+      const newImageFiles = formData.getAll(`variants[${index}][images]`) as File[];
+      
+      // Fallback for old single image if needed (optional, but good for safety)
+      // const singleImage = formData.get(`variants[${index}][image]`) as File;
+      // if (singleImage && singleImage.size > 0 && newImageFiles.length === 0) newImageFiles.push(singleImage);
+
 
       if (!desc) {
         // If desc is missing but ID exists, maybe it's the end of list? 
         // But checking just 'desc' might be risky if there are gaps (though UI sends array). 
         // Assuming packed array from 0.
         if (!formData.has(`variants[${index}][desc]`)) break;
-        // If key exists but empty value, skip or error? UI validates strict desc.
       }
 
       const price = parseInt(priceStr);
+      const stok = stokStr ? parseInt(stokStr) : 0;
       const variantId = idStr ? parseInt(idStr) : null;
 
       let currentVariantId = variantId;
@@ -173,6 +192,8 @@ export async function PUT(
           data: {
             desc,
             price,
+            stok,
+            size: size || null,
           },
         });
         processedVariantIds.push(variantId);
@@ -183,52 +204,55 @@ export async function PUT(
             product_id: productId,
             desc,
             price,
+            stok,
+            size: size || null,
             created_by: updated_by,
           },
         });
         currentVariantId = newVariant.id;
       }
 
-      // Handle Image
+      // Handle Images for currentVariantId
       if (currentVariantId) {
-        if (imageFile && imageFile.size > 0) {
-          // Upload new image
-          const imagePath = await uploadVariantImage(imageFile);
+          
+        // 1. Delete removed images
+        if (removedImageIdsStr) {
+            const idsToDelete = removedImageIdsStr.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+            
+            if (idsToDelete.length > 0) {
+                // Get images to delete file path
+                const imagesToDelete = await prisma.product_variant_images.findMany({
+                    where: {
+                        id: { in: idsToDelete },
+                        product_variant_id: currentVariantId // Safety check
+                    }
+                });
+                
+                for (const img of imagesToDelete) {
+                    await deleteVariantImage(img.image);
+                    await prisma.product_variant_images.delete({
+                        where: { id: img.id }
+                    });
+                }
+            }
+        }
 
-          // Get existing images
-          const oldImages = await prisma.product_variant_images.findMany({
-            where: { product_variant_id: currentVariantId },
-          });
-
-          // Delete old images from storage and DB
-          for (const oldImg of oldImages) {
-            await deleteVariantImage(oldImg.image);
-            await prisma.product_variant_images.delete({
-              where: { id: oldImg.id },
-            });
-          }
-
-          // Create new image record
-          await prisma.product_variant_images.create({
-            data: {
-              product_variant_id: currentVariantId,
-              image: imagePath,
-              created_by: updated_by,
-            },
-          });
-        } else if (removeImage) {
-           // Get existing images
-           const oldImages = await prisma.product_variant_images.findMany({
-            where: { product_variant_id: currentVariantId },
-          });
-
-          // Delete old images from storage and DB
-          for (const oldImg of oldImages) {
-            await deleteVariantImage(oldImg.image);
-            await prisma.product_variant_images.delete({
-              where: { id: oldImg.id },
-            });
-          }
+        // 2. Add new images
+        if (newImageFiles && newImageFiles.length > 0) {
+            for (const file of newImageFiles) {
+                if (file.size > 0) {
+                    const imagePath = await uploadVariantImage(file);
+                    if (imagePath) {
+                        await prisma.product_variant_images.create({
+                            data: {
+                                product_variant_id: currentVariantId,
+                                image: imagePath,
+                                created_by: updated_by,
+                            }
+                        });
+                    }
+                }
+            }
         }
       }
 
