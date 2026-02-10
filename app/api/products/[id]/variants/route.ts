@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { uploadVariantImage } from "@/lib/path-img";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 // GET: Get all variants for a product
 export async function GET(
@@ -11,7 +13,6 @@ export async function GET(
     const params = await context.params;
     const productId = parseInt(params.id);
 
-    // Check if product exists
     const product = await prisma.product.findUnique({
       where: { id: productId },
     });
@@ -40,7 +41,7 @@ export async function GET(
   }
 }
 
-// POST: Add new variant to product
+// POST:
 export async function POST(
   request: NextRequest,
   context: { params: { id: string } },
@@ -49,7 +50,12 @@ export async function POST(
     const params = await context.params;
     const productId = parseInt(params.id);
     const formData = await request.formData();
-    const created_by = 1;
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user?.id) {
+       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const created_by = parseInt(session.user.id);
+    // const created_by = 1; // Removed hardcoded id
 
     const product = await prisma.product.findUnique({
       where: { id: productId },
@@ -59,12 +65,21 @@ export async function POST(
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    // Parse data
     const desc = formData.get("desc") as string;
     const price = formData.get("price") as string;
-    const imageFile = formData.get("image") as File;
+    const stok = formData.get("stok") as string;
+    const size = formData.get("size") as string;
+    
+    // Handle multiple images
+    // Check for 'images' (new convention) or 'image' (old convention/fallback)
+    let imageFiles = formData.getAll("images") as File[];
+    if (imageFiles.length === 0) {
+       const keyCheck = formData.getAll("image") as File[];
+       if (keyCheck.length > 0) {
+         imageFiles = keyCheck;
+       }
+    }
 
-    // Validation
     if (!desc || !price) {
       return NextResponse.json(
         { error: "Deskripsi dan harga harus diisi" },
@@ -79,34 +94,35 @@ export async function POST(
       );
     }
 
-    // Upload image if exists
-    let imagePath = null;
-    if (imageFile && imageFile.size > 0) {
-      imagePath = await uploadVariantImage(imageFile);
-    }
-
-    // Create variant
     const variant = await prisma.product_variants.create({
       data: {
         product_id: productId,
         desc,
         price: parseInt(price),
+        stok: stok ? parseInt(stok) : 0,
+        size: size || null,
         created_by,
       },
     });
 
-    // Create variant image record
-    if (imagePath) {
-      await prisma.product_variant_images.create({
-        data: {
-          product_variant_id: variant.id,
-          image: imagePath,
-          created_by,
-        },
-      });
+    // Upload and save images
+    if (imageFiles && imageFiles.length > 0) {
+      for (const file of imageFiles) {
+        if (file.size > 0) {
+           const imagePath = await uploadVariantImage(file);
+           if (imagePath) {
+             await prisma.product_variant_images.create({
+               data: {
+                 product_variant_id: variant.id,
+                 image: imagePath,
+                 created_by,
+               },
+             });
+           }
+        }
+      }
     }
 
-    // Get complete variant data
     const completeVariant = await prisma.product_variants.findUnique({
       where: { id: variant.id },
       include: {

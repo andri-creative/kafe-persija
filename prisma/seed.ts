@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { PrismaClient } from "../generated/prisma/client";
+import bcrypt from "bcryptjs"; // Import bcrypt directly
 
 const adapter = new PrismaMariaDb(process.env.DATABASE_URL!);
 const prisma = new PrismaClient({ adapter });
@@ -15,7 +16,7 @@ async function main() {
   // Cek dulu apakah role sudah ada
   const existingRoles = await prisma.role.findMany();
 
-  let superAdminRole, adminRole, staffRole;
+  let superAdminRole, adminRole, staffRole, customerRole;
 
   if (existingRoles.length === 0) {
     // Jika belum ada role, buat dengan createMany
@@ -23,6 +24,7 @@ async function main() {
       { name: "SUPER_ADMIN", description: "Akses penuh ke seluruh sistem" },
       { name: "ADMIN", description: "Administrator operasional" },
       { name: "STAFF", description: "Staff dengan akses terbatas" },
+      { name: "CUSTOMER", description: "Pelanggan" },
     ];
 
     await prisma.role.createMany({
@@ -34,6 +36,7 @@ async function main() {
     superAdminRole = roles.find((r) => r.name === "SUPER_ADMIN");
     adminRole = roles.find((r) => r.name === "ADMIN");
     staffRole = roles.find((r) => r.name === "STAFF");
+    customerRole = roles.find((r) => r.name === "CUSTOMER");
 
     console.log("✅ Roles berhasil dibuat");
   } else {
@@ -41,6 +44,7 @@ async function main() {
     superAdminRole = existingRoles.find((r) => r.name === "SUPER_ADMIN");
     adminRole = existingRoles.find((r) => r.name === "ADMIN");
     staffRole = existingRoles.find((r) => r.name === "STAFF");
+    customerRole = existingRoles.find((r) => r.name === "CUSTOMER");
 
     // Jika ada yang belum ada, buat yang belum
     if (!superAdminRole) {
@@ -61,9 +65,14 @@ async function main() {
         data: { name: "STAFF", description: "Staff dengan akses terbatas" },
       });
     }
+    if (!customerRole) {
+      customerRole = await prisma.role.create({
+        data: { name: "CUSTOMER", description: "Pelanggan" },
+      });
+    }
   }
 
-  if (!superAdminRole || !adminRole || !staffRole) {
+  if (!superAdminRole || !adminRole || !staffRole || !customerRole) {
     throw new Error("Gagal mendapatkan role");
   }
 
@@ -71,10 +80,17 @@ async function main() {
      CREATE USERS
   ========================= */
 
+  // Hash passwords
+  const passwordSuperAdmin = await bcrypt.hash("superasmin", 12);
+  const passwordAdmin = await bcrypt.hash("admin", 12);
+  const passwordStaff = await bcrypt.hash("staff", 12); // user wrote 'pass staff'
+  const passwordCustomer = await bcrypt.hash("customer", 12);
+
   const usersData = [
     {
       nickname: "Super Admin",
-      email: "superadmin@example.com",
+      email: "superadmin@persija.id", // Updated to prevent confusing with example.com
+      password: passwordSuperAdmin,
       status: "ACTIVE",
       type: "SYSTEM",
       point: 9999,
@@ -82,7 +98,8 @@ async function main() {
     },
     {
       nickname: "Admin",
-      email: "admin@example.com",
+      email: "admin@persija.id",
+      password: passwordAdmin,
       status: "ACTIVE",
       type: "SYSTEM",
       point: 1000,
@@ -90,11 +107,21 @@ async function main() {
     },
     {
       nickname: "Staff",
-      email: "staff@example.com",
+      email: "staff@persija.id",
+      password: passwordStaff,
       status: "ACTIVE",
       type: "STAFF",
       point: 300,
       roleId: staffRole.id,
+    },
+    {
+      nickname: "Customer",
+      email: "customer@persija.id",
+      password: passwordCustomer,
+      status: "ACTIVE",
+      type: "CUSTOMER",
+      point: 0,
+      roleId: customerRole.id,
     },
   ];
 
@@ -112,6 +139,7 @@ async function main() {
         where: { email: data.email },
         data: {
           nickname: data.nickname,
+          password: data.password, // Update password too
           status: data.status,
           type: data.type,
           point: data.point,
@@ -124,6 +152,7 @@ async function main() {
         data: {
           nickname: data.nickname,
           email: data.email,
+          password: data.password,
           status: data.status,
           type: data.type,
           point: data.point,
@@ -132,7 +161,7 @@ async function main() {
       console.log(`✅ User ${data.email} dibuat`);
     }
 
-    // PERBAIKAN DI SINI: gunakan snake_case 'user_role_trx' bukan camelCase
+    // Assign Role
     const existingUserRole = await prisma.user_role_trx.findFirst({
       where: {
         user_id: user.id,
@@ -141,7 +170,6 @@ async function main() {
     });
 
     if (!existingUserRole) {
-      // PERBAIKAN DI SINI: juga gunakan snake_case
       await prisma.user_role_trx.create({
         data: {
           user_id: user.id,

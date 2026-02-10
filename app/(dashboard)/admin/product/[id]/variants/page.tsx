@@ -27,12 +27,16 @@ import { Label } from "@/components/ui/label";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useRef } from "react";
+import { Switch } from "@/components/ui/switch";
 
 // Type untuk variant
 type Variant = {
   id: number;
   desc: string | null;
   price: number;
+  stok: number | null;
+  size: string | null;
+  status: boolean;
   created_at: string;
   product_variant_images: {
     id: number;
@@ -67,13 +71,14 @@ export default function ProductVariantsPage() {
   const [newVariant, setNewVariant] = useState({
     desc: "",
     price: "",
+    stok: "",
+    size: "",
     imageFile: null as File | null,
     imagePreview: "",
   });
   const [addingVariant, setAddingVariant] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch product dan variants
   useEffect(() => {
     if (productId) {
       fetchProductAndVariants();
@@ -205,6 +210,8 @@ export default function ProductVariantsPage() {
       const formData = new FormData();
       formData.append("desc", newVariant.desc);
       formData.append("price", newVariant.price);
+      formData.append("stok", newVariant.stok || "0");
+      formData.append("size", newVariant.size || "");
       if (newVariant.imageFile) {
         formData.append("image", newVariant.imageFile);
       }
@@ -229,6 +236,8 @@ export default function ProductVariantsPage() {
       setNewVariant({
         desc: "",
         price: "",
+        stok: "",
+        size: "",
         imageFile: null,
         imagePreview: "",
       });
@@ -251,6 +260,35 @@ export default function ProductVariantsPage() {
   // Edit variant (redirect to edit page)
   const handleEditVariant = (variantId: number) => {
     router.push(`/admin/product/${productId}/variants/${variantId}/edit`);
+  };
+
+  const handleToggleStatus = async (variantId: number, checked: boolean) => {
+    // Optimistic update
+    const previousVariants = [...variants];
+    const newVariants = variants.map((v) =>
+      v.id === variantId ? { ...v, status: !checked } : v
+    );
+    setVariants(newVariants);
+
+    try {
+      const response = await fetch(`/api/variants/${variantId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: !checked }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update status");
+      }
+
+      toast.success("Status varian berhasil diperbarui");
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast.error("Gagal memperbarui status");
+      setVariants(previousVariants); 
+    }
   };
 
   if (loading) {
@@ -379,6 +417,34 @@ export default function ProductVariantsPage() {
                   min="0"
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="stok">Stok</Label>
+                <Input
+                  id="stok"
+                  type="number"
+                  placeholder="0"
+                  value={newVariant.stok}
+                  onChange={(e) =>
+                    setNewVariant({ ...newVariant, stok: e.target.value })
+                  }
+                  disabled={addingVariant}
+                  min="0"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="size">Size (Opsional)</Label>
+                <Input
+                  id="size"
+                  placeholder="Contoh: Large, 350ml"
+                  value={newVariant.size}
+                  onChange={(e) =>
+                    setNewVariant({ ...newVariant, size: e.target.value })
+                  }
+                  disabled={addingVariant}
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -482,13 +548,19 @@ export default function ProductVariantsPage() {
                       Varian
                     </th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">
+                      Size
+                    </th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">
+                      Stok
+                    </th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">
                       Gambar
                     </th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">
                       Harga
                     </th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">
-                      Tanggal
+                      Status
                     </th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">
                       Aksi
@@ -499,28 +571,39 @@ export default function ProductVariantsPage() {
                   {variants.map((variant) => (
                     <tr key={variant.id} className="border-b hover:bg-gray-50">
                       <td className="py-4 px-4">
-                        <div>
-                          <div className="font-medium">
-                            {variant.desc || "Standard"}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            ID: {variant.id}
-                          </div>
+                        <div className="font-medium">
+                          {variant.desc || "-"}
                         </div>
+                        <div className="text-xs text-gray-500">
+                          Added: {formatDate(variant.created_at)}
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 text-sm">
+                        {variant.size || "-"}
+                      </td>
+                      <td className="py-4 px-4 text-sm">
+                        {variant.stok || 0}
                       </td>
                       <td className="py-4 px-4">
                         {variant.product_variant_images.length > 0 ? (
-                          <div className="w-16 h-16 rounded-lg overflow-hidden border">
-                            <img
-                              src={variant.product_variant_images[0].image}
-                              alt={variant.desc || "Variant"}
-                              className="w-full h-full object-cover"
-                            />
+                          <div className="flex -space-x-2 overflow-hidden">
+                             {variant.product_variant_images.slice(0, 3).map((img) => (
+                                <div key={img.id} className="inline-block h-10 w-10 rounded-full ring-2 ring-white overflow-hidden bg-gray-100">
+                                   <img
+                                     src={img.image}
+                                     alt="Variant"
+                                     className="h-full w-full object-cover"
+                                   />
+                                </div>
+                             ))}
+                             {variant.product_variant_images.length > 3 && (
+                               <div className="flex items-center justify-center h-10 w-10 rounded-full ring-2 ring-white bg-gray-200 text-xs font-medium text-gray-600">
+                                 +{variant.product_variant_images.length - 3}
+                               </div>
+                             )}
                           </div>
                         ) : (
-                          <div className="w-16 h-16 rounded-lg border flex items-center justify-center bg-gray-100">
-                            <ImageIcon className="h-6 w-6 text-gray-400" />
-                          </div>
+                          <span className="text-gray-400 text-xs">No image</span>
                         )}
                       </td>
                       <td className="py-4 px-4">
@@ -528,10 +611,20 @@ export default function ProductVariantsPage() {
                           {formatPrice(variant.price)}
                         </div>
                       </td>
-                      <td className="py-4 px-4">
-                        <div className="text-sm text-gray-500">
-                          {formatDate(variant.created_at)}
-                        </div>
+                      <td className="py-4 px-4 flex flex-col gap-2">
+                        <span 
+                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium max-w-fit justify-center items-center ${
+                             variant.status === false 
+                               ? "bg-green-100 text-green-800"
+                               : "bg-gray-100 text-gray-800"
+                           }`}
+                        >
+                          {variant.status === false ? "Aktif" : "Nonaktif"}
+                        </span>
+                        <Switch 
+                          checked={variant.status === false}
+                          onCheckedChange={(checked) => handleToggleStatus(variant.id, checked)}
+                        />
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex gap-2">

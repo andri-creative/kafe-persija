@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import crypto from 'crypto';
 
 export async function uploadVariantImage(file: File): Promise<string> {
   try {
@@ -13,7 +14,7 @@ export async function uploadVariantImage(file: File): Promise<string> {
       year: now.getFullYear().toString(),
     };
     
-    const fileName = `${timestamp.second}${timestamp.minute}${timestamp.hour}-${timestamp.date}${timestamp.month}${timestamp.year}.webp`;
+    const fileName = `${timestamp.second}${timestamp.minute}${timestamp.hour}-${timestamp.date}${timestamp.month}${timestamp.year}-${crypto.randomUUID()}.webp`;
     
     const uploadDir = path.join(process.cwd(), 'public', 'images', 'variant');
     await fs.mkdir(uploadDir, { recursive: true });
