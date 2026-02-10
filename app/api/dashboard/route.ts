@@ -3,148 +3,75 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const period = searchParams.get("period") || "today";
+    // Get today's date range
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    // Calculate date range based on period
-    const now = new Date();
-    let startDate = new Date();
+    // Get this week's start date (Monday)
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1); // Monday
+    weekStart.setHours(0, 0, 0, 0);
 
-    switch (period) {
-      case "week":
-        startDate.setDate(now.getDate() - 7);
-        break;
-      case "month":
-        startDate.setMonth(now.getMonth() - 1);
-        break;
-      default: // today
-        startDate.setHours(0, 0, 0, 0);
-    }
-
-    // Fetch statistics
+    // Fetch all data in parallel
     const [
       totalProducts,
       activeProducts,
       draftProducts,
       inactiveProducts,
-      totalVariants,
-      totalCategories,
       totalUsers,
-      totalTransactions,
-      totalRevenue,
-      recentProducts,
-      recentTransactions,
-      topProducts,
+      activeUsers,
+      newTodayUsers,
+      newThisWeekUsers,
     ] = await Promise.all([
-      // Total Products
+      // Product Stats
       prisma.product.count(),
-
-      // Active Products
       prisma.product.count({ where: { status: "active" } }),
-
-      // Draft Products
       prisma.product.count({ where: { status: "draft" } }),
-
-      // Inactive Products
       prisma.product.count({ where: { status: "inactive" } }),
 
-      // Total Variants
-      prisma.product_variants.count(),
-
-      // Total Categories
-      prisma.product_category.count(),
-
-      // Total Users
+      // User Stats
       prisma.user.count(),
-
-      // Total Transactions
-      prisma.transaction.count({
+      prisma.user.count({ where: { status: "active" } }),
+      prisma.user.count({
         where: {
-          created_at: { gte: startDate },
-        },
-      }),
-
-      // Total Revenue (sum of transaction totals)
-      prisma.transaction.aggregate({
-        where: {
-          created_at: { gte: startDate },
-          status: "completed",
-        },
-        _sum: { total: true },
-      }),
-
-      // Recent Products (5 latest)
-      prisma.product.findMany({
-        take: 5,
-        orderBy: { created_at: "desc" },
-        select: {
-          id: true,
-          name: true,
-          status: true,
-          created_at: true,
-        },
-      }),
-
-      // Recent Transactions (5 latest)
-      prisma.transaction.findMany({
-        take: 5,
-        where: { created_at: { gte: startDate } },
-        orderBy: { created_at: "desc" },
-        include: {
-          user: {
-            select: { nickname: true },
+          created_at: {
+            gte: today,
           },
         },
       }),
-
-      // Top Products (based on transaction items)
-      prisma.product.findMany({
-        take: 5,
-        orderBy: {
-          transaction_item: {
-            _count: "desc",
-          },
-        },
-        include: {
-          _count: {
-            select: { transaction_item: true },
+      prisma.user.count({
+        where: {
+          created_at: {
+            gte: weekStart,
           },
         },
       }),
     ]);
 
-    // Format data
-    const formattedData = {
-      totalProducts,
-      activeProducts,
-      draftProducts,
-      inactiveProducts,
-      totalVariants,
-      totalCategories,
-      totalUsers,
-      totalTransactions,
-      totalRevenue: totalRevenue._sum.total || 0,
-      recentProducts,
-      recentTransactions: recentTransactions.map((tx) => ({
-        id: tx.id,
-        user_name: tx.user.nickname,
-        total: tx.total,
-        status: tx.status,
-        created_at: tx.created_at,
-      })),
-      topProducts: topProducts.map((p) => ({
-        id: p.id,
-        name: p.name,
-        sales: p._count.transaction_item,
-        revenue: p._count.transaction_item * 10000,
-      })),
+    // Format response
+    const dashboardData = {
+      products: {
+        total: totalProducts,
+        active: activeProducts,
+        draft: draftProducts,
+        inactive: inactiveProducts,
+      },
+      users: {
+        total: totalUsers,
+        active: activeUsers,
+        newToday: newTodayUsers,
+        newThisWeek: newThisWeekUsers,
+      },
     };
 
-    return NextResponse.json(formattedData);
+    return NextResponse.json(dashboardData);
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
     return NextResponse.json(
-      { error: "Failed to fetch dashboard data" },
+      {
+        error: "Failed to fetch dashboard data",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 },
     );
   }
