@@ -1,27 +1,56 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get("authorization");
+const API_BASE = "https://api.dev.accolaplay.id/v2/kafe/dashboard/orders";
 
-  if (!authHeader) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
+/**
+ * GET ORDERS
+ */
+export async function GET() {
   try {
-    const response = await fetch(
-      "https://api.dev.accolaplay.id/v2/kafe/dashboard/orders",
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
+    const res = await fetch(API_BASE, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      cache: "no-store",
+    });
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    const data = await res.json();
+
+    return NextResponse.json(data, {
+      status: res.status,
+    });
   } catch (error) {
     return NextResponse.json(
-      { message: "Failed to fetch orders" },
+      { message: "Gagal mengambil data order" },
+      { status: 500 },
+    );
+  }
+}
+
+/**
+ * UPDATE ORDER (PUT)
+ */
+export async function PUT(req: Request) {
+  try {
+    const body = await req.json();
+
+    const res = await fetch(API_BASE, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+
+    return NextResponse.json(data, {
+      status: res.status,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { message: "Gagal update order" },
       { status: 500 },
     );
   }
