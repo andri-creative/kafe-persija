@@ -2,14 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { uploadVariantImage, deleteVariantImage } from "@/lib/path-img";
 
-// GET: Get variant by ID
+// GET
 export async function GET(
   request: NextRequest,
   context: { params: { id: string } },
 ) {
   try {
     const params = await context.params;
-    console.log("🚀 ~ GET ~ params:", params);
     const variantId = parseInt(params.id);
 
     const variant = await prisma.product_variants.findUnique({
@@ -42,7 +41,6 @@ export async function GET(
   }
 }
 
-// PUT: Update variant
 export async function PUT(
   request: NextRequest,
   context: { params: { id: string } },
@@ -53,7 +51,6 @@ export async function PUT(
     const formData = await request.formData();
     const updated_by = 1;
 
-    // Check if variant exists
     const existingVariant = await prisma.product_variants.findUnique({
       where: { id: variantId },
       include: {
@@ -68,10 +65,12 @@ export async function PUT(
     // Parse data
     const desc = formData.get("desc") as string;
     const price = formData.get("price") as string;
-    const imageFile = formData.get("image") as File;
-    const removeImage = formData.get("removeImage") === "true";
+    const stok = formData.get("stok") as string;
+    const size = formData.get("size") as string;
+    
+    const removedImageIdsStr = formData.get("removedImageIds") as string;
+    const newImageFiles = formData.getAll("images") as File[];
 
-    // Validation
     if (!desc || !price) {
       return NextResponse.json(
         { error: "Deskripsi dan harga harus diisi" },
@@ -86,51 +85,54 @@ export async function PUT(
       );
     }
 
-    // Handle image removal
-    if (removeImage && existingVariant.product_variant_images.length > 0) {
-      await deleteVariantImage(existingVariant.product_variant_images[0].image);
-      await prisma.product_variant_images.deleteMany({
-        where: { product_variant_id: variantId },
-      });
+    if (removedImageIdsStr) {
+        const idsToDelete = removedImageIdsStr.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+        
+        if (idsToDelete.length > 0) {
+            const imagesToDelete = await prisma.product_variant_images.findMany({
+                where: {
+                    id: { in: idsToDelete },
+                    product_variant_id: variantId
+                }
+            });
+            
+            for (const img of imagesToDelete) {
+                await deleteVariantImage(img.image);
+                await prisma.product_variant_images.delete({
+                    where: { id: img.id }
+                });
+            }
+        }
     }
 
-    // Upload new image if exists
-    let imagePath = null;
-    if (imageFile && imageFile.size > 0) {
-      // Delete old image if exists
-      if (existingVariant.product_variant_images.length > 0) {
-        await deleteVariantImage(
-          existingVariant.product_variant_images[0].image,
-        );
-        await prisma.product_variant_images.deleteMany({
-          where: { product_variant_id: variantId },
-        });
-      }
-
-      imagePath = await uploadVariantImage(imageFile);
+    if (newImageFiles && newImageFiles.length > 0) {
+        for (const file of newImageFiles) {
+            if (file.size > 0) {
+                const imagePath = await uploadVariantImage(file);
+                if (imagePath) {
+                    await prisma.product_variant_images.create({
+                        data: {
+                            product_variant_id: variantId,
+                            image: imagePath,
+                            created_by: updated_by,
+                        }
+                    });
+                }
+            }
+        }
     }
 
-    // Update variant
     const updatedVariant = await prisma.product_variants.update({
       where: { id: variantId },
       data: {
         desc,
         price: parseInt(price),
+        stok: stok ? parseInt(stok) : 0,
+        size: size || null,
       },
     });
 
-    // Create variant image record if new image
-    if (imagePath) {
-      await prisma.product_variant_images.create({
-        data: {
-          product_variant_id: variantId,
-          image: imagePath,
-          created_by: updated_by,
-        },
-      });
-    }
 
-    // Get updated data
     const completeVariant = await prisma.product_variants.findUnique({
       where: { id: variantId },
       include: {
@@ -156,7 +158,7 @@ export async function PUT(
   }
 }
 
-// DELETE: Delete variant
+// DELETE
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } },
@@ -164,7 +166,6 @@ export async function DELETE(
   try {
     const variantId = parseInt(params.id);
 
-    // Check if variant exists
     const variant = await prisma.product_variants.findUnique({
       where: { id: variantId },
       include: {
@@ -176,12 +177,9 @@ export async function DELETE(
       return NextResponse.json({ error: "Variant not found" }, { status: 404 });
     }
 
-    // Delete image from storage
     if (variant.product_variant_images.length > 0) {
       await deleteVariantImage(variant.product_variant_images[0].image);
     }
-
-    // Delete variant (cascade will delete variant_images)
     await prisma.product_variants.delete({
       where: { id: variantId },
     });
@@ -196,6 +194,55 @@ export async function DELETE(
       {
         success: false,
         error: "Failed to delete variant",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    );
+  }
+}
+
+// PATCH
+export async function PATCH(
+  request: NextRequest,
+  context: { params: { id: string } },
+) {
+  try {
+    const params = await context.params;
+    const variantId = parseInt(params.id);
+    const body = await request.json();
+    const { status } = body;
+
+    const existingVariant = await prisma.product_variants.findUnique({
+      where: { id: variantId },
+    });
+
+    if (!existingVariant) {
+      return NextResponse.json({ error: "Variant not found" }, { status: 404 });
+    }
+
+    if (status !== undefined) {
+      const updatedVariant = await prisma.product_variants.update({
+        where: { id: variantId },
+        data: {
+          status: status,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Variant status updated successfully",
+        data: updatedVariant,
+      });
+    } else {
+        return NextResponse.json({ error: "Status field is required" }, { status: 400 });
+    }
+
+  } catch (error) {
+    console.error("Error updating variant status:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to update variant status",
         details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },

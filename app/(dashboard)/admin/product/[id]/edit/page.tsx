@@ -44,9 +44,12 @@ type VariantFormData = {
   id?: number;
   desc: string;
   price: string;
-  imageFile?: File | null;
-  imagePreview?: string;
-  existingImage?: string;
+  stok: string;
+  size: string;
+  imageFiles: File[];
+  imagePreviews: string[];
+  existingImages: { id: number; url: string }[];
+  removedImageIds: number[];
 };
 
 // Type untuk category
@@ -76,7 +79,16 @@ export default function EditProductPage() {
 
   // Variants state
   const [variants, setVariants] = useState<VariantFormData[]>([
-    { desc: "", price: "" },
+    {
+      desc: "",
+      price: "",
+      stok: "0",
+      size: "",
+      imageFiles: [],
+      imagePreviews: [],
+      existingImages: [],
+      removedImageIds: [],
+    },
   ]);
 
   // Fetch product data
@@ -114,13 +126,30 @@ export default function EditProductPage() {
           id: variant.id,
           desc: variant.desc || "",
           price: variant.price.toString(),
-          imageFile: null,
-          imagePreview: variant.product_variant_images[0]?.image || "",
-          existingImage: variant.product_variant_images[0]?.image || "",
+          stok: variant.stok ? variant.stok.toString() : "0",
+          size: variant.size || "",
+          imageFiles: [],
+          imagePreviews: [],
+          existingImages: variant.product_variant_images.map((img: any) => ({
+            id: img.id,
+            url: img.image,
+          })),
+          removedImageIds: [],
         }));
         setVariants(variantData);
       } else {
-        setVariants([{ desc: "", price: "" }]);
+        setVariants([
+          {
+            desc: "",
+            price: "",
+            stok: "0",
+            size: "",
+            imageFiles: [],
+            imagePreviews: [],
+            existingImages: [],
+            removedImageIds: [],
+          },
+        ]);
       }
     } catch (error) {
       console.error("Error fetching product:", error);
@@ -179,61 +208,105 @@ export default function EditProductPage() {
     index: number,
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      toast.error("Hanya file gambar yang diizinkan");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Ukuran file maksimal 5MB");
-      return;
-    }
-
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+    
     const newVariants = [...variants];
+    const currentVariant = newVariants[index];
+    
+    // Convert FileList to Array
+    const fileArray = Array.from(files);
+    const validFiles: File[] = [];
+    
+    fileArray.forEach(file => {
+        if (!file.type.startsWith("image/")) {
+            toast.error(`File ${file.name} bukan gambar`);
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+             toast.error(`File ${file.name} terlalu besar (max 5MB)`);
+             return;
+        }
+        validFiles.push(file);
+    });
+    
+    if (validFiles.length === 0) return;
+
+    // Append files and previews
+    const newImageFiles = [...currentVariant.imageFiles, ...validFiles];
+    const newImagePreviews = [
+      ...currentVariant.imagePreviews,
+      ...validFiles.map(file => URL.createObjectURL(file))
+    ];
+
     newVariants[index] = {
-      ...newVariants[index],
-      imageFile: file,
-      imagePreview: URL.createObjectURL(file),
+      ...currentVariant,
+      imageFiles: newImageFiles,
+      imagePreviews: newImagePreviews,
     };
     setVariants(newVariants);
-  };
-
-  // Remove variant image
-  const handleRemoveImage = (index: number) => {
-    const newVariants = [...variants];
-
-    // Clean up URL object if it's a new image
-    if (newVariants[index].imagePreview && newVariants[index].imageFile) {
-      URL.revokeObjectURL(newVariants[index].imagePreview!);
-    }
-
-    newVariants[index] = {
-      ...newVariants[index],
-      imageFile: null,
-      imagePreview: undefined,
-      existingImage: undefined,
-    };
-
-    setVariants(newVariants);
-
-    // Reset file input
+    
+    // Reset inputs
     if (fileInputRefs.current[index]) {
       fileInputRefs.current[index]!.value = "";
     }
   };
 
+  // Remove variant image
+  const handleRemoveImage = (
+    variantIndex: number,
+    type: "new" | "existing",
+    imageIndex: number,
+  ) => {
+    const newVariants = [...variants];
+    const variant = newVariants[variantIndex];
+
+    if (type === "new") {
+      // Remove newly uploaded image
+      URL.revokeObjectURL(variant.imagePreviews[imageIndex]);
+      
+      const newImageFiles = variant.imageFiles.filter((_, i) => i !== imageIndex);
+      const newImagePreviews = variant.imagePreviews.filter((_, i) => i !== imageIndex);
+      
+      newVariants[variantIndex] = {
+        ...variant,
+        imageFiles: newImageFiles,
+        imagePreviews: newImagePreviews,
+      };
+    } else {
+      // Remove existing image from UI and add to removal list
+      const imageToRemove = variant.existingImages[imageIndex];
+      const newExistingImages = variant.existingImages.filter((_, i) => i !== imageIndex);
+      
+      newVariants[variantIndex] = {
+        ...variant,
+        existingImages: newExistingImages,
+        removedImageIds: [...variant.removedImageIds, imageToRemove.id],
+      };
+    }
+
+    setVariants(newVariants);
+  };
+
   const addVariant = () => {
-    setVariants([...variants, { desc: "", price: "" }]);
+    setVariants([
+      ...variants,
+      {
+        desc: "",
+        price: "",
+        stok: "0",
+        size: "",
+        imageFiles: [],
+        imagePreviews: [],
+        existingImages: [],
+        removedImageIds: [],
+      },
+    ]);
   };
 
   const removeVariant = (index: number) => {
     if (variants.length > 1) {
-      if (variants[index].imagePreview) {
-        URL.revokeObjectURL(variants[index].imagePreview);
-      }
+      variants[index].imagePreviews.forEach(url => URL.revokeObjectURL(url));
 
       const newVariants = variants.filter((_, i) => i !== index);
       setVariants(newVariants);
@@ -276,21 +349,23 @@ export default function EditProductPage() {
       });
 
       // Add variants
+      // Add variants
       variants.forEach((variant, index) => {
-        formDataObj.append(
-          `variants[${index}][id]`,
-          variant.id?.toString() || "",
-        );
+        formDataObj.append(`variants[${index}][id]`, variant.id?.toString() || "");
         formDataObj.append(`variants[${index}][desc]`, variant.desc);
         formDataObj.append(`variants[${index}][price]`, variant.price);
+        formDataObj.append(`variants[${index}][stok]`, variant.stok);
+        formDataObj.append(`variants[${index}][size]`, variant.size);
 
-        if (variant.imageFile) {
-          formDataObj.append(`variants[${index}][image]`, variant.imageFile);
-        }
+        // New images
+        variant.imageFiles.forEach((file) => {
+          formDataObj.append(`variants[${index}][images]`, file);
+        });
 
-        // Flag to remove existing image
-        if (!variant.existingImage && !variant.imageFile) {
-          formDataObj.append(`variants[${index}][removeImage]`, "true");
+        // Removed images (send as JSON string or multiple fields)
+        if (variant.removedImageIds.length > 0) {
+            // Option 1: Comma separated string
+            formDataObj.append(`variants[${index}][removedImageIds]`, variant.removedImageIds.join(","));
         }
       });
 
@@ -309,10 +384,9 @@ export default function EditProductPage() {
       toast.success("Produk berhasil diupdate!");
 
       // Clean up URL objects
+      // Clean up URL objects
       variants.forEach((variant) => {
-        if (variant.imagePreview && variant.imageFile) {
-          URL.revokeObjectURL(variant.imagePreview);
-        }
+        variant.imagePreviews.forEach(url => URL.revokeObjectURL(url));
       });
 
       // Redirect back to products list
@@ -567,52 +641,112 @@ export default function EditProductPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Gambar (Opsional)</Label>
-                        <div className="space-y-2">
-                          {variant.imagePreview || variant.existingImage ? (
-                            <div className="relative">
-                              <div className="border rounded-lg overflow-hidden w-full h-24">
-                                <img
-                                  src={
-                                    variant.imagePreview ||
-                                    variant.existingImage
-                                  }
-                                  alt="Preview"
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="sm"
-                                className="absolute top-1 right-1 h-6 w-6 p-0"
-                                onClick={() => handleRemoveImage(index)}
-                                disabled={saving}
-                              >
-                                <X className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <div
-                              className="border-2 border-dashed rounded-lg p-3 text-center cursor-pointer hover:bg-gray-50 transition-colors"
-                              onClick={() => fileInputRefs.current[index]?.click()}
-                            >
-                              <input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                ref={(el) => {
-                                  fileInputRefs.current[index] = el;
-                                }}
-                                onChange={(e) => handleImageUpload(index, e)}
-                                disabled={saving}
-                              />
-                              <Upload className="h-6 w-6 text-gray-400 mx-auto mb-1" />
-                              <p className="text-xs text-gray-600">Upload</p>
-                              <p className="text-xs text-gray-500">Max 5MB</p>
-                            </div>
-                          )}
-                        </div>
+                         <Label>
+                            Stok <span className="text-red-500">*</span>
+                         </Label>
+                         <Input
+                           type="number"
+                           placeholder="0"
+                           value={variant.stok}
+                           onChange={(e) =>
+                             handleVariantChange(index, "stok", e.target.value)
+                           }
+                           required
+                           min="0"
+                           disabled={saving}
+                         />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                        <Label>Size <span className="text-gray-400">(Opsional)</span></Label>
+                        <Input
+                           placeholder="Contoh: Large, 500ml"
+                           value={variant.size}
+                           onChange={(e) =>
+                             handleVariantChange(index, "size", e.target.value)
+                           }
+                           disabled={saving}
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Gambar (Opsional - Bisa banyak)</Label>
+                      <div className="space-y-4">
+                         {/* Image Grid */}
+                         {(variant.existingImages.length > 0 || variant.imagePreviews.length > 0) && (
+                           <div className="grid grid-cols-3 gap-2">
+                             {/* Existing Images */}
+                             {variant.existingImages.map((img, imgIndex) => (
+                               <div key={`existing-${imgIndex}`} className="relative group">
+                                 <div className="border rounded-lg overflow-hidden h-24 w-full">
+                                    <Image 
+                                      src={img.url} 
+                                      alt={`Existing ${imgIndex}`}
+                                      width={100}
+                                      height={100}
+                                      className="w-full h-full object-cover"
+                                    />
+                                 </div>
+                                 <Button
+                                   type="button"
+                                   variant="destructive"
+                                   size="icon"
+                                   className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                   onClick={() => handleRemoveImage(index, "existing", imgIndex)}
+                                 >
+                                   <X className="h-3 w-3" />
+                                 </Button>
+                               </div>
+                             ))}
+                             
+                             {/* New Images */}
+                             {variant.imagePreviews.map((preview, imgIndex) => (
+                               <div key={`new-${imgIndex}`} className="relative group">
+                                 <div className="border rounded-lg overflow-hidden h-24 w-full">
+                                   <img
+                                     src={preview}
+                                     alt={`New ${imgIndex}`}
+                                     className="w-full h-full object-cover"
+                                   />
+                                 </div>
+                                 <Button
+                                   type="button"
+                                   variant="destructive"
+                                   size="icon"
+                                   className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                   onClick={() => handleRemoveImage(index, "new", imgIndex)}
+                                 >
+                                   <X className="h-3 w-3" />
+                                 </Button>
+                               </div>
+                             ))}
+                           </div>
+                         )}
+                         
+                         <div
+                            className="border-2 border-dashed rounded-lg p-3 text-center cursor-pointer hover:bg-gray-50 transition-colors"
+                            onClick={() => fileInputRefs.current[index]?.click()}
+                          >
+                            <input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              className="hidden"
+                              ref={(el) => {
+                                fileInputRefs.current[index] = el;
+                              }}
+                              onChange={(e) => handleImageUpload(index, e)}
+                              disabled={saving}
+                            />
+                            <Upload className="h-6 w-6 text-gray-400 mx-auto mb-1" />
+                            <p className="text-xs text-gray-600">
+                               {(variant.existingImages.length > 0 || variant.imagePreviews.length > 0) 
+                                 ? "Tambah Gambar Lain" 
+                                 : "Upload Gambar"}
+                            </p>
+                            <p className="text-xs text-gray-500">Max 5MB</p>
+                          </div>
                       </div>
                     </div>
                   </div>

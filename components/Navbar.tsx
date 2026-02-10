@@ -18,7 +18,10 @@ import { Label } from "@/components/ui/label";
 import { LoginDialog } from "./auth/login-dialog";
 import { RegisterDialog } from "./auth/register-dialog";
 
+import { useSession, signOut } from "next-auth/react";
+
 export default function Navbar() {
+  const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [registerOpen, setRegisterOpen] = useState(false);
@@ -27,14 +30,12 @@ export default function Navbar() {
 
   const handleLoginSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Add your login logic here
     console.log("Login submitted");
     setLoginOpen(false);
   };
 
   const handleRegisterSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Add your register logic here
     console.log("Register submitted");
     setRegisterOpen(false);
   };
@@ -59,35 +60,75 @@ export default function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-4">
-            {/* Login Dialog */}
-            <LoginDialog 
-              open={loginOpen}
-              onOpenChange={setLoginOpen}
-              onSwitchToRegister={() => {
-                setLoginOpen(false);
-                setRegisterOpen(true);
-              }}
-              trigger={
-                <Button variant="ghost" className="text-sm font-medium">
-                  Login
+            {status === "loading" ? (
+              <div className="h-8 w-24 bg-gray-200 animate-pulse rounded"></div>
+            ) : session?.user ? (
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  {session.user.image ? (
+                    <Image
+                      src={session.user.image}
+                      alt={session.user.name || "User"}
+                      width={32}
+                      height={32}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
+                      {session.user.name?.charAt(0) || "U"}
+                    </div>
+                  )}
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      Hi, {session.user.name?.split(" ")[0]}
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                      {session.user.roles?.[0] || "Customer"}
+                    </span>
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200"
+                >
+                  Logout
                 </Button>
-              }
-            />
+              </div>
+            ) : (
+              <>
+                {/* Login Dialog */}
+                <LoginDialog 
+                  open={loginOpen}
+                  onOpenChange={setLoginOpen}
+                  onSwitchToRegister={() => {
+                    setLoginOpen(false);
+                    setRegisterOpen(true);
+                  }}
+                  trigger={
+                    <Button variant="ghost" className="text-sm font-medium">
+                      Login
+                    </Button>
+                  }
+                />
 
-            {/* Register Dialog */}
-        <RegisterDialog 
-          open={registerOpen}
-          onOpenChange={setRegisterOpen}
-          onSwitchToLogin={() => {
-            setRegisterOpen(false);
-            setLoginOpen(true);
-          }}
-          trigger={
-            <Button variant="ghost" className="text-sm font-medium">
-              Register
-            </Button>
-          }
-        />
+                {/* Register Dialog */}
+                <RegisterDialog 
+                  open={registerOpen}
+                  onOpenChange={setRegisterOpen}
+                  onSwitchToLogin={() => {
+                    setRegisterOpen(false);
+                    setLoginOpen(true);
+                  }}
+                  trigger={
+                    <Button variant="ghost" className="text-sm font-medium">
+                      Register
+                    </Button>
+                  }
+                />
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -111,180 +152,228 @@ export default function Navbar() {
       {isOpen && (
         <div className="md:hidden border-t border-zinc-200 dark:border-zinc-800">
           <div className="px-4 pt-2 pb-4 space-y-2">
-            <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-sm font-medium"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Login
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl">Sign in to your account</DialogTitle>
-                  <DialogDescription>
-                    Enter your credentials to access your account
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleLoginSubmit} className="space-y-4 mt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="mobile-login-email">Email address</Label>
-                    <Input
-                      id="mobile-login-email"
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      required
-                      placeholder="[email protected]"
+            {status === "loading" ? (
+              <div className="space-y-2 animate-pulse">
+                <div className="h-10 w-full bg-gray-200 rounded"></div>
+                <div className="h-10 w-full bg-gray-200 rounded"></div>
+              </div>
+            ) : session?.user ? (
+               <div className="space-y-4">
+                 <div className="flex items-center gap-3 px-2 py-2">
+                  {session.user.image ? (
+                    <Image
+                      src={session.user.image}
+                      alt={session.user.name || "User"}
+                      width={40}
+                      height={40}
+                      className="rounded-full"
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="mobile-login-password">Password</Label>
-                    <Input
-                      id="mobile-login-password"
-                      name="password"
-                      type="password"
-                      autoComplete="current-password"
-                      required
-                      placeholder="••••••••"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <input
-                        id="mobile-remember-me"
-                        name="remember-me"
-                        type="checkbox"
-                        className="h-4 w-4 rounded border-zinc-300"
-                      />
-                      <Label htmlFor="mobile-remember-me" className="text-sm font-normal cursor-pointer">
-                        Remember me
-                      </Label>
+                  ) : (
+                    <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
+                      {session.user.name?.charAt(0) || "U"}
                     </div>
-                    <button
-                      type="button"
-                      className="text-sm font-medium hover:underline"
-                    >
-                      Forgot password?
-                    </button>
+                  )}
+                  <div className="flex flex-col">
+                    <span className="font-medium text-gray-900 dark:text-gray-100">
+                      {session.user.name || "User"}
+                    </span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      {session.user.email}
+                    </span>
+                    <span className="text-xs text-blue-600 dark:text-blue-400 capitalize mt-0.5">
+                      {session.user.roles?.[0] || "Customer"}
+                    </span>
                   </div>
-                  <Button type="submit" className="w-full">
-                    Sign in
-                  </Button>
-                  <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
-                    Don't have an account?{" "}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setLoginOpen(false);
-                        setRegisterOpen(true);
-                      }}
-                      className="font-medium hover:underline"
-                    >
-                      Register here
-                    </button>
-                  </p>
-                </form>
-              </DialogContent>
-            </Dialog>
-
-            <Dialog open={registerOpen} onOpenChange={setRegisterOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  className="w-full text-sm font-medium"
-                  onClick={() => setIsOpen(false)}
+                </div>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-center text-red-500 hover:text-red-600 border-red-200 hover:bg-red-50"
+                  onClick={() => {
+                    setIsOpen(false);
+                    signOut({ callbackUrl: "/" });
+                  }}
                 >
-                  Register
+                  Logout
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl">Create your account</DialogTitle>
-                  <DialogDescription>
-                    Fill in the details below to get started
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleRegisterSubmit} className="space-y-4 mt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="mobile-register-name">Full Name</Label>
-                    <Input
-                      id="mobile-register-name"
-                      name="name"
-                      type="text"
-                      autoComplete="name"
-                      required
-                      placeholder="John Doe"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="mobile-register-email">Email address</Label>
-                    <Input
-                      id="mobile-register-email"
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      required
-                      placeholder="[email protected]"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="mobile-register-password">Password</Label>
-                    <Input
-                      id="mobile-register-password"
-                      name="password"
-                      type="password"
-                      autoComplete="new-password"
-                      required
-                      placeholder="••••••••"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="mobile-register-confirm-password">Confirm Password</Label>
-                    <Input
-                      id="mobile-register-confirm-password"
-                      name="confirm-password"
-                      type="password"
-                      autoComplete="new-password"
-                      required
-                      placeholder="••••••••"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      id="mobile-terms"
-                      name="terms"
-                      type="checkbox"
-                      required
-                      className="h-4 w-4 rounded border-zinc-300"
-                    />
-                    <Label htmlFor="mobile-terms" className="text-sm font-normal cursor-pointer">
-                      I agree to the{" "}
-                      <a href="#" className="font-medium hover:underline">
-                        Terms and Conditions
-                      </a>
-                    </Label>
-                  </div>
-                  <Button type="submit" className="w-full">
-                    Create account
-                  </Button>
-                  <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
-                    Already have an account?{" "}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setRegisterOpen(false);
-                        setLoginOpen(true);
-                      }}
-                      className="font-medium hover:underline"
+              </div>
+            ) : (
+              <>
+                <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-sm font-medium"
+                      onClick={() => setIsOpen(false)}
                     >
-                      Sign in here
-                    </button>
-                  </p>
-                </form>
-              </DialogContent>
-            </Dialog>
+                      Login
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl">Sign in to your account</DialogTitle>
+                      <DialogDescription>
+                        Enter your credentials to access your account
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleLoginSubmit} className="space-y-4 mt-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="mobile-login-email">Email address</Label>
+                        <Input
+                          id="mobile-login-email"
+                          name="email"
+                          type="email"
+                          autoComplete="email"
+                          required
+                          placeholder="[email protected]"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="mobile-login-password">Password</Label>
+                        <Input
+                          id="mobile-login-password"
+                          name="password"
+                          type="password"
+                          autoComplete="current-password"
+                          required
+                          placeholder="••••••••"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <input
+                            id="mobile-remember-me"
+                            name="remember-me"
+                            type="checkbox"
+                            className="h-4 w-4 rounded border-zinc-300"
+                          />
+                          <Label htmlFor="mobile-remember-me" className="text-sm font-normal cursor-pointer">
+                            Remember me
+                          </Label>
+                        </div>
+                        <button
+                          type="button"
+                          className="text-sm font-medium hover:underline"
+                        >
+                          Forgot password?
+                        </button>
+                      </div>
+                      <Button type="submit" className="w-full">
+                        Sign in
+                      </Button>
+                      <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
+                        Don't have an account?{" "}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLoginOpen(false);
+                            setRegisterOpen(true);
+                          }}
+                          className="font-medium hover:underline"
+                        >
+                          Register here
+                        </button>
+                      </p>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+    
+                <Dialog open={registerOpen} onOpenChange={setRegisterOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                      className="w-full text-sm font-medium"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Register
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl">Create your account</DialogTitle>
+                      <DialogDescription>
+                        Fill in the details below to get started
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleRegisterSubmit} className="space-y-4 mt-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="mobile-register-name">Full Name</Label>
+                        <Input
+                          id="mobile-register-name"
+                          name="name"
+                          type="text"
+                          autoComplete="name"
+                          required
+                          placeholder="John Doe"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="mobile-register-email">Email address</Label>
+                        <Input
+                          id="mobile-register-email"
+                          name="email"
+                          type="email"
+                          autoComplete="email"
+                          required
+                          placeholder="[email protected]"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="mobile-register-password">Password</Label>
+                        <Input
+                          id="mobile-register-password"
+                          name="password"
+                          type="password"
+                          autoComplete="new-password"
+                          required
+                          placeholder="••••••••"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="mobile-register-confirm-password">Confirm Password</Label>
+                        <Input
+                          id="mobile-register-confirm-password"
+                          name="confirm-password"
+                          type="password"
+                          autoComplete="new-password"
+                          required
+                          placeholder="••••••••"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          id="mobile-terms"
+                          name="terms"
+                          type="checkbox"
+                          required
+                          className="h-4 w-4 rounded border-zinc-300"
+                        />
+                        <Label htmlFor="mobile-terms" className="text-sm font-normal cursor-pointer">
+                          I agree to the{" "}
+                          <a href="#" className="font-medium hover:underline">
+                            Terms and Conditions
+                          </a>
+                        </Label>
+                      </div>
+                      <Button type="submit" className="w-full">
+                        Create account
+                      </Button>
+                      <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
+                        Already have an account?{" "}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRegisterOpen(false);
+                            setLoginOpen(true);
+                          }}
+                          className="font-medium hover:underline"
+                        >
+                          Sign in here
+                        </button>
+                      </p>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </>
+            )}
           </div>
         </div>
       )}
