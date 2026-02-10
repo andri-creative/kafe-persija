@@ -36,3 +36,13 @@ Content-Type: application/json
   "category_ids": [1, 2]
 }
 
+
+
+### PUT Order
+PUT https://api.dev.accolaplay.id/v2/kafe/dashboard/orders
+Content-Type: application/json
+
+{
+  "order_number":"ORD-1763023497509-444",
+  "status": "PROCESSING"
+}
