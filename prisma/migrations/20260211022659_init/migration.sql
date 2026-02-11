@@ -3,11 +3,12 @@ CREATE TABLE `user` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `nickname` VARCHAR(191) NOT NULL,
     `email` VARCHAR(191) NOT NULL,
+    `password` VARCHAR(191) NULL,
     `picture` VARCHAR(191) NULL,
     `auth_token` VARCHAR(191) NULL,
     `point` INTEGER NOT NULL DEFAULT 0,
     `type` VARCHAR(191) NOT NULL,
-    `status` VARCHAR(191) NOT NULL,
+    `status` VARCHAR(191) NOT NULL DEFAULT 'active',
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL,
 
@@ -18,7 +19,7 @@ CREATE TABLE `user` (
 -- CreateTable
 CREATE TABLE `role` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL DEFAULT 'customer',
     `description` VARCHAR(191) NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL,
@@ -59,6 +60,9 @@ CREATE TABLE `product_variants` (
     `product_id` INTEGER NOT NULL,
     `desc` VARCHAR(191) NULL,
     `price` INTEGER NOT NULL,
+    `status` BOOLEAN NOT NULL DEFAULT false,
+    `stok` INTEGER NULL DEFAULT 0,
+    `size` VARCHAR(191) NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `created_by` INTEGER NOT NULL,
 

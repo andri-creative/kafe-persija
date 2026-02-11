@@ -1,16 +1,18 @@
+import { title } from "process";
 
 export const navCafe = {
   navMain: [
-    {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: "LayoutDashboard",
-    },
     {
       title: "Order",
       url: "/order",
       icon: "ShoppingCart",
     },
+    {
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: "LayoutDashboard",
+    },
+
     {
       title: "Product",
       icon: "Package",
@@ -25,6 +27,16 @@ export const navCafe = {
           url: "/product/category",
         },
       ],
+    },
+    {
+      title: "Users",
+      url: "/users",
+      icon: "Users",
+    },
+    {
+      title: "Profile",
+      url: "/profile",
+      icon: "User",
     },
     {
       title: "Report",

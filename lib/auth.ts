@@ -27,9 +27,9 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        console.log("Authorize called with:", { email: credentials?.email }); // DEBUG
+        console.log("Authorize called with:", { email: credentials?.email });
         if (!credentials?.email || !credentials?.password) {
-          console.error("Missing credentials"); // DEBUG
+          console.error("Missing credentials");
           throw new Error("Email dan password diperlukan");
         }
 
@@ -38,17 +38,17 @@ export const authOptions: NextAuthOptions = {
             credentials.email,
             credentials.password,
           );
-          
+
           if (!user) {
-            console.error("User returned null from service"); 
+            console.error("User returned null from service");
             throw new Error("Email atau password salah");
           }
 
-          console.log("Authorize success:", user.email); 
+          console.log("Authorize success:", user.email);
           return user;
         } catch (e: any) {
-          console.error("Authorize error:", e.message); 
-          return null; 
+          console.error("Authorize error:", e.message);
+          return null;
         }
       },
     }),
@@ -81,18 +81,25 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       if (user) {
         if (account?.provider === "google" || account?.provider === "apple") {
-           const dbUser = await authService.getUserByEmail(user.email!);
-           if (dbUser) {
-             token.id = dbUser.id;
-             token.roles = dbUser.roles;
-             token.auth_token = dbUser.auth_token;
-             token.type = dbUser.type;
-           }
+          const dbUser: any = await authService.getUserByEmail(user.email!);
+          if (dbUser) {
+            token.id = dbUser.id;
+            token.nickname = dbUser.nickname;
+            token.email = dbUser.email;
+            token.picture = dbUser.picture;
+            token.roles = dbUser.roles;
+            token.auth_token = dbUser.auth_token;
+            token.type = dbUser.type;
+          }
         } else {
-           token.id = user.id;
-           token.roles = user.roles;
-           token.auth_token = user.auth_token;
-           token.type = user.type;
+          const u = user as any;
+          token.id = u.id;
+          token.nickname = u.nickname;
+          token.email = u.email;
+          token.picture = u.picture;
+          token.roles = u.roles;
+          token.auth_token = u.auth_token;
+          token.type = u.type;
         }
       }
       return token;
@@ -101,6 +108,9 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = (token.id as string) || "";
+        session.user.nickname = (token.nickname as string) || "";
+        session.user.email = (token.email as string) || "";
+        session.user.picture = (token.picture as string) || "";
         session.user.roles = token.roles as string[];
         session.user.auth_token = token.auth_token as string;
         session.user.type = token.type as string;
@@ -117,7 +127,7 @@ export const authOptions: NextAuthOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, 
+    maxAge: 30 * 24 * 60 * 60,
   },
 
   secret: process.env.NEXTAUTH_SECRET,

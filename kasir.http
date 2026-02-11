@@ -43,6 +43,18 @@ PUT https://api.dev.accolaplay.id/v2/kafe/dashboard/orders
 Content-Type: application/json
 
 {
-  "order_number":"ORD-1761647445431-346",
-  "status": "SERVED"
+  "order_number":"ORD-1763023608865-245",
+  "status": "ORDERED",
+  "products": [
+    {
+      "id": 92,
+      "status": "ORDERED"
+    },
+    {
+      "id": 85,
+      "status": "ORDERED"
+    }
+  ]
 }
+
+

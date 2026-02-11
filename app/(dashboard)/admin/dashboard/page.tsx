@@ -14,7 +14,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Default stats untuk mencegah undefined
 const defaultStats = {
   products: { total: 0, active: 0, draft: 0, inactive: 0 },
   users: { total: 0, active: 0, newToday: 0, newThisWeek: 0 },
@@ -44,7 +43,6 @@ export default function DashboardPage() {
       const data = await response.json();
       console.log("Dashboard data received:", data);
 
-      // Validate and set data
       if (data && data.products && data.users) {
         setStats(data);
       } else {
@@ -53,7 +51,6 @@ export default function DashboardPage() {
       }
     } catch (error) {
       console.error("Error in fetchDashboardData:", error);
-      // Keep default stats on error
       setStats(defaultStats);
     } finally {
       setLoading(false);
@@ -66,7 +63,6 @@ export default function DashboardPage() {
     fetchDashboardData();
   };
 
-  // Loading skeleton
   if (loading) {
     return (
       <div className="p-6 space-y-6">
@@ -79,7 +75,6 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Product Stats Skeleton */}
           <Card>
             <CardContent className="p-6">
               <Skeleton className="h-6 w-32 mb-4" />
@@ -92,7 +87,6 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* User Stats Skeleton */}
           <Card>
             <CardContent className="p-6">
               <Skeleton className="h-6 w-32 mb-4" />
@@ -121,6 +115,12 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex gap-2">
+          <Link href="/admin/layar-tv">
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="h-4 w-4 mr-2" />
+              Layar TV
+            </Button>
+          </Link>
           <Link href="/admin/product/create">
             <Button className="bg-blue-600 hover:bg-blue-700">
               <Plus className="h-4 w-4 mr-2" />

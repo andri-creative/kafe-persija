@@ -15,7 +15,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2 } from "lucide-react";
 import {
   Field,
   FieldDescription,
@@ -51,13 +50,13 @@ export function LoginDialog({
     const roles: string[] = session?.user?.roles || [];
 
     if (roles.includes("SUPER_ADMIN")) {
-      router.push("/super-admin/dashboard");
+      router.push("/super-admin/order");
     } else if (roles.includes("ADMIN")) {
-      router.push("/admin/dashboard");
+      router.push("/admin/order");
     } else if (roles.includes("STAFF")) {
-      router.push("/staff/dashboard");
+      router.push("/staff/order");
     } else {
-      router.push("/dashboard");
+      router.push("/order");
     }
   };
 

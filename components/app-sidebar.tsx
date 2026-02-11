@@ -11,6 +11,8 @@ import {
   GalleryVerticalEnd,
   ChevronRight,
   LucideIcon,
+  User,
+  Users,
 } from "lucide-react";
 
 import {
@@ -36,16 +38,16 @@ import { getBasePathByRole } from "@/lib/role-path";
 
 import Link from "next/link";
 
-interface NavItem {
-  title: string;
-  url: string;
-  icon?: LucideIcon;
-  isActive?: boolean;
-  items?: {
-    title: string;
-    url: string;
-  }[];
-}
+// interface NavItem {
+//   title: string;
+//   url: string;
+//   icon?: LucideIcon;
+//   isActive?: boolean;
+//   items?: {
+//     title: string;
+//     url: string;
+//   }[];
+// }
 
 // Helper function untuk mendapatkan icon
 const getIcon = (iconName: string | React.ComponentType<any>) => {

@@ -16,17 +16,29 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { MoreHorizontalIcon } from "lucide-react";
-
 import { userApi } from "@/lib/user-api";
+import PaginationControls from "@/components/pagination-controls"; // Komponen baru
 
-export default async function UsersPage() {
-  const users = await userApi.getAll();
+interface UsersPageProps {
+  searchParams?: {
+    page?: string;
+    pageSize?: string;
+  };
+}
 
+export default async function UsersPage({ searchParams }: UsersPageProps) {
+  // Parse query parameters
+  const page = Number(searchParams?.page) || 1;
+  const pageSize = Number(searchParams?.pageSize) || 10;
+
+  // Get paginated data
+  const result = await userApi.getAll(page, pageSize);
+  const { data: users, pagination } = result;
 
   return (
     <>
       <Card>
-        <CardHeader className="flex justify-between items-center">
+        <CardHeader className="flex flex-row justify-between items-center">
           <CardTitle>Users</CardTitle>
           <Button variant="default" className="cursor-pointer">
             Tambah User
@@ -47,12 +59,19 @@ export default async function UsersPage() {
             <TableBody>
               {users.map((u: any, index: number) => (
                 <TableRow key={u.id}>
-                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>
+                    {(page - 1) * pageSize + index + 1}
+                  </TableCell>
                   <TableCell>{u.nickname || u.name || "-"}</TableCell>
                   <TableCell>{u.email}</TableCell>
-                  <TableCell className="capitalize">{u.type || u.role || "-"}</TableCell>
+                  <TableCell className="capitalize">
+                    {u.type || u.role || "-"}
+                  </TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${u.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${u.status === 'active'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-gray-100 text-gray-700'
+                      }`}>
                       {u.status || "Active"}
                     </span>
                   </TableCell>
@@ -65,8 +84,12 @@ export default async function UsersPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem className="cursor-pointer">Edit</DropdownMenuItem>
-                        <DropdownMenuItem className="cursor-pointer">Show</DropdownMenuItem>
+                        <DropdownMenuItem className="cursor-pointer">
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="cursor-pointer">
+                          Show
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem variant="destructive" className="cursor-pointer">
                           Delete
@@ -85,6 +108,19 @@ export default async function UsersPage() {
               )}
             </TableBody>
           </Table>
+
+          {/* Pagination Controls */}
+          {pagination.totalPages > 1 && (
+            <div className="mt-6">
+              <PaginationControls pagination={pagination} />
+            </div>
+          )}
+
+          {/* Info pagination summary */}
+          <div className="mt-4 text-sm text-gray-500">
+            Menampilkan {users.length} dari {pagination.totalCount} data
+            (Halaman {pagination.page} dari {pagination.totalPages})
+          </div>
         </CardContent>
       </Card>
     </>
