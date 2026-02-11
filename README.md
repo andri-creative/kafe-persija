@@ -34,3 +34,43 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Setup Database & Prisma
+
+Proyek ini menggunakan [Prisma](https://www.prisma.io/) sebagai ORM. Ikuti langkah-langkah berikut untuk menyiapkan database:
+
+### 1. Konfigurasi Environment
+
+Atur koneksi database Anda di file `.env`:
+
+```env
+DATABASE_URL="mysql://username:password@localhost:3306/cafe"
+```
+
+### 2. Migrasi Database
+
+Untuk menyinkronkan skema Prisma dengan database Anda, jalankan:
+
+```bash
+npx prisma migrate dev --name init
+```
+
+### 3. Generate Prisma Client
+
+Setelah migrasi atau jika ada perubahan skema, jalankan perintah ini untuk memperbarui Prisma Client:
+
+```bash
+npx prisma generate
+```
+
+### 4. Database Seeding (Isi Data Awal)
+
+Untuk mengisi database dengan data awal (Role, Akun Superadmin, dll.), Anda bisa menjalankan salah satu perintah berikut:
+
+```bash
+npx prisma db seed
+# atau
+npm run seed
+```
+
+Proses ini akan menjalankan script yang ada di `prisma/seed.ts`.

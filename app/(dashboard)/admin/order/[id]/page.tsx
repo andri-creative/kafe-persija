@@ -59,8 +59,8 @@ export default function OrderDetailPage() {
     } catch (e: any) {
       setError(
         e?.response?.data?.message ||
-          e?.message ||
-          "Gagal mengambil data order",
+        e?.message ||
+        "Gagal mengambil data order",
       );
     } finally {
       setLoading(false);
@@ -99,21 +99,67 @@ export default function OrderDetailPage() {
     } catch (e: any) {
       alert(
         e?.response?.data?.message ||
-          e?.message ||
-          "Terjadi kesalahan saat update",
+        e?.message ||
+        "Terjadi kesalahan saat update",
       );
     } finally {
       setUpdating(false);
     }
   };
 
-  const handleUpdateStatus = (newStatus: string) => {
-    updateOrder({ status: newStatus });
+  const getNextStatus = (currentStatus: string, allowedStatuses: string[]) => {
+    const currentIndex = allowedStatuses.indexOf(currentStatus);
+    if (currentIndex === -1 || currentIndex === allowedStatuses.length - 1) {
+      return currentStatus;
+    }
+    return allowedStatuses[currentIndex + 1];
   };
 
-  const handleProductStatusChange = (productId: number, newStatus: string) => {
+  const handleUpdateStatus = () => {
+    const currentStatus = order?.status || "ORDERED";
+    const nextStatus = getNextStatus(currentStatus, ORDER_STATUSES);
+
+    const productUpdates = products.map((p: any) => ({
+      id: p.id,
+      status: nextStatus,
+    }));
+
     updateOrder({
-      products: [{ id: productId, status: newStatus }],
+      status: nextStatus,
+      products: productUpdates,
+    });
+  };
+
+  const handleProductStatusChange = (productId: number) => {
+    const product = products.find((p: any) => p.id === productId);
+    const currentStatus = product?.status || "ORDERED";
+    const nextStatus = getNextStatus(currentStatus, PRODUCT_STATUSES);
+
+    // Create a copy of products with the updated status for status calculation
+    const updatedProducts = products.map((p: any) =>
+      p.id === productId ? { ...p, status: nextStatus } : p
+    );
+
+    // Calculate overall order status
+    let nextOrderStatus = order?.status || "ORDERED";
+
+    const allServed = updatedProducts.every((p: any) => p.status === "SERVED");
+    const anyReady = updatedProducts.some((p: any) => p.status === "READY");
+    const anyProcessing = updatedProducts.some((p: any) => p.status === "PROCESSING");
+
+    if (allServed) {
+      nextOrderStatus = "SERVED";
+    } else if (anyReady) {
+      nextOrderStatus = "READY";
+    } else if (anyProcessing) {
+      nextOrderStatus = "PROCESSING";
+    } else {
+      nextOrderStatus = "ORDERED";
+    }
+
+    updateOrder({
+      status: nextOrderStatus,
+      products: [{ id: productId, status: nextStatus }],
     });
   };
 
@@ -180,20 +226,24 @@ export default function OrderDetailPage() {
                 </div>
                 <div className="flex flex-col gap-2">
                   <div className="text-xs text-gray-500 text-right">
-                    Update Order Status
+                    Order Status
                   </div>
-                  <select
-                    className="text-xs px-2 py-1 rounded border bg-white text-gray-700 outline-none"
-                    value={order?.status}
-                    disabled={updating}
-                    onChange={(e) => handleUpdateStatus(e.target.value)}
+                  <button
+                    className={`text-xs px-3 py-2 rounded border font-semibold outline-none transition-all ${order?.status === "ORDERED"
+                      ? "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200"
+                      : order?.status === "PROCESSING"
+                        ? "bg-yellow-100 text-yellow-700 border-yellow-300 hover:bg-yellow-200"
+                        : order?.status === "READY"
+                          ? "bg-orange-100 text-orange-700 border-orange-300 hover:bg-orange-200"
+                          : order?.status === "SERVED"
+                            ? "bg-green-100 text-green-700 border-green-300 cursor-not-allowed"
+                            : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
+                      }`}
+                    disabled={updating || order?.status === "SERVED" || order?.status === "CANCELLED"}
+                    onClick={handleUpdateStatus}
                   >
-                    {ORDER_STATUSES.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
+                    {order?.status || "ORDERED"}
+                  </button>
                   {updating && (
                     <span className="text-[10px] text-orange-500 text-right animate-pulse">
                       Updating...
@@ -243,20 +293,22 @@ export default function OrderDetailPage() {
                         <div className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">
                           Status Produk
                         </div>
-                        <select
-                          className="text-[11px] px-2 py-1.5 rounded border bg-white text-gray-700 outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
-                          value={p?.status || "ordered"}
-                          disabled={updating}
-                          onChange={(e) =>
-                            handleProductStatusChange(p.id, e.target.value)
-                          }
+                        <button
+                          className={`text-[11px] px-2 py-1.5 rounded border font-semibold outline-none transition-all ${p?.status === "ORDERED"
+                            ? "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200"
+                            : p?.status === "PROCESSING"
+                              ? "bg-yellow-100 text-yellow-700 border-yellow-300 hover:bg-yellow-200"
+                              : p?.status === "READY"
+                                ? "bg-orange-100 text-orange-700 border-orange-300 hover:bg-orange-200"
+                                : p?.status === "SERVED"
+                                  ? "bg-green-100 text-green-700 border-green-300 cursor-not-allowed"
+                                  : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
+                            }`}
+                          disabled={updating || p?.status === "SERVED"}
+                          onClick={() => handleProductStatusChange(p.id)}
                         >
-                          {PRODUCT_STATUSES.map((s) => (
-                            <option key={s} value={s}>
-                              {s.toUpperCase()}
-                            </option>
-                          ))}
-                        </select>
+                          {p?.status?.toUpperCase() || "ORDERED"}
+                        </button>
                       </div>
                     </div>
                   ))}

@@ -19,7 +19,7 @@ export const authService = {
 
       return {
         id: user.id.toString(),
-        name: user.nickname,
+        nickname: user.nickname,
         email: user.email,
         picture: user.picture || "",
         auth_token: user.auth_token,
@@ -46,12 +46,12 @@ export const authService = {
       });
 
       if (!user) {
-        console.error("User not found in DB"); 
+        console.error("User not found in DB");
         throw new Error("User tidak ditemukan");
       }
 
       if (!user.password) {
-        console.error("User has no password"); 
+        console.error("User has no password");
         throw new Error("User belum setup password");
       }
 
@@ -62,16 +62,20 @@ export const authService = {
         throw new Error("Password salah");
       }
 
-      const authToken = randomUUID();
+      // Ambil token dari DB jika sudah ada, atau generate baru jika kosong
+      const authToken = user.auth_token || randomUUID();
 
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { auth_token: authToken, updated_at: new Date() },
-      });
+      // Hanya update DB jika sebelumnya token masih kosong
+      if (!user.auth_token) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { auth_token: authToken, updated_at: new Date() },
+        });
+      }
 
       return {
         id: user.id.toString(),
-        name: user.nickname,
+        nickname: user.nickname,
         email: user.email,
         picture: user.picture || "",
         auth_token: authToken,
@@ -85,7 +89,7 @@ export const authService = {
   },
 
   // REGISTER
-  async registerUser(name: string, email: string, password: string) {
+  async registerUser(nickname: string, email: string, password: string) {
     try {
       const existingUser = await prisma.user.findUnique({
         where: { email },
@@ -107,12 +111,12 @@ export const authService = {
 
       const user = await prisma.user.create({
         data: {
-          nickname: name,
+          nickname: nickname,
           email: email,
           password: hashedPassword,
           auth_token: authToken,
           type: "USER",
-          picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}`,
+          picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname)}`,
           user_role_trx: {
             create: {
               role_id: customerRole.id,
@@ -156,7 +160,7 @@ export const authService = {
   },
 
   // LOGIN GOOGLE
-  async loginWithGoogle(email: string, name: string, picture?: string) {
+  async loginWithGoogle(email: string, nickname: string, picture?: string) {
     try {
       const existingUser = await prisma.user.findUnique({
         where: { email },
@@ -182,7 +186,7 @@ export const authService = {
 
         return {
           id: existingUser.id.toString(),
-          name: existingUser.nickname,
+          nickname: existingUser.nickname,
           email: existingUser.email,
           picture: picture || existingUser.picture || "",
           auth_token: authToken,
@@ -203,13 +207,13 @@ export const authService = {
 
       const newUser = await prisma.user.create({
         data: {
-          nickname: name,
+          nickname: nickname,
           email: email,
           auth_token: authToken,
           type: "GOOGLE",
           picture:
             picture ||
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}`,
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname)}`,
           user_role_trx: {
             create: {
               role_id: customerRole.id,
@@ -225,7 +229,7 @@ export const authService = {
 
       return {
         id: newUser.id.toString(),
-        name: newUser.nickname,
+        nickname: newUser.nickname,
         email: newUser.email,
         picture: newUser.picture || "",
         auth_token: authToken,
@@ -239,7 +243,7 @@ export const authService = {
   },
 
   // LOGIN APPLE
-  async loginWithApple(email: string, name: string) {
+  async loginWithApple(email: string, nickname: string) {
     try {
       const existingUser = await prisma.user.findUnique({
         where: { email },
@@ -264,7 +268,7 @@ export const authService = {
 
         return {
           id: existingUser.id.toString(),
-          name: existingUser.nickname,
+          nickname: existingUser.nickname,
           email: existingUser.email,
           picture: existingUser.picture || "",
           auth_token: authToken,
@@ -285,11 +289,11 @@ export const authService = {
 
       const newUser = await prisma.user.create({
         data: {
-          nickname: name || email.split("@")[0],
+          nickname: nickname || email.split("@")[0],
           email: email,
           auth_token: authToken,
           type: "APPLE",
-          picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(name || email.split("@")[0])}`,
+          picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname || email.split("@")[0])}`,
           user_role_trx: {
             create: {
               role_id: customerRole.id,
@@ -305,7 +309,7 @@ export const authService = {
 
       return {
         id: newUser.id.toString(),
-        name: newUser.nickname,
+        nickname: newUser.nickname,
         email: newUser.email,
         picture: newUser.picture || "",
         auth_token: authToken,
@@ -336,7 +340,7 @@ export const authService = {
 
       return {
         id: user.id.toString(),
-        name: user.nickname,
+        nickname: user.nickname,
         email: user.email,
         picture: user.picture || "",
         roles: user.user_role_trx.map((trx) => trx.role.name),
