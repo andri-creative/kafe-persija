@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
+
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext
 ) {
   try {
-    const { id } = await params;
+    const params = await context.params;
+    const id = parseInt(params.id);
     const { status } = await req.json();
 
-    // Validate status value
     if (!["active", "inactive"].includes(status)) {
       return NextResponse.json(
         { error: "Invalid status value. Must be 'active' or 'inactive'" },
@@ -17,7 +21,6 @@ export async function PATCH(
       );
     }
 
-    // Update product status
     const updatedProduct = await prisma.product.update({
       where: { id: Number(id) },
       data: { status },

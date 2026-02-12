@@ -1,18 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
-    // Get today's date range
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Get this week's start date (Monday)
     const weekStart = new Date();
-    weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1); // Monday
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
     weekStart.setHours(0, 0, 0, 0);
-
-    // Fetch all data in parallel
     const [
       totalProducts,
       activeProducts,
@@ -23,13 +19,10 @@ export async function GET(request: NextRequest) {
       newTodayUsers,
       newThisWeekUsers,
     ] = await Promise.all([
-      // Product Stats
       prisma.product.count(),
       prisma.product.count({ where: { status: "active" } }),
       prisma.product.count({ where: { status: "draft" } }),
       prisma.product.count({ where: { status: "inactive" } }),
-
-      // User Stats
       prisma.user.count(),
       prisma.user.count({ where: { status: "active" } }),
       prisma.user.count({
@@ -48,7 +41,6 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    // Format response
     const dashboardData = {
       products: {
         total: totalProducts,

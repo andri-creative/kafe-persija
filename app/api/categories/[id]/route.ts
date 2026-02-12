@@ -6,7 +6,7 @@ import {
 } from "@/services/category.service";
 
 type Params = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 /* =====================
@@ -14,7 +14,8 @@ type Params = {
 ===================== */
 export async function GET(_: NextRequest, { params }: Params) {
   try {
-    const category = await getCategoryById(params.id);
+    const { id } = await params;
+    const category = await getCategoryById(id);
     return NextResponse.json(category);
   } catch {
     return NextResponse.json({ error: "Category not found" }, { status: 404 });
@@ -26,8 +27,9 @@ export async function GET(_: NextRequest, { params }: Params) {
 ===================== */
 export async function PUT(req: NextRequest, { params }: Params) {
   try {
+    const { id } = await params;
     const body = await req.json();
-    const category = await updateCategory(params.id, body);
+    const category = await updateCategory(id, body);
 
     return NextResponse.json(category);
   } catch {
@@ -40,7 +42,8 @@ export async function PUT(req: NextRequest, { params }: Params) {
 ===================== */
 export async function DELETE(_: NextRequest, { params }: Params) {
   try {
-    await deleteCategory(params.id);
+    const { id } = await params;
+    await deleteCategory(id);
     return NextResponse.json({ message: "Category deleted successfully" });
   } catch {
     return NextResponse.json({ error: "Category not found" }, { status: 404 });

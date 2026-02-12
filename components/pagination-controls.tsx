@@ -1,5 +1,7 @@
-"use client";
+"use client"
 
+import Link from 'next/link'
+import { usePathname, useSearchParams } from 'next/navigation'
 import {
     Pagination,
     PaginationContent,
@@ -8,15 +10,7 @@ import {
     PaginationLink,
     PaginationNext,
     PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { useRouter, useSearchParams } from "next/navigation";
+} from "@/components/ui/pagination"
 
 interface PaginationProps {
     pagination: {
@@ -26,139 +20,86 @@ interface PaginationProps {
         totalPages: number;
         hasNextPage: boolean;
         hasPreviousPage: boolean;
-    };
+    }
 }
 
 export default function PaginationControls({ pagination }: PaginationProps) {
-    const router = useRouter();
+    const pathname = usePathname();
     const searchParams = useSearchParams();
+    const { page, totalPages, hasNextPage, hasPreviousPage } = pagination;
 
     const createPageURL = (pageNumber: number | string) => {
         const params = new URLSearchParams(searchParams.toString());
-        params.set("page", pageNumber.toString());
-        return `?${params.toString()}`;
+        params.set('page', pageNumber.toString());
+        return `${pathname}?${params.toString()}`;
     };
 
-    const handlePageSizeChange = (value: string) => {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("pageSize", value);
-        params.set("page", "1"); // Reset ke halaman pertama
-        router.push(`?${params.toString()}`);
-    };
-
-    // Generate array of page numbers to display
     const getPageNumbers = () => {
-        const delta = 2; // Jumlah halaman di kiri dan kanan halaman aktif
-        const range = [];
-        const rangeWithDots = [];
-        let l;
+        const pages: (number | string)[] = [];
+        const range = 1;
 
-        for (let i = 1; i <= pagination.totalPages; i++) {
+        for (let i = 1; i <= totalPages; i++) {
             if (
                 i === 1 ||
-                i === pagination.totalPages ||
-                (i >= pagination.page - delta && i <= pagination.page + delta)
+                i === totalPages ||
+                (i >= page - range && i <= page + range)
             ) {
-                range.push(i);
-            }
-        }
-
-        range.forEach((i) => {
-            if (l) {
-                if (i - l === 2) {
-                    rangeWithDots.push(l + 1);
-                } else if (i - l !== 1) {
-                    rangeWithDots.push("...");
+                pages.push(i);
+            } else if (
+                i === page - range - 1 ||
+                i === page + range + 1
+            ) {
+                if (pages[pages.length - 1] !== 'ellipsis') {
+                    pages.push('ellipsis');
                 }
             }
-            rangeWithDots.push(i);
-            l = i;
-        });
-
-        return rangeWithDots;
+        }
+        return pages;
     };
 
+    const pageNumbers = getPageNumbers();
+
+    if (totalPages <= 1) return null;
+
     return (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <Pagination>
-                <PaginationContent>
-                    {/* Previous Button */}
-                    <PaginationItem>
-                        <PaginationPrevious
-                            href={createPageURL(pagination.page - 1)}
-                            aria-disabled={!pagination.hasPreviousPage}
-                            tabIndex={!pagination.hasPreviousPage ? -1 : undefined}
-                            className={
-                                !pagination.hasPreviousPage
-                                    ? "pointer-events-none opacity-50"
-                                    : ""
-                            }
-                            onClick={(e) => {
-                                if (!pagination.hasPreviousPage) {
-                                    e.preventDefault();
-                                }
-                            }}
-                        />
+        <Pagination>
+            <PaginationContent>
+                <PaginationItem>
+                    <PaginationPrevious
+                        asChild
+                        href={hasPreviousPage ? createPageURL(page - 1) : "#"}
+                        className={!hasPreviousPage ? "pointer-events-none opacity-50" : ""}
+                    >
+                        <Link href={hasPreviousPage ? createPageURL(page - 1) : "#"}>Previous</Link>
+                    </PaginationPrevious>
+                </PaginationItem>
+
+                {pageNumbers.map((p, i) => (
+                    <PaginationItem key={i}>
+                        {p === 'ellipsis' ? (
+                            <PaginationEllipsis />
+                        ) : (
+                            <PaginationLink
+                                asChild
+                                href={createPageURL(p)}
+                                isActive={p === page}
+                            >
+                                <Link href={createPageURL(p)}>{p}</Link>
+                            </PaginationLink>
+                        )}
                     </PaginationItem>
+                ))}
 
-                    {/* Page Numbers */}
-                    {getPageNumbers().map((pageNum, index) => (
-                        <PaginationItem key={`page-${index}`}>
-                            {pageNum === "..." ? (
-                                <PaginationEllipsis />
-                            ) : (
-                                <PaginationLink
-                                    href={createPageURL(pageNum)}
-                                    isActive={pagination.page === pageNum}
-                                >
-                                    {pageNum}
-                                </PaginationLink>
-                            )}
-                        </PaginationItem>
-                    ))}
-
-                    {/* Next Button */}
-                    <PaginationItem>
-                        <PaginationNext
-                            href={createPageURL(pagination.page + 1)}
-                            aria-disabled={!pagination.hasNextPage}
-                            tabIndex={!pagination.hasNextPage ? -1 : undefined}
-                            className={
-                                !pagination.hasNextPage
-                                    ? "pointer-events-none opacity-50"
-                                    : ""
-                            }
-                            onClick={(e) => {
-                                if (!pagination.hasNextPage) {
-                                    e.preventDefault();
-                                }
-                            }}
-                        />
-                    </PaginationItem>
-                </PaginationContent>
-            </Pagination>
-
-            {/* Page Size Selector */}
-            <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">
-                    Baris per halaman:
-                </span>
-                <Select
-                    value={pagination.pageSize.toString()}
-                    onValueChange={handlePageSizeChange}
-                >
-                    <SelectTrigger className="w-[70px]">
-                        <SelectValue placeholder={pagination.pageSize} />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {[5, 10, 20, 50, 100].map((size) => (
-                            <SelectItem key={size} value={size.toString()}>
-                                {size}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-        </div>
-    );
+                <PaginationItem>
+                    <PaginationNext
+                        asChild
+                        href={hasNextPage ? createPageURL(page + 1) : "#"}
+                        className={!hasNextPage ? "pointer-events-none opacity-50" : ""}
+                    >
+                        <Link href={hasNextPage ? createPageURL(page + 1) : "#"}>Next</Link>
+                    </PaginationNext>
+                </PaginationItem>
+            </PaginationContent>
+        </Pagination>
+    )
 }

@@ -3,14 +3,16 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { 
-  ArrowLeft, 
-  Save, 
-  Loader2, 
-  Upload, 
-  X, 
-  Image as ImageIcon 
+import {
+  ArrowLeft,
+  Save,
+  Loader2,
+  Upload,
+  X,
+  Image as ImageIcon,
+  ChevronLeft
 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -45,7 +47,7 @@ type Variant = {
 export default function ProductVariantEditPage() {
   const params = useParams();
   const router = useRouter();
-  
+
   // Safely access params
   const variantId = params?.variantId as string;
   const productId = params?.id as string;
@@ -53,7 +55,7 @@ export default function ProductVariantEditPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [variant, setVariant] = useState<Variant | null>(null);
-  
+
   // Form state
   const [formData, setFormData] = useState({
     desc: "",
@@ -78,14 +80,14 @@ export default function ProductVariantEditPage() {
     try {
       setLoading(true);
       const response = await fetch(`/api/variants/${variantId}`);
-      
+
       if (!response.ok) {
         throw new Error("Gagal mengambil data varian");
       }
-      
+
       const data = await response.json();
       setVariant(data);
-      
+
       // Initialize form data
       setFormData({
         desc: data.desc || "",
@@ -113,15 +115,15 @@ export default function ProductVariantEditPage() {
     const validFiles: File[] = [];
 
     fileArray.forEach(file => {
-        if (!file.type.startsWith("image/")) {
-            toast.error(`File ${file.name} bukan gambar`);
-            return;
-        }
-        if (file.size > 5 * 1024 * 1024) {
-             toast.error(`File ${file.name} terlalu besar (max 5MB)`);
-             return;
-        }
-        validFiles.push(file);
+      if (!file.type.startsWith("image/")) {
+        toast.error(`File ${file.name} bukan gambar`);
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`File ${file.name} terlalu besar (max 5MB)`);
+        return;
+      }
+      validFiles.push(file);
     });
 
     if (validFiles.length === 0) return;
@@ -131,28 +133,28 @@ export default function ProductVariantEditPage() {
       imageFiles: [...prev.imageFiles, ...validFiles],
       imagePreviews: [...prev.imagePreviews, ...validFiles.map(file => URL.createObjectURL(file))]
     }));
-    
+
     // Reset input
     if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+      fileInputRef.current.value = "";
     }
   };
 
   const handleRemoveImage = (type: "new" | "existing", index: number) => {
     if (type === "new") {
-        URL.revokeObjectURL(formData.imagePreviews[index]);
-        setFormData(prev => ({
-            ...prev,
-            imageFiles: prev.imageFiles.filter((_, i) => i !== index),
-            imagePreviews: prev.imagePreviews.filter((_, i) => i !== index)
-        }));
+      URL.revokeObjectURL(formData.imagePreviews[index]);
+      setFormData(prev => ({
+        ...prev,
+        imageFiles: prev.imageFiles.filter((_, i) => i !== index),
+        imagePreviews: prev.imagePreviews.filter((_, i) => i !== index)
+      }));
     } else {
-        const imageToRemove = formData.existingImages[index];
-        setFormData(prev => ({
-            ...prev,
-            existingImages: prev.existingImages.filter((_, i) => i !== index),
-            removedImageIds: [...prev.removedImageIds, imageToRemove.id]
-        }));
+      const imageToRemove = formData.existingImages[index];
+      setFormData(prev => ({
+        ...prev,
+        existingImages: prev.existingImages.filter((_, i) => i !== index),
+        removedImageIds: [...prev.removedImageIds, imageToRemove.id]
+      }));
     }
   };
 
@@ -171,18 +173,18 @@ export default function ProductVariantEditPage() {
 
     try {
       setSaving(true);
-      
+
       const submitData = new FormData();
       submitData.append("desc", formData.desc);
       submitData.append("price", formData.price);
       submitData.append("stok", formData.stok);
       submitData.append("size", formData.size);
-      
+
       // New images
       formData.imageFiles.forEach((file) => {
         submitData.append("images", file);
       });
-      
+
       // Removed images
       if (formData.removedImageIds.length > 0) {
         submitData.append("removedImageIds", formData.removedImageIds.join(","));
@@ -200,7 +202,7 @@ export default function ProductVariantEditPage() {
       }
 
       toast.success("Varian berhasil diperbarui");
-      
+
       setTimeout(() => {
         router.push(`/admin/product/${productId}/variants`);
       }, 1000);
@@ -254,22 +256,24 @@ export default function ProductVariantEditPage() {
       />
 
       {/* HEADER */}
-      <div className="flex items-center justify-between">
-        <div>
-          <Link
-            href={`/admin/product/${productId}/variants`}
-            className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-2"
-          >
-            <ArrowLeft size={20} className="mr-2" />
-            Kembali ke Daftar Varian
-          </Link>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Edit Varian: {variant.product.name}
-          </h1>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/admin/product/${productId}/variants`}>
+              <ChevronLeft size={20} className="mr-2" />
+              Kembali
+            </Link>
+          </Button>
+          <Separator orientation="vertical" className="mx-2 h-4" />
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Edit Varian: {variant.product.name}
+            </h1>
+          </div>
         </div>
-        
-        <Button 
-          onClick={handleSubmit} 
+
+        <Button
+          onClick={handleSubmit}
           disabled={saving}
           className="bg-blue-600 hover:bg-blue-700"
         >
@@ -362,71 +366,71 @@ export default function ProductVariantEditPage() {
               <div className="flex flex-col gap-4">
                 {/* Existing Images */}
                 {(formData.existingImages.length > 0 || formData.imagePreviews.length > 0) && (
-                    <div className="grid grid-cols-3 gap-2">
-                        {formData.existingImages.map((img, index) => (
-                            <div key={`existing-${index}`} className="relative aspect-square border rounded-lg overflow-hidden bg-gray-50 group">
-                                <img
-                                    src={img.image}
-                                    alt="Existing"
-                                    className="w-full h-full object-cover"
-                                />
-                                <Button
-                                    type="button"
-                                    variant="destructive"
-                                    size="icon"
-                                    className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    onClick={() => handleRemoveImage("existing", index)}
-                                    disabled={saving}
-                                >
-                                    <X className="h-3 w-3" />
-                                </Button>
-                            </div>
-                        ))}
-                        {formData.imagePreviews.map((preview, index) => (
-                            <div key={`new-${index}`} className="relative aspect-square border rounded-lg overflow-hidden bg-gray-50 group">
-                                <img
-                                    src={preview}
-                                    alt="New Preview"
-                                    className="w-full h-full object-cover"
-                                />
-                                <Button
-                                    type="button"
-                                    variant="destructive"
-                                    size="icon"
-                                    className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    onClick={() => handleRemoveImage("new", index)}
-                                    disabled={saving}
-                                >
-                                    <X className="h-3 w-3" />
-                                </Button>
-                            </div>
-                        ))}
-                    </div>
-                )}
-                
-                <div
-                    className="w-full border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      ref={fileInputRef}
-                      onChange={handleImageUpload}
-                      disabled={saving}
-                    />
-                    <div className="p-3 bg-gray-100 rounded-full mb-2">
-                      <Upload className="h-6 w-6 text-gray-500" />
-                    </div>
-                    <p className="text-sm font-medium text-gray-700">
-                      {(formData.existingImages.length > 0 || formData.imagePreviews.length > 0) ? "Tambah Gambar Lain" : "Upload Gambar"}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Maksimal 5MB per file
-                    </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {formData.existingImages.map((img, index) => (
+                      <div key={`existing-${index}`} className="relative aspect-square border rounded-lg overflow-hidden bg-gray-50 group">
+                        <img
+                          src={img.image}
+                          alt="Existing"
+                          className="w-full h-full object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => handleRemoveImage("existing", index)}
+                          disabled={saving}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                    {formData.imagePreviews.map((preview, index) => (
+                      <div key={`new-${index}`} className="relative aspect-square border rounded-lg overflow-hidden bg-gray-50 group">
+                        <img
+                          src={preview}
+                          alt="New Preview"
+                          className="w-full h-full object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => handleRemoveImage("new", index)}
+                          disabled={saving}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
                   </div>
+                )}
+
+                <div
+                  className="w-full border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    ref={fileInputRef}
+                    onChange={handleImageUpload}
+                    disabled={saving}
+                  />
+                  <div className="p-3 bg-gray-100 rounded-full mb-2">
+                    <Upload className="h-6 w-6 text-gray-500" />
+                  </div>
+                  <p className="text-sm font-medium text-gray-700">
+                    {(formData.existingImages.length > 0 || formData.imagePreviews.length > 0) ? "Tambah Gambar Lain" : "Upload Gambar"}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Maksimal 5MB per file
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>

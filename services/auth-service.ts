@@ -1,5 +1,5 @@
 // services/auth-service.ts
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { hash, compare } from "bcryptjs";
 import { randomUUID } from "crypto";
 

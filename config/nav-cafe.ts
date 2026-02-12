@@ -38,10 +38,10 @@ export const navCafe = {
       url: "/profile",
       icon: "User",
     },
-    {
-      title: "Report",
-      url: "/report",
-      icon: "BarChart3",
-    },
+    // {
+    //   title: "Report",
+    //   url: "/report",
+    //   icon: "BarChart3",
+    // },
   ],
 };

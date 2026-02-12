@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { uploadVariantImage } from "@/lib/path-img";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -12,7 +12,6 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
     const search = searchParams.get("search");
 
-    // Build filter
     const where: any = {};
 
     if (status && status !== "all") {
@@ -78,13 +77,12 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const created_by = parseInt(session.user.id);
 
-    // Parse product data
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
     const status = (formData.get("status") as string) || "active";
-    
+
     let categories = formData.getAll("categories") as string[];
-    
+
     if (categories.length === 0) {
       const singleCategory = formData.get("category") as string;
       if (singleCategory) {
@@ -106,7 +104,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-      // Create product
     const product = await prisma.product.create({
       data: {
         name,
@@ -147,17 +144,14 @@ export async function POST(request: NextRequest) {
       const price = formData.get(`variants[${index}][price]`) as string;
       const stok = formData.get(`variants[${index}][stok]`) as string;
       const size = formData.get(`variants[${index}][size]`) as string;
-      
+
       const imageFiles: File[] = [];
-      // Collect all images for this variant
-      // Because we used `append('variants[i][images]', file)`, getAll should work if key is exact
-      // But FormData.getAll needs the exact key. Logic in frontend loop: formData.append(`variants[${index}][images]`, file);
       const images = formData.getAll(`variants[${index}][images]`);
-      
+
       images.forEach(img => {
-          if (img instanceof File && img.size > 0) {
-              imageFiles.push(img);
-          }
+        if (img instanceof File && img.size > 0) {
+          imageFiles.push(img);
+        }
       });
 
       if (!desc) break;
@@ -203,19 +197,18 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Upload and Create Images
       for (const imageFile of variant.imageFiles) {
-          const imagePath = await uploadVariantImage(imageFile);
-          
-          if (imagePath) {
-            await prisma.product_variant_images.create({
-              data: {
-                product_variant_id: createdVariant.id,
-                image: imagePath,
-                created_by,
-              },
-            });
-          }
+        const imagePath = await uploadVariantImage(imageFile);
+
+        if (imagePath) {
+          await prisma.product_variant_images.create({
+            data: {
+              product_variant_id: createdVariant.id,
+              image: imagePath,
+              created_by,
+            },
+          });
+        }
       }
     }
 

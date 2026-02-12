@@ -2,7 +2,6 @@ import prisma from "@/lib/prisma";
 
 export async function getDashboardData() {
   try {
-    // Get data secara paralel untuk performa lebih baik
     const [
       totalOrders,
       totalRevenue,
@@ -10,7 +9,6 @@ export async function getDashboardData() {
       totalProducts,
       recentOrders,
       topProducts,
-      dailyRevenue,
     ] = await Promise.all([
       // 1. Total Orders
       prisma.transaction.count({
@@ -46,14 +44,6 @@ export async function getDashboardData() {
         },
       }),
 
-      // 6. Top Products (terlaris) - groupBy tidak support include
-      prisma.transactionItem.groupBy({
-        by: ["product_id"],
-        _sum: { qty: true },
-        orderBy: { _sum: { qty: "desc" } },
-        take: 10,
-      }),
-
       // 7. Revenue 7 hari terakhir
       getLast7DaysRevenue(),
     ]);
@@ -65,7 +55,6 @@ export async function getDashboardData() {
       totalProducts,
       recentOrders,
       topProducts,
-      dailyRevenue,
     };
   } catch (error) {
     console.error("Error fetching dashboard data:", error);

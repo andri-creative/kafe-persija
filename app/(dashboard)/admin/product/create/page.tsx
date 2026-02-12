@@ -32,7 +32,9 @@ import {
   X,
   Image as ImageIcon,
   ChevronDown,
+  ChevronLeft,
 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "react-toastify";
 
@@ -328,10 +330,19 @@ export default function CreateProductPage() {
   return (
     <>
       <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Tambah Produk Baru</h1>
-            <p className="text-gray-500">Isi informasi produk dan variannya</p>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/admin/product">
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Kembali
+              </Link>
+            </Button>
+            <Separator orientation="vertical" className="mx-2 h-4" />
+            <div>
+              <h1 className="text-2xl font-bold">Tambah Produk Baru</h1>
+              <p className="text-gray-500 text-sm">Isi informasi produk dan variannya</p>
+            </div>
           </div>
           <div className="flex gap-2">
             <Link href="/admin/product">
