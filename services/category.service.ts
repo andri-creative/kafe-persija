@@ -41,10 +41,24 @@ export async function createCategory(data: CreateCategoryInput) {
    GET ALL
 ===================== */
 export async function getCategories() {
-  return prisma.product_category.findMany({
+  const categories = await prisma.product_category.findMany({
     orderBy: { created_at: "desc" },
   });
+
+  const creatorIds = Array.from(new Set(categories.map((c) => c.created_by)));
+  const users = await prisma.user.findMany({
+    where: { id: { in: creatorIds } },
+    select: { id: true, nickname: true },
+  });
+
+  const userMap = new Map(users.map((u) => [u.id, u.nickname]));
+
+  return categories.map((c) => ({
+    ...c,
+    creator_name: userMap.get(c.created_by) || "Unknown",
+  }));
 }
+
 
 /* =====================
    GET BY ID

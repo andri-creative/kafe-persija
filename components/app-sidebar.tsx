@@ -36,6 +36,13 @@ import {
 import { navCafe } from "@/config/nav-cafe";
 import { getBasePathByRole } from "@/lib/role-path";
 
+import {
+  Avatar,
+  AvatarBadge,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar"
+
 import Link from "next/link";
 
 // interface NavItem {
@@ -98,7 +105,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size="lg" asChild>
               <Link href={`${basePath}/dashboard`}>
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <GalleryVerticalEnd className="size-4" />
+                  {/* <GalleryVerticalEnd className="size-4" /> */}
+                  <Avatar className="rounded-md">
+                    <AvatarImage src="/icons/favicon-for-app/icon0.svg" alt="@shadcn" />
+                    <AvatarFallback>CN</AvatarFallback>
+                    <AvatarBadge className="bg-green-600 dark:bg-green-800" />
+                  </Avatar>
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
                   <span className="font-semibold">Cafe Management</span>
