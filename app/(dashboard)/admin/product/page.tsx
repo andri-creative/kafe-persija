@@ -46,7 +46,7 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("all"); 
+  const [selectedStatus, setSelectedStatus] = useState("all");
 
 
   useEffect(() => {
@@ -416,13 +416,12 @@ export default function ProductPage() {
                     </td>
                     <td className="px-6 py-4 flex items-center flex-col gap-2">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          product.status === "active"
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.status === "active"
                             ? "bg-green-100 text-green-800"
                             : product.status === "Non Stok"
                               ? "bg-gray-100 text-gray-800"
                               : "bg-red-100 text-red-800"
-                        }`}
+                          }`}
                       >
                         {product.status}
                       </span>
@@ -467,6 +466,13 @@ export default function ProductPage() {
                               href={`/admin/product/${product.id}/variants`}
                             >
                               Variants
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Link
+                              href={`/admin/product/${product.id}/view`}
+                            >
+                              View
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />

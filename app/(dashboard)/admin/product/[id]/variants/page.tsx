@@ -13,7 +13,9 @@ import {
   Loader2,
   Upload,
   X,
+  ChevronLeft,
 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -287,7 +289,7 @@ export default function ProductVariantsPage() {
     } catch (error) {
       console.error("Error updating status:", error);
       toast.error("Gagal memperbarui status");
-      setVariants(previousVariants); 
+      setVariants(previousVariants);
     }
   };
 
@@ -342,29 +344,31 @@ export default function ProductVariantsPage() {
 
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <Link
-            href="/admin/product"
-            className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-2"
-          >
-            <ArrowLeft size={20} className="mr-2" />
-            Kembali ke Produk
-          </Link>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Varian Produk: {product.name}
-          </h1>
-          {product.description && (
-            <p className="text-gray-600 mt-1">{product.description}</p>
-          )}
-          <div className="flex flex-wrap gap-2 mt-2">
-            {product.product_category_trx.map((trx, index) => (
-              <span
-                key={index}
-                className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
-              >
-                {trx.product_category.name}
-              </span>
-            ))}
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/admin/product">
+              <ChevronLeft size={20} className="mr-1" />
+              Kembali
+            </Link>
+          </Button>
+          <Separator orientation="vertical" className="mx-2 h-4" />
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Varian Produk: {product.name}
+            </h1>
+            {product.description && (
+              <p className="text-gray-600 mt-1 text-sm">{product.description}</p>
+            )}
+            <div className="flex flex-wrap gap-2 mt-2">
+              {product.product_category_trx.map((trx, index) => (
+                <span
+                  key={index}
+                  className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
+                >
+                  {trx.product_category.name}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -587,20 +591,20 @@ export default function ProductVariantsPage() {
                       <td className="py-4 px-4">
                         {variant.product_variant_images.length > 0 ? (
                           <div className="flex -space-x-2 overflow-hidden">
-                             {variant.product_variant_images.slice(0, 3).map((img) => (
-                                <div key={img.id} className="inline-block h-10 w-10 rounded-full ring-2 ring-white overflow-hidden bg-gray-100">
-                                   <img
-                                     src={img.image}
-                                     alt="Variant"
-                                     className="h-full w-full object-cover"
-                                   />
-                                </div>
-                             ))}
-                             {variant.product_variant_images.length > 3 && (
-                               <div className="flex items-center justify-center h-10 w-10 rounded-full ring-2 ring-white bg-gray-200 text-xs font-medium text-gray-600">
-                                 +{variant.product_variant_images.length - 3}
-                               </div>
-                             )}
+                            {variant.product_variant_images.slice(0, 3).map((img) => (
+                              <div key={img.id} className="inline-block h-10 w-10 rounded-full ring-2 ring-white overflow-hidden bg-gray-100">
+                                <img
+                                  src={img.image}
+                                  alt="Variant"
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                            ))}
+                            {variant.product_variant_images.length > 3 && (
+                              <div className="flex items-center justify-center h-10 w-10 rounded-full ring-2 ring-white bg-gray-200 text-xs font-medium text-gray-600">
+                                +{variant.product_variant_images.length - 3}
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <span className="text-gray-400 text-xs">No image</span>
@@ -612,16 +616,15 @@ export default function ProductVariantsPage() {
                         </div>
                       </td>
                       <td className="py-4 px-4 flex flex-col gap-2">
-                        <span 
-                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium max-w-fit justify-center items-center ${
-                             variant.status === false 
-                               ? "bg-green-100 text-green-800"
-                               : "bg-gray-100 text-gray-800"
-                           }`}
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium max-w-fit justify-center items-center ${variant.status === false
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                            }`}
                         >
                           {variant.status === false ? "Aktif" : "Nonaktif"}
                         </span>
-                        <Switch 
+                        <Switch
                           checked={variant.status === false}
                           onCheckedChange={(checked) => handleToggleStatus(variant.id, checked)}
                         />

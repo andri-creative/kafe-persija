@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { uploadVariantImage } from "@/lib/path-img";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
+
 // GET: Get all variants for a product
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } },
+  context: RouteContext,
 ) {
   try {
     const params = await context.params;
@@ -44,7 +48,7 @@ export async function GET(
 // POST:
 export async function POST(
   request: NextRequest,
-  context: { params: { id: string } },
+  context: RouteContext
 ) {
   try {
     const params = await context.params;
@@ -52,10 +56,9 @@ export async function POST(
     const formData = await request.formData();
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
-       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const created_by = parseInt(session.user.id);
-    // const created_by = 1; // Removed hardcoded id
 
     const product = await prisma.product.findUnique({
       where: { id: productId },
@@ -69,15 +72,13 @@ export async function POST(
     const price = formData.get("price") as string;
     const stok = formData.get("stok") as string;
     const size = formData.get("size") as string;
-    
-    // Handle multiple images
-    // Check for 'images' (new convention) or 'image' (old convention/fallback)
+
     let imageFiles = formData.getAll("images") as File[];
     if (imageFiles.length === 0) {
-       const keyCheck = formData.getAll("image") as File[];
-       if (keyCheck.length > 0) {
-         imageFiles = keyCheck;
-       }
+      const keyCheck = formData.getAll("image") as File[];
+      if (keyCheck.length > 0) {
+        imageFiles = keyCheck;
+      }
     }
 
     if (!desc || !price) {
@@ -105,20 +106,19 @@ export async function POST(
       },
     });
 
-    // Upload and save images
     if (imageFiles && imageFiles.length > 0) {
       for (const file of imageFiles) {
         if (file.size > 0) {
-           const imagePath = await uploadVariantImage(file);
-           if (imagePath) {
-             await prisma.product_variant_images.create({
-               data: {
-                 product_variant_id: variant.id,
-                 image: imagePath,
-                 created_by,
-               },
-             });
-           }
+          const imagePath = await uploadVariantImage(file);
+          if (imagePath) {
+            await prisma.product_variant_images.create({
+              data: {
+                product_variant_id: variant.id,
+                image: imagePath,
+                created_by,
+              },
+            });
+          }
         }
       }
     }

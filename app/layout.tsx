@@ -13,9 +13,27 @@ const geistMono = Geist_Mono({
     subsets: ["latin"],
 });
 
+export const viewport = {
+    themeColor: "#ffffff",
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+};
+
 export const metadata: Metadata = {
     title: "Persija Cafe POS",
     description: "Persija Cafe Management System",
+    manifest: "/manifest.json",
+    icons: {
+        icon: "/icons/favicon-for-app/favicon.ico",
+        shortcut: "/icons/favicon-for-app/favicon.ico",
+        apple: "/icons/favicon-for-app/apple-icon.png",
+        other: {
+            rel: "apple-touch-icon-precomposed",
+            url: "/icons/favicon-for-app/apple-icon.png",
+        },
+    },
     appleWebApp: {
         capable: true,
         statusBarStyle: "default",
@@ -26,12 +44,7 @@ export const metadata: Metadata = {
     },
 };
 
-export const viewport = {
-    themeColor: "#ffffff",
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-};
+
 
 export default function RootLayout({
     children,
@@ -39,9 +52,13 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
+        <html lang="en" suppressHydrationWarning>
+            <head>
+                <meta name="apple-mobile-web-app-title" content="Caffee Persija" />
+            </head>
+
             <body
-                className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+                className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning
             >
                 <AuthProvider>{children}</AuthProvider>
             </body>

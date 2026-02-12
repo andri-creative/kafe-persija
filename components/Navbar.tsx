@@ -65,30 +65,30 @@ export default function Navbar() {
             ) : session?.user ? (
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  {session.user.image ? (
+                  {session.user.picture ? (
                     <Image
-                      src={session.user.image}
-                      alt={session.user.name || "User"}
+                      src={session.user.picture}
+                      alt={session.user.nickname || "User"}
                       width={32}
                       height={32}
                       className="rounded-full"
                     />
                   ) : (
                     <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
-                      {session.user.name?.charAt(0) || "U"}
+                      {session.user.nickname?.charAt(0) || "U"}
                     </div>
                   )}
                   <div className="flex flex-col">
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      Hi, {session.user.name?.split(" ")[0]}
+                      Hi, {session.user.nickname?.split(" ")[0]}
                     </span>
                     <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">
                       {session.user.roles?.[0] || "Customer"}
                     </span>
                   </div>
                 </div>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => signOut({ callbackUrl: "/" })}
                   className="text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200"
@@ -99,7 +99,7 @@ export default function Navbar() {
             ) : (
               <>
                 {/* Login Dialog */}
-                <LoginDialog 
+                <LoginDialog
                   open={loginOpen}
                   onOpenChange={setLoginOpen}
                   onSwitchToRegister={() => {
@@ -114,7 +114,7 @@ export default function Navbar() {
                 />
 
                 {/* Register Dialog */}
-                <RegisterDialog 
+                <RegisterDialog
                   open={registerOpen}
                   onOpenChange={setRegisterOpen}
                   onSwitchToLogin={() => {
@@ -158,24 +158,24 @@ export default function Navbar() {
                 <div className="h-10 w-full bg-gray-200 rounded"></div>
               </div>
             ) : session?.user ? (
-               <div className="space-y-4">
-                 <div className="flex items-center gap-3 px-2 py-2">
-                  {session.user.image ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 px-2 py-2">
+                  {session.user.picture ? (
                     <Image
-                      src={session.user.image}
-                      alt={session.user.name || "User"}
+                      src={session.user.picture}
+                      alt={session.user.nickname || "User"}
                       width={40}
                       height={40}
                       className="rounded-full"
                     />
                   ) : (
                     <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
-                      {session.user.name?.charAt(0) || "U"}
+                      {session.user.nickname?.charAt(0) || "U"}
                     </div>
                   )}
                   <div className="flex flex-col">
                     <span className="font-medium text-gray-900 dark:text-gray-100">
-                      {session.user.name || "User"}
+                      {session.user.nickname || "User"}
                     </span>
                     <span className="text-sm text-gray-500 dark:text-gray-400">
                       {session.user.email}
@@ -185,8 +185,8 @@ export default function Navbar() {
                     </span>
                   </div>
                 </div>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full justify-center text-red-500 hover:text-red-600 border-red-200 hover:bg-red-50"
                   onClick={() => {
                     setIsOpen(false);
@@ -276,7 +276,7 @@ export default function Navbar() {
                     </form>
                   </DialogContent>
                 </Dialog>
-    
+
                 <Dialog open={registerOpen} onOpenChange={setRegisterOpen}>
                   <DialogTrigger asChild>
                     <Button

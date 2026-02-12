@@ -14,7 +14,9 @@ import {
   X,
   Loader2,
   ChevronDown,
+  ChevronLeft,
 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -210,26 +212,26 @@ export default function EditProductPage() {
   ) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
-    
+
     const newVariants = [...variants];
     const currentVariant = newVariants[index];
-    
+
     // Convert FileList to Array
     const fileArray = Array.from(files);
     const validFiles: File[] = [];
-    
+
     fileArray.forEach(file => {
-        if (!file.type.startsWith("image/")) {
-            toast.error(`File ${file.name} bukan gambar`);
-            return;
-        }
-        if (file.size > 5 * 1024 * 1024) {
-             toast.error(`File ${file.name} terlalu besar (max 5MB)`);
-             return;
-        }
-        validFiles.push(file);
+      if (!file.type.startsWith("image/")) {
+        toast.error(`File ${file.name} bukan gambar`);
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`File ${file.name} terlalu besar (max 5MB)`);
+        return;
+      }
+      validFiles.push(file);
     });
-    
+
     if (validFiles.length === 0) return;
 
     // Append files and previews
@@ -245,7 +247,7 @@ export default function EditProductPage() {
       imagePreviews: newImagePreviews,
     };
     setVariants(newVariants);
-    
+
     // Reset inputs
     if (fileInputRefs.current[index]) {
       fileInputRefs.current[index]!.value = "";
@@ -264,10 +266,10 @@ export default function EditProductPage() {
     if (type === "new") {
       // Remove newly uploaded image
       URL.revokeObjectURL(variant.imagePreviews[imageIndex]);
-      
+
       const newImageFiles = variant.imageFiles.filter((_, i) => i !== imageIndex);
       const newImagePreviews = variant.imagePreviews.filter((_, i) => i !== imageIndex);
-      
+
       newVariants[variantIndex] = {
         ...variant,
         imageFiles: newImageFiles,
@@ -277,7 +279,7 @@ export default function EditProductPage() {
       // Remove existing image from UI and add to removal list
       const imageToRemove = variant.existingImages[imageIndex];
       const newExistingImages = variant.existingImages.filter((_, i) => i !== imageIndex);
-      
+
       newVariants[variantIndex] = {
         ...variant,
         existingImages: newExistingImages,
@@ -342,7 +344,7 @@ export default function EditProductPage() {
       formDataObj.append("name", formData.name);
       formDataObj.append("description", formData.description);
       formDataObj.append("status", formData.status);
-      
+
       // Append multiple categories
       formData.categories.forEach((category) => {
         formDataObj.append("categories", category);
@@ -364,8 +366,8 @@ export default function EditProductPage() {
 
         // Removed images (send as JSON string or multiple fields)
         if (variant.removedImageIds.length > 0) {
-            // Option 1: Comma separated string
-            formDataObj.append(`variants[${index}][removedImageIds]`, variant.removedImageIds.join(","));
+          // Option 1: Comma separated string
+          formDataObj.append(`variants[${index}][removedImageIds]`, variant.removedImageIds.join(","));
         }
       });
 
@@ -433,17 +435,19 @@ export default function EditProductPage() {
       />
 
       {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <Link
-            href="/admin/product"
-            className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-2"
-          >
-            <ArrowLeft size={20} className="mr-2" />
-            Kembali ke Daftar Produk
-          </Link>
-          <h1 className="text-2xl font-bold">Edit Produk</h1>
-          <p className="text-gray-500">Ubah informasi produk dan variannya</p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/admin/product">
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Kembali
+            </Link>
+          </Button>
+          <Separator orientation="vertical" className="mx-2 h-4" />
+          <div>
+            <h1 className="text-2xl font-bold">Edit Produk</h1>
+            <p className="text-gray-500 text-sm">Ubah informasi produk dan variannya</p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Link href="/admin/product">
@@ -641,112 +645,112 @@ export default function EditProductPage() {
                       </div>
 
                       <div className="space-y-2">
-                         <Label>
-                            Stok <span className="text-red-500">*</span>
-                         </Label>
-                         <Input
-                           type="number"
-                           placeholder="0"
-                           value={variant.stok}
-                           onChange={(e) =>
-                             handleVariantChange(index, "stok", e.target.value)
-                           }
-                           required
-                           min="0"
-                           disabled={saving}
-                         />
+                        <Label>
+                          Stok <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          type="number"
+                          placeholder="0"
+                          value={variant.stok}
+                          onChange={(e) =>
+                            handleVariantChange(index, "stok", e.target.value)
+                          }
+                          required
+                          min="0"
+                          disabled={saving}
+                        />
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2">
-                        <Label>Size <span className="text-gray-400">(Opsional)</span></Label>
-                        <Input
-                           placeholder="Contoh: Large, 500ml"
-                           value={variant.size}
-                           onChange={(e) =>
-                             handleVariantChange(index, "size", e.target.value)
-                           }
-                           disabled={saving}
-                        />
+                      <Label>Size <span className="text-gray-400">(Opsional)</span></Label>
+                      <Input
+                        placeholder="Contoh: Large, 500ml"
+                        value={variant.size}
+                        onChange={(e) =>
+                          handleVariantChange(index, "size", e.target.value)
+                        }
+                        disabled={saving}
+                      />
                     </div>
 
                     <div className="space-y-2">
                       <Label>Gambar (Opsional - Bisa banyak)</Label>
                       <div className="space-y-4">
-                         {/* Image Grid */}
-                         {(variant.existingImages.length > 0 || variant.imagePreviews.length > 0) && (
-                           <div className="grid grid-cols-3 gap-2">
-                             {/* Existing Images */}
-                             {variant.existingImages.map((img, imgIndex) => (
-                               <div key={`existing-${imgIndex}`} className="relative group">
-                                 <div className="border rounded-lg overflow-hidden h-24 w-full">
-                                    <Image 
-                                      src={img.url} 
-                                      alt={`Existing ${imgIndex}`}
-                                      width={100}
-                                      height={100}
-                                      className="w-full h-full object-cover"
-                                    />
-                                 </div>
-                                 <Button
-                                   type="button"
-                                   variant="destructive"
-                                   size="icon"
-                                   className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                                   onClick={() => handleRemoveImage(index, "existing", imgIndex)}
-                                 >
-                                   <X className="h-3 w-3" />
-                                 </Button>
-                               </div>
-                             ))}
-                             
-                             {/* New Images */}
-                             {variant.imagePreviews.map((preview, imgIndex) => (
-                               <div key={`new-${imgIndex}`} className="relative group">
-                                 <div className="border rounded-lg overflow-hidden h-24 w-full">
-                                   <img
-                                     src={preview}
-                                     alt={`New ${imgIndex}`}
-                                     className="w-full h-full object-cover"
-                                   />
-                                 </div>
-                                 <Button
-                                   type="button"
-                                   variant="destructive"
-                                   size="icon"
-                                   className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                                   onClick={() => handleRemoveImage(index, "new", imgIndex)}
-                                 >
-                                   <X className="h-3 w-3" />
-                                 </Button>
-                               </div>
-                             ))}
-                           </div>
-                         )}
-                         
-                         <div
-                            className="border-2 border-dashed rounded-lg p-3 text-center cursor-pointer hover:bg-gray-50 transition-colors"
-                            onClick={() => fileInputRefs.current[index]?.click()}
-                          >
-                            <input
-                              type="file"
-                              accept="image/*"
-                              multiple
-                              className="hidden"
-                              ref={(el) => {
-                                fileInputRefs.current[index] = el;
-                              }}
-                              onChange={(e) => handleImageUpload(index, e)}
-                              disabled={saving}
-                            />
-                            <Upload className="h-6 w-6 text-gray-400 mx-auto mb-1" />
-                            <p className="text-xs text-gray-600">
-                               {(variant.existingImages.length > 0 || variant.imagePreviews.length > 0) 
-                                 ? "Tambah Gambar Lain" 
-                                 : "Upload Gambar"}
-                            </p>
-                            <p className="text-xs text-gray-500">Max 5MB</p>
+                        {/* Image Grid */}
+                        {(variant.existingImages.length > 0 || variant.imagePreviews.length > 0) && (
+                          <div className="grid grid-cols-3 gap-2">
+                            {/* Existing Images */}
+                            {variant.existingImages.map((img, imgIndex) => (
+                              <div key={`existing-${imgIndex}`} className="relative group">
+                                <div className="border rounded-lg overflow-hidden h-24 w-full">
+                                  <Image
+                                    src={img.url}
+                                    alt={`Existing ${imgIndex}`}
+                                    width={100}
+                                    height={100}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="icon"
+                                  className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={() => handleRemoveImage(index, "existing", imgIndex)}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ))}
+
+                            {/* New Images */}
+                            {variant.imagePreviews.map((preview, imgIndex) => (
+                              <div key={`new-${imgIndex}`} className="relative group">
+                                <div className="border rounded-lg overflow-hidden h-24 w-full">
+                                  <img
+                                    src={preview}
+                                    alt={`New ${imgIndex}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="icon"
+                                  className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={() => handleRemoveImage(index, "new", imgIndex)}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ))}
                           </div>
+                        )}
+
+                        <div
+                          className="border-2 border-dashed rounded-lg p-3 text-center cursor-pointer hover:bg-gray-50 transition-colors"
+                          onClick={() => fileInputRefs.current[index]?.click()}
+                        >
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            ref={(el) => {
+                              fileInputRefs.current[index] = el;
+                            }}
+                            onChange={(e) => handleImageUpload(index, e)}
+                            disabled={saving}
+                          />
+                          <Upload className="h-6 w-6 text-gray-400 mx-auto mb-1" />
+                          <p className="text-xs text-gray-600">
+                            {(variant.existingImages.length > 0 || variant.imagePreviews.length > 0)
+                              ? "Tambah Gambar Lain"
+                              : "Upload Gambar"}
+                          </p>
+                          <p className="text-xs text-gray-500">Max 5MB</p>
+                        </div>
                       </div>
                     </div>
                   </div>

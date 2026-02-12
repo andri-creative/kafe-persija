@@ -1,4 +1,4 @@
-import { prisma } from "./prisma";
+import prisma from "./prisma";
 
 export const userApi = {
     getAll: async (page: number = 1, pageSize: number = 10) => {
@@ -8,6 +8,13 @@ export const userApi = {
             prisma.user.findMany({
                 skip,
                 take: pageSize,
+                include: {
+                    user_role_trx: {
+                        include: {
+                            role: true,
+                        },
+                    },
+                },
                 orderBy: {
                     id: 'asc',
                 },
@@ -49,6 +56,13 @@ export const userApi = {
                 skip,
                 take: pageSize,
                 where: options?.where,
+                include: {
+                    user_role_trx: {
+                        include: {
+                            role: true,
+                        },
+                    },
+                },
                 orderBy,
             }),
             prisma.user.count({

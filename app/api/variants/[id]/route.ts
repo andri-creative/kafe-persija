@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { uploadVariantImage, deleteVariantImage } from "@/lib/path-img";
+
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
 
 // GET
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } },
+  context: RouteContext,
 ) {
   try {
     const params = await context.params;
@@ -43,7 +47,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } },
+  context: RouteContext,
 ) {
   try {
     const params = await context.params;
@@ -67,7 +71,7 @@ export async function PUT(
     const price = formData.get("price") as string;
     const stok = formData.get("stok") as string;
     const size = formData.get("size") as string;
-    
+
     const removedImageIdsStr = formData.get("removedImageIds") as string;
     const newImageFiles = formData.getAll("images") as File[];
 
@@ -86,40 +90,40 @@ export async function PUT(
     }
 
     if (removedImageIdsStr) {
-        const idsToDelete = removedImageIdsStr.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
-        
-        if (idsToDelete.length > 0) {
-            const imagesToDelete = await prisma.product_variant_images.findMany({
-                where: {
-                    id: { in: idsToDelete },
-                    product_variant_id: variantId
-                }
-            });
-            
-            for (const img of imagesToDelete) {
-                await deleteVariantImage(img.image);
-                await prisma.product_variant_images.delete({
-                    where: { id: img.id }
-                });
-            }
+      const idsToDelete = removedImageIdsStr.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+
+      if (idsToDelete.length > 0) {
+        const imagesToDelete = await prisma.product_variant_images.findMany({
+          where: {
+            id: { in: idsToDelete },
+            product_variant_id: variantId
+          }
+        });
+
+        for (const img of imagesToDelete) {
+          await deleteVariantImage(img.image);
+          await prisma.product_variant_images.delete({
+            where: { id: img.id }
+          });
         }
+      }
     }
 
     if (newImageFiles && newImageFiles.length > 0) {
-        for (const file of newImageFiles) {
-            if (file.size > 0) {
-                const imagePath = await uploadVariantImage(file);
-                if (imagePath) {
-                    await prisma.product_variant_images.create({
-                        data: {
-                            product_variant_id: variantId,
-                            image: imagePath,
-                            created_by: updated_by,
-                        }
-                    });
-                }
-            }
+      for (const file of newImageFiles) {
+        if (file.size > 0) {
+          const imagePath = await uploadVariantImage(file);
+          if (imagePath) {
+            await prisma.product_variant_images.create({
+              data: {
+                product_variant_id: variantId,
+                image: imagePath,
+                created_by: updated_by,
+              }
+            });
+          }
         }
+      }
     }
 
     const updatedVariant = await prisma.product_variants.update({
@@ -161,9 +165,10 @@ export async function PUT(
 // DELETE
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  context: RouteContext,
 ) {
   try {
+    const params = await context.params;
     const variantId = parseInt(params.id);
 
     const variant = await prisma.product_variants.findUnique({
@@ -204,7 +209,7 @@ export async function DELETE(
 // PATCH
 export async function PATCH(
   request: NextRequest,
-  context: { params: { id: string } },
+  context: RouteContext,
 ) {
   try {
     const params = await context.params;
@@ -234,7 +239,7 @@ export async function PATCH(
         data: updatedVariant,
       });
     } else {
-        return NextResponse.json({ error: "Status field is required" }, { status: 400 });
+      return NextResponse.json({ error: "Status field is required" }, { status: 400 });
     }
 
   } catch (error) {
