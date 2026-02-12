@@ -84,6 +84,14 @@ export default function CategoryTable() {
                   </Button>
                   <Button
                     size="sm"
+                    variant="outline"
+                    onClick={() => {
+                    }}
+                  >
+                    View
+                  </Button>
+                  <Button
+                    size="sm"
                     variant="destructive"
                     onClick={() => handleDelete(cat.id)}
                   >

@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table";
 import { MoreHorizontalIcon } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 export function TabelCategory({ categories }: { categories: any[] }) {
   return (
@@ -37,13 +38,13 @@ export function TabelCategory({ categories }: { categories: any[] }) {
             <TableCell className="font-medium">{category.name}</TableCell>
             <TableCell>
               <Image
-                src={category.image || ""} 
+                src={category.image || ""}
                 alt={category.name}
                 width={50}
                 height={50}
               />
             </TableCell>
-            <TableCell>{category.created_by || ""}</TableCell>
+            <TableCell>{category.creator_name || "Unknown"}</TableCell>
             {/* <TableCell>{category.created_at || ""}</TableCell> */}
             <TableCell className="text-right">
               <DropdownMenu>
@@ -54,8 +55,12 @@ export function TabelCategory({ categories }: { categories: any[] }) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>Edit</DropdownMenuItem>
-                  <DropdownMenuItem>Duplicate</DropdownMenuItem>
+                  <Link href={`/admin/product/category/${category.id}/edit`} className="cursor-pointer">
+                    <DropdownMenuItem className="cursor-pointer">Edit</DropdownMenuItem>
+                  </Link>
+                  <Link href={`/admin/product/category/${category.id}/view`} className="cursor-pointer">
+                    <DropdownMenuItem className="cursor-pointer">View</DropdownMenuItem>
+                  </Link>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem variant="destructive">
                     Delete

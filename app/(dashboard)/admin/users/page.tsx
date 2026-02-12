@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { userApi } from "@/lib/user-api";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
+import Link from "next/link";
 
 interface UsersPageProps {
   searchParams?: Promise<{
@@ -29,9 +30,11 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
               Manage your application users and their roles.
             </p>
           </div>
-          <Button variant="default" className="cursor-pointer font-bold">
-            Tambah User
-          </Button>
+          <Link href="/admin/users/new">
+            <Button variant="default" className="cursor-pointer font-bold">
+              Tambah User
+            </Button>
+          </Link>
         </CardHeader>
         <CardContent>
           <DataTable columns={columns} data={users} />

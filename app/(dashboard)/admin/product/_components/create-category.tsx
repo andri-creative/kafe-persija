@@ -2,12 +2,14 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
+import { useSession } from "next-auth/react";
 
 export default function CreateCategory({
   onCreated,
 }: {
   onCreated: (category: any) => void;
 }) {
+  const { data: session } = useSession();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -86,7 +88,9 @@ export default function CreateCategory({
       const submitFormData = new FormData();
       submitFormData.append("name", formData.name);
       submitFormData.append("image", imageFile);
-      submitFormData.append("created_by", "1");
+      submitFormData.append("created_by", session?.user?.id || "1");
+
+      console.log("Session user:", session?.user?.id);
 
       console.log("FormData entries:");
       submitFormData.forEach((value, key) => {
@@ -154,13 +158,12 @@ export default function CreateCategory({
 
             {/* Upload Area */}
             <div
-              className={`relative border-2 border-dashed rounded-xl p-6 transition-all duration-300 ${
-                isDragging
-                  ? "border-blue-500 bg-blue-50"
-                  : uploading
-                    ? "border-yellow-500 bg-yellow-50"
-                    : "border-gray-300 hover:border-gray-400"
-              } ${uploading ? "cursor-wait" : "cursor-pointer"}`}
+              className={`relative border-2 border-dashed rounded-xl p-6 transition-all duration-300 ${isDragging
+                ? "border-blue-500 bg-blue-50"
+                : uploading
+                  ? "border-yellow-500 bg-yellow-50"
+                  : "border-gray-300 hover:border-gray-400"
+                } ${uploading ? "cursor-wait" : "cursor-pointer"}`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
@@ -239,11 +242,10 @@ export default function CreateCategory({
         <Button
           type="submit"
           disabled={uploading || !formData.name || !imageFile}
-          className={`w-full py-3 font-medium rounded-lg transition-colors ${
-            uploading || !formData.name || !imageFile
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700 text-white"
-          }`}
+          className={`w-full py-3 font-medium rounded-lg transition-colors ${uploading || !formData.name || !imageFile
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-blue-600 hover:bg-blue-700 text-white"
+            }`}
         >
           {uploading ? "Creating..." : "Create Category"}
         </Button>
