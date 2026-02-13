@@ -1,7 +1,12 @@
 "use client"
 
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { ColumnDef } from "@tanstack/react-table"
-import { ArrowUpDown, MoreHorizontal } from "lucide-react"
+import { ArrowUpDown, MoreHorizontal, Trash2, Edit } from "lucide-react"
+import Link from "next/link"
+import { toast } from "react-toastify"
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -13,6 +18,16 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 export type User = {
     id: number
@@ -24,6 +39,93 @@ export type User = {
             name: string
         }
     }[]
+}
+
+const UserActions = ({ user }: { user: User }) => {
+    const { data: session } = useSession()
+    const router = useRouter()
+    const [open, setOpen] = useState(false)
+    const [loading, setLoading] = useState(false)
+
+    const isSelf = session?.user?.id === user.id.toString()
+
+    const onDelete = async () => {
+        try {
+            setLoading(true)
+            const res = await fetch(`/api/users/${user.id}`, {
+                method: "DELETE",
+            })
+
+            if (!res.ok) {
+                const data = await res.json()
+                throw new Error(data.error || "Gagal menghapus user")
+            }
+
+            toast.success("User berhasil dihapus")
+            router.refresh()
+        } catch (error: any) {
+            toast.error(error.message)
+        } finally {
+            setLoading(false)
+            setOpen(false)
+        }
+    }
+
+    return (
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuItem asChild>
+                        <Link href={`/admin/users/${user.id}/edit`} className="flex items-center">
+                            <Edit className="mr-2 h-3.5 w-3.5" />
+                            Edit user
+                        </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                        variant="destructive"
+                        className="flex items-center text-destructive focus:text-destructive"
+                        disabled={isSelf}
+                        onClick={() => setOpen(true)}
+                    >
+                        <Trash2 className="mr-2 h-3.5 w-3.5" />
+                        Delete user
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <AlertDialog open={open} onOpenChange={setOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Tindakan ini tidak dapat dibatalkan. Ini akan menghapus akun <strong>{user.nickname}</strong> secara permanen dari sistem kami.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={loading}>Batal</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={(e) => {
+                                e.preventDefault()
+                                onDelete()
+                            }}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            disabled={loading}
+                        >
+                            {loading ? "Menghapus..." : "Hapus"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </>
+    )
 }
 
 export const columns: ColumnDef<User>[] = [
@@ -92,30 +194,6 @@ export const columns: ColumnDef<User>[] = [
     {
         id: "actions",
         enableHiding: false,
-        cell: ({ row }) => {
-            const user = row.original
-
-            return (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem
-                            onClick={() => navigator.clipboard.writeText(String(user.id))}
-                        >
-                            Copy user ID
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>View details</DropdownMenuItem>
-                        <DropdownMenuItem>Edit user</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            )
-        },
+        cell: ({ row }) => <UserActions user={row.original} />,
     },
 ]
