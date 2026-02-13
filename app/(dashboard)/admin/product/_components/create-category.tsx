@@ -242,7 +242,7 @@ export default function CreateCategory({
         <Button
           type="submit"
           disabled={uploading || !formData.name || !imageFile}
-          className={`w-full py-3 font-medium rounded-lg transition-colors ${uploading || !formData.name || !imageFile
+          className={`w-full py-3 font-medium rounded-lg transition-colors cursor-pointer ${uploading || !formData.name || !imageFile
             ? "bg-gray-400 cursor-not-allowed"
             : "bg-blue-600 hover:bg-blue-700 text-white"
             }`}

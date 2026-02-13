@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { getCategoryImageUrl } from "@/lib/category-helper";
 
 interface Category {
     id: number;
@@ -34,7 +35,7 @@ export default function ViewCategory({ category }: { category: Category }) {
                     <div className="relative w-14 h-14 flex-shrink-0 rounded-lg overflow-hidden border">
                         {category.image ? (
                             <Image
-                                src={category.image}
+                                src={getCategoryImageUrl(category.image)}
                                 alt={category.name}
                                 fill
                                 className="object-cover"

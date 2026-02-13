@@ -132,13 +132,13 @@ export const ProductTableRow = ({ product, onStatusChange, onDelete }: ProductTa
                             <Link href={`/admin/product/${product.id}/variants`} className="text-xs sm:text-sm">Variants</Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
+                        {/* <DropdownMenuItem
                             variant="destructive"
                             onClick={() => onDelete(product.id)}
                             className="text-xs sm:text-sm cursor-pointer"
                         >
                             Delete
-                        </DropdownMenuItem>
+                        </DropdownMenuItem> */}
                     </DropdownMenuContent>
                 </DropdownMenu>
             </td>

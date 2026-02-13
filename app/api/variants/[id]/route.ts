@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { uploadVariantImage, deleteVariantImage } from "@/lib/path-img";
+import { uploadVariantImage, deleteVariantImage } from "@/lib/file-upload";
 
 type RouteContext = {
   params: Promise<{ id: string }>;

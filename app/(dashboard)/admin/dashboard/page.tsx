@@ -170,7 +170,7 @@ export default function DashboardPage() {
             {refreshing ? "Memperbarui..." : "Refresh"}
           </Button>
           <Link href="/admin/layar-tv">
-            <Button size="sm" className="bg-gray-900 hover:bg-gray-800 text-white shadow-lg h-9 font-bold text-xs uppercase tracking-widest px-4">
+            <Button size="sm" className="bg-gray-900 cursor-pointer hover:bg-gray-800 text-white shadow-lg h-9 font-bold text-xs uppercase tracking-widest px-4">
               Layar TV
             </Button>
           </Link>

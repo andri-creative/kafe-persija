@@ -4,6 +4,7 @@ import {
   updateCategory,
   deleteCategory,
 } from "@/services/category.service";
+import { uploadFile } from "@/lib/file-upload";
 
 type Params = {
   params: Promise<{ id: string }>;
@@ -22,8 +23,6 @@ export async function GET(_: NextRequest, { params }: Params) {
   }
 }
 
-import { saveImage } from "@/lib/upload";
-
 /* =====================
    UPDATE
 ===================== */
@@ -37,7 +36,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     let imageUrl: string | undefined;
 
     if (imageFile instanceof File) {
-      imageUrl = await saveImage(imageFile, "images/category");
+      imageUrl = await uploadFile(imageFile, "category", true); // Save filename only
     }
 
     const category = await updateCategory(id, {
@@ -60,7 +59,16 @@ export async function DELETE(_: NextRequest, { params }: Params) {
     const { id } = await params;
     await deleteCategory(id);
     return NextResponse.json({ message: "Category deleted successfully" });
-  } catch {
-    return NextResponse.json({ error: "Category not found" }, { status: 404 });
+  } catch (error: any) {
+    if (error.message === "CATEGORY_NOT_FOUND") {
+      return NextResponse.json({ error: "Category not found" }, { status: 404 });
+    }
+    if (error.message === "CATEGORY_IN_USE") {
+      return NextResponse.json(
+        { error: "Cannot delete category because it is being used by products" },
+        { status: 400 },
+      );
+    }
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
