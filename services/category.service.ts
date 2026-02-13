@@ -42,6 +42,11 @@ export async function createCategory(data: CreateCategoryInput) {
 ===================== */
 export async function getCategories() {
   const categories = await prisma.product_category.findMany({
+    include: {
+      _count: {
+        select: { product_category_trx: true },
+      },
+    },
     orderBy: { created_at: "desc" },
   });
 
@@ -56,6 +61,7 @@ export async function getCategories() {
   return categories.map((c) => ({
     ...c,
     creator_name: userMap.get(c.created_by) || "Unknown",
+    product_count: c._count.product_category_trx,
   }));
 }
 
@@ -80,7 +86,13 @@ export async function getCategoryById(id: string) {
 ===================== */
 
 export async function updateCategory(id: string, data: UpdateCategoryInput) {
-  await getCategoryById(id);
+  const existing = await getCategoryById(id);
+
+  // If updating with new image, delete old one
+  if (data.image && existing.image && data.image !== existing.image) {
+    const { deleteFile } = await import('@/lib/file-upload');
+    await deleteFile(existing.image, 'category'); // Pass type for filename-only format
+  }
 
   return prisma.product_category.update({
     where: { id: Number(id) },
@@ -96,9 +108,31 @@ export async function updateCategory(id: string, data: UpdateCategoryInput) {
    DELETE
 ===================== */
 export async function deleteCategory(id: string) {
-  await getCategoryById(id); // validasi exists
+  const categoryId = Number(id);
+  const category = await prisma.product_category.findUnique({
+    where: { id: categoryId },
+    include: {
+      _count: {
+        select: { product_category_trx: true },
+      },
+    },
+  });
+
+  if (!category) {
+    throw new Error("CATEGORY_NOT_FOUND");
+  }
+
+  if (category._count.product_category_trx > 0) {
+    throw new Error("CATEGORY_IN_USE");
+  }
+
+  // Delete image file if exists
+  if (category.image) {
+    const { deleteFile } = await import("@/lib/file-upload");
+    await deleteFile(category.image, "category"); // Pass type for filename-only format
+  }
 
   return prisma.product_category.delete({
-    where: { id: Number(id) },
+    where: { id: categoryId },
   });
 }

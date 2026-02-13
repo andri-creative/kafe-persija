@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
-import sharp from "sharp";
 import { createCategory, getCategories } from "@/services/category.service";
+import { uploadFile } from "@/lib/file-upload";
 
 export async function GET() {
   const categories = await getCategories();
@@ -37,44 +35,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const now = new Date();
-    const filename = `${now.getSeconds()}${now.getMinutes()}${now.getHours()}-${now.getDate()}${now.getMonth() + 1}${now.getFullYear()}.webp`;
+    // Upload file and get filename only
+    const filename = await uploadFile(imageFile, "category", true);
 
-    const uploadDir = path.join(process.cwd(), "public", "images", "category");
-
-    try {
-      await mkdir(uploadDir, { recursive: true });
-    } catch (error) {
-      console.error("Error creating directory:", error);
-    }
-
-    const filePath = path.join(uploadDir, filename);
-
-    try {
-      const bytes = await imageFile.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      await sharp(buffer)
-        .webp({
-          quality: 80,
-          effort: 6,
-        })
-        .resize(800, 800, {
-          fit: "inside",
-          withoutEnlargement: true,
-        })
-        .toFile(filePath);
-    } catch (error) {
-      console.error("Error processing image:", error);
-      return NextResponse.json(
-        { error: "Failed to process image" },
-        { status: 500 },
-      );
-    }
-
-    const imageUrl = `/images/category/${filename}`;
     const categoryData = {
       name: name.trim(),
-      image: imageUrl,
+      image: filename, // Save only filename
       created_by: parseInt(created_by) || 1,
     };
 
@@ -86,9 +52,7 @@ export async function POST(req: NextRequest) {
         message: "Category created successfully",
         data: category,
         image: {
-          url: imageUrl,
           filename: filename,
-          path: filePath,
         },
       },
       { status: 201 },

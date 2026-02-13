@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { deleteVariantImage, uploadVariantImage } from "@/lib/path-img";
+import { deleteVariantImage, uploadVariantImage } from "@/lib/file-upload";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 

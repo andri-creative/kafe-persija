@@ -10,6 +10,7 @@ import { ArrowLeft, Upload, X, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { getCategoryImageUrl } from "@/lib/category-helper";
 
 interface Category {
     id: number;
@@ -19,7 +20,7 @@ interface Category {
 
 export default function EditCategory({ category }: { category: Category }) {
     const router = useRouter();
-    const [imagePreview, setImagePreview] = useState<string | null>(category.image);
+    const [imagePreview, setImagePreview] = useState<string | null>(getCategoryImageUrl(category.image));
     const [isDragging, setIsDragging] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [formData, setFormData] = useState({

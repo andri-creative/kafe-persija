@@ -30,7 +30,12 @@ export default function ProductCategoryPage() {
           <h1>Product Category</h1>
         </CardHeader>
         <CardContent>
-          <TabelCategory categories={categories} />
+          <TabelCategory
+            categories={categories}
+            onDelete={(id) =>
+              setCategories((prev) => prev.filter((c) => c.id !== id))
+            }
+          />
         </CardContent>
       </Card>
 
