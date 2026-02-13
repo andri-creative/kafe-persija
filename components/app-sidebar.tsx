@@ -1,5 +1,6 @@
 "use client";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import * as React from "react";
 import {
   LayoutDashboard,
@@ -66,6 +67,8 @@ const getIcon = (iconName: string | React.ComponentType<any>) => {
       BarChart3: BarChart3,
       FolderTree: FolderTree,
       Palette: Palette,
+      User: User,
+      Users: Users,
     };
     return iconMap[iconName] || LayoutDashboard;
   }
@@ -74,13 +77,7 @@ const getIcon = (iconName: string | React.ComponentType<any>) => {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
-  const [activePath, setActivePath] = React.useState("");
-
-  React.useEffect(() => {
-    if (typeof window !== "undefined") {
-      setActivePath(window.location.pathname);
-    }
-  }, []);
+  const pathname = usePathname();
 
   if (!session?.user) return null;
 
@@ -92,9 +89,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const isActive = (url: string, items?: Array<{ url: string }>) => {
     if (url === "#" && items) {
-      return items.some((item) => activePath === item.url);
+      return items.some((item) => pathname === `${basePath}${item.url}`);
     }
-    return activePath === url;
+    return pathname === `${basePath}${url}`;
   };
 
   return (
@@ -153,7 +150,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             <SidebarMenuSubItem key={subItem.title}>
                               <SidebarMenuSubButton
                                 asChild
-                                isActive={activePath === subItem.url}
+                                isActive={pathname === `${basePath}${subItem.url}`}
                               >
                                 <Link href={`${basePath}${subItem.url}`}>
                                   <span>{subItem.title}</span>
