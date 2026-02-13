@@ -22,18 +22,33 @@ export async function GET(_: NextRequest, { params }: Params) {
   }
 }
 
+import { saveImage } from "@/lib/upload";
+
 /* =====================
    UPDATE
 ===================== */
 export async function PUT(req: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
-    const body = await req.json();
-    const category = await updateCategory(id, body);
+    const formData = await req.formData();
+    const name = formData.get("name") as string;
+    const imageFile = formData.get("image") as File | null;
+
+    let imageUrl: string | undefined;
+
+    if (imageFile instanceof File) {
+      imageUrl = await saveImage(imageFile, "images/category");
+    }
+
+    const category = await updateCategory(id, {
+      name: name || undefined,
+      image: imageUrl,
+    });
 
     return NextResponse.json(category);
-  } catch {
-    return NextResponse.json({ error: "Category not found" }, { status: 404 });
+  } catch (error: any) {
+    console.error("Error updating category:", error);
+    return NextResponse.json({ error: error.message || "Failed to update category" }, { status: 500 });
   }
 }
 

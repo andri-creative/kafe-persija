@@ -7,6 +7,7 @@ import { useSocketOrders } from "@/hooks/useSocketOrders";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
+import { Maximize2, Minimize2 } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -23,6 +24,35 @@ export default function OrderBaruPage() {
     const containerRef = useRef<HTMLDivElement>(null);
     const [updating, setUpdating] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<any>(null);
+
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    }, []);
+
+    const toggleFullscreen = async (e?: React.MouseEvent) => {
+        if (e) e.stopPropagation();
+
+        try {
+            if (!document.fullscreenElement) {
+                if (containerRef.current?.requestFullscreen) {
+                    await containerRef.current.requestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    await document.exitFullscreen();
+                }
+            }
+        } catch (err) {
+            console.error("Error toggling fullscreen:", err);
+            // Fallback to simulated if API fails
+            setIsSimulatedFullscreen(!isSimulatedFullscreen);
+        }
+    };
 
     const ORDER_STATUSES = ["ORDERED", "PROCESSING", "READY", "SERVED", "CANCELLED"];
     const PRODUCT_STATUSES = ["ORDERED", "PROCESSING", "READY", "SERVED"];
@@ -194,6 +224,7 @@ export default function OrderBaruPage() {
         bgColor,
         headerBgColor,
         textColor,
+        rightAction,
     }: {
         title: string,
         count: number,
@@ -201,14 +232,22 @@ export default function OrderBaruPage() {
         bgColor: string,
         headerBgColor: string,
         textColor: string,
+        rightAction?: React.ReactNode,
     }) => (
         <div className={`flex flex-col h-full ${bgColor} border-r border-gray-100 last:border-r-0 min-w-[200px] flex-1`}>
             {/* Column Header */}
-            <div className={`${headerBgColor} p-1.5 text-center shadow-sm z-10 sticky top-0`}>
-                <h2 className="text-[9px] font-black text-white uppercase tracking-[0.1em]">{title}</h2>
-                <div className="text-white/90 text-[10px] font-black leading-none mt-0.5">
-                    {count}
+            <div className={`${headerBgColor} p-1.5 text-center shadow-sm z-10 sticky top-0 flex items-center justify-center`}>
+                <div className="flex-1">
+                    <h2 className="text-[9px] font-black text-white uppercase tracking-widest">{title}</h2>
+                    <div className="text-white/90 text-[10px] font-black leading-none mt-0.5">
+                        {count}
+                    </div>
                 </div>
+                {rightAction && (
+                    <div className="absolute right-1">
+                        {rightAction}
+                    </div>
+                )}
             </div>
 
             {/* Orders List */}
@@ -276,11 +315,10 @@ export default function OrderBaruPage() {
     return (
         <div
             ref={containerRef}
-            className={`relative bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 flex flex-col cursor-pointer select-none transition-all duration-300 ${activeFullscreen
-                ? "fixed inset-0 z-9999 h-screen w-screen rounded-none border-none"
-                : "h-screen mb-6"
+            className={`relative bg-white overflow-hidden flex flex-col select-none transition-all duration-300 ${activeFullscreen
+                ? "h-screen w-screen p-4"
+                : "h-screen rounded-xl shadow-sm border border-gray-100 mb-6"
                 }`}
-            title={activeFullscreen ? "Klik untuk keluar Fullscreen" : "Klik untuk masuk Fullscreen"}
         >
             {/* Connection Status Indicator */}
             <div className="absolute bottom-4 right-4 z-50 flex items-center gap-1.5 bg-black/90 backdrop-blur-md px-3 py-1.5 rounded-full pointer-events-none shadow-lg border border-white/10">
@@ -342,13 +380,30 @@ export default function OrderBaruPage() {
                         bgColor="bg-red-50"
                         headerBgColor="bg-red-600"
                         textColor="#dc2626"
+                        rightAction={
+                            <button
+                                onClick={toggleFullscreen}
+                                className="p-1 hover:bg-white/20 rounded transition-colors text-white cursor-pointer"
+                                title={activeFullscreen ? "Exit Fullscreen" : "Full Screen"}
+                            >
+                                {activeFullscreen ? (
+                                    <Minimize2 className="w-3 h-3" />
+                                ) : (
+                                    <Maximize2 className="w-3 h-3" />
+                                )}
+                            </button>
+                        }
                     />
                 </div>
             )}
 
             {/* Detailed Order Dialog - Mirroring app/(dashboard)/admin/order/[id]/page.tsx */}
             <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
-                <DialogContent showCloseButton={false} className="sm:max-w-xl bg-gray-50 border-0 shadow-2xl rounded-2xl p-0 overflow-hidden max-h-[90vh] flex flex-col">
+                <DialogContent
+                    showCloseButton={false}
+                    className="sm:max-w-xl bg-gray-50 border-0 shadow-2xl rounded-2xl p-0 overflow-hidden max-h-[90vh] flex flex-col"
+                    container={containerRef.current || undefined}
+                >
                     {/* Header Section */}
                     <div className="bg-white p-6 border-b border-gray-100 shrink-0">
                         <DialogHeader>

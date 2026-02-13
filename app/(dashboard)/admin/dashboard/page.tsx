@@ -13,10 +13,12 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getOrders } from "@/lib/order-api";
 
 const defaultStats = {
   products: { total: 0, active: 0, draft: 0, inactive: 0 },
   users: { total: 0, active: 0, newToday: 0, newThisWeek: 0 },
+  orders: { ordered: 0, processing: 0, ready: 0 },
 };
 
 export default function DashboardPage() {
@@ -28,27 +30,47 @@ export default function DashboardPage() {
     fetchDashboardData();
   }, []);
 
+  const getOrdersByProductStatus = (orders: any[], status: string) => {
+    return orders.map((order: any) => {
+      const products = Array.isArray(order?.products) ? order.products : [];
+      const filteredProducts = products.filter((p: any) => {
+        const itemStatus = p.status || "ORDERED";
+        return itemStatus.toUpperCase() === status.toUpperCase();
+      });
+      if (filteredProducts.length === 0) return null;
+      return { ...order, products: filteredProducts };
+    }).filter(Boolean);
+  };
+
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
       console.log("Fetching dashboard data...");
 
-      const response = await fetch("/api/dashboard");
-
-      if (!response.ok) {
-        console.error("API response not OK:", response.status);
-        throw new Error(`HTTP ${response.status}`);
+      const dashboardResponse = await fetch("/api/dashboard");
+      if (!dashboardResponse.ok) {
+        console.error("API response not OK:", dashboardResponse.status);
+        throw new Error(`HTTP ${dashboardResponse.status}`);
       }
+      const dashboardData = await dashboardResponse.json();
+      console.log("Dashboard data received:", dashboardData);
 
-      const data = await response.json();
-      console.log("Dashboard data received:", data);
+      const ordersResponse = await getOrders();
+      const allOrders = ordersResponse?.rows || [];
+      console.log("Orders received:", allOrders.length);
+      const orderedCount = getOrdersByProductStatus(allOrders, "ORDERED").length;
+      const processingCount = getOrdersByProductStatus(allOrders, "PROCESSING").length;
+      const readyCount = getOrdersByProductStatus(allOrders, "READY").length;
 
-      if (data && data.products && data.users) {
-        setStats(data);
-      } else {
-        console.warn("Invalid data structure, using defaults");
-        setStats(defaultStats);
-      }
+      setStats({
+        products: dashboardData.products || defaultStats.products,
+        users: dashboardData.users || defaultStats.users,
+        orders: {
+          ordered: orderedCount,
+          processing: processingCount,
+          ready: readyCount,
+        },
+      });
     } catch (error) {
       console.error("Error in fetchDashboardData:", error);
       setStats(defaultStats);
@@ -68,310 +90,177 @@ export default function DashboardPage() {
       <div className="p-6 space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold">Dashboard</h1>
-            <p className="text-gray-500">Memuat data...</p>
+            <h1 className="text-2xl font-bold uppercase tracking-tight">Dashboard</h1>
+            <p className="text-gray-500 text-sm">Memuat data performa...</p>
           </div>
           <Skeleton className="h-10 w-32" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardContent className="p-6">
-              <Skeleton className="h-6 w-32 mb-4" />
-              <div className="space-y-4">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <Skeleton className="h-6 w-32 mb-4" />
-              <div className="space-y-4">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <Skeleton className="h-4 w-20 mb-2" />
+                <Skeleton className="h-8 w-24 mb-1" />
+                <Skeleton className="h-3 w-32" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     );
   }
 
+  const KPICard = ({
+    title,
+    value,
+    icon: Icon,
+    colorClass,
+    iconColorClass,
+    subtitle
+  }: any) => (
+    <Card className="border-0 shadow-sm overflow-hidden hover:shadow-md transition-all duration-200">
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <p className="text-xs font-black text-gray-400 uppercase tracking-[0.15em]">
+              {title}
+            </p>
+            <h3 className="text-2xl font-black text-gray-900 tracking-tight">
+              {value}
+            </h3>
+            {subtitle && (
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                {subtitle}
+              </p>
+            )}
+          </div>
+          <div className={`p-2.5 rounded-xl ${colorClass}`}>
+            <Icon className={`h-5 w-5 ${iconColorClass}`} />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-8 bg-gray-50/50 min-h-screen">
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500">
-            Total: {stats.products.total} produk • {stats.users.total} pengguna
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight uppercase">
+            Dashboard
+          </h1>
+          <p className="text-gray-500 text-sm font-medium">
+            Statistik dan performa kafe secara real-time
           </p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="bg-white hover:bg-gray-50 border-gray-200 h-9 font-bold text-xs uppercase tracking-widest"
+          >
+            <RefreshCw
+              className={`h-3.5 w-3.5 mr-2 ${refreshing ? "animate-spin" : ""}`}
+            />
+            {refreshing ? "Memperbarui..." : "Refresh"}
+          </Button>
           <Link href="/admin/layar-tv">
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4 mr-2" />
+            <Button size="sm" className="bg-gray-900 hover:bg-gray-800 text-white shadow-lg h-9 font-bold text-xs uppercase tracking-widest px-4">
               Layar TV
             </Button>
           </Link>
-          <Link href="/admin/product/create">
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Tambah Produk
-            </Button>
-          </Link>
-          <Button
-            variant="outline"
-            onClick={handleRefresh}
-            disabled={refreshing}
-          >
-            <RefreshCw
-              className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
-            />
-            Refresh
-          </Button>
         </div>
       </div>
 
-      {/* STATS GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* PRODUK STATS */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Package className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold">Produk</h2>
-                  <p className="text-sm text-gray-500">
-                    Total: {stats.products.total} produk
-                  </p>
-                </div>
-              </div>
-              <Link
-                href="/admin/product"
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-              >
-                Lihat semua →
-              </Link>
-            </div>
+      {/* KPI GRID - RESPONSIVE */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        {/* ORDERED */}
+        <KPICard
+          title="ORDERED"
+          value={stats.orders.ordered}
+          subtitle="Pesanan baru masuk"
+          icon={Package}
+          colorClass="bg-blue-100/80"
+          iconColorClass="text-blue-600"
+        />
 
-            <div className="space-y-4">
-              {/* Total Products */}
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
-                    <Package className="h-4 w-4 text-gray-600" />
-                  </div>
-                  <span className="font-medium">Total Produk</span>
-                </div>
-                <div className="text-xl font-bold">{stats.products.total}</div>
-              </div>
+        {/* PROCESSING */}
+        <KPICard
+          title="PROCESSING"
+          value={stats.orders.processing}
+          subtitle="Sedang diproses"
+          icon={RefreshCw}
+          colorClass="bg-orange-100/80"
+          iconColorClass="text-orange-600"
+        />
 
-              {/* Active Products */}
-              <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                    <TrendingUp className="h-4 w-4 text-green-600" />
-                  </div>
-                  <div>
-                    <span className="font-medium">Aktif</span>
-                    <div className="text-xs text-gray-500">
-                      Tersedia untuk dijual
-                    </div>
-                  </div>
-                </div>
-                <div className="text-xl font-bold text-green-600">
-                  {stats.products.active}
-                </div>
-              </div>
+        {/* READY */}
+        <KPICard
+          title="READY"
+          value={stats.orders.ready}
+          subtitle="Siap disajikan"
+          icon={TrendingUp}
+          colorClass="bg-green-100/80"
+          iconColorClass="text-green-600"
+        />
 
-              {/* Draft Products */}
-              <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center">
-                    <Package className="h-4 w-4 text-yellow-600" />
-                  </div>
-                  <div>
-                    <span className="font-medium">Draft</span>
-                    <div className="text-xs text-gray-500">
-                      Dalam pengerjaan
-                    </div>
-                  </div>
-                </div>
-                <div className="text-xl font-bold text-yellow-600">
-                  {stats.products.draft}
-                </div>
-              </div>
+        {/* TOTAL PRODUCTS */}
+        <KPICard
+          title="Total Products"
+          value={stats.products.total}
+          subtitle={`${stats.products.active} Aktif • ${stats.products.inactive} Nonaktif`}
+          icon={Package}
+          colorClass="bg-amber-100/80"
+          iconColorClass="text-amber-600"
+        />
 
-              {/* Inactive Products */}
-              <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center">
-                    <TrendingDown className="h-4 w-4 text-red-600" />
-                  </div>
-                  <div>
-                    <span className="font-medium">Nonaktif</span>
-                    <div className="text-xs text-gray-500">Tidak tersedia</div>
-                  </div>
-                </div>
-                <div className="text-xl font-bold text-red-600">
-                  {stats.products.inactive}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* USER STATS */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Users className="h-5 w-5 text-green-600" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold">Pengguna</h2>
-                  <p className="text-sm text-gray-500">
-                    Total: {stats.users.total} pengguna
-                  </p>
-                </div>
-              </div>
-              <Link
-                href="/admin/users"
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-              >
-                Lihat semua →
-              </Link>
-            </div>
-
-            <div className="space-y-4">
-              {/* Total Users */}
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
-                    <Users className="h-4 w-4 text-gray-600" />
-                  </div>
-                  <span className="font-medium">Total Pengguna</span>
-                </div>
-                <div className="text-xl font-bold">{stats.users.total}</div>
-              </div>
-
-              {/* Active Users */}
-              <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                    <TrendingUp className="h-4 w-4 text-green-600" />
-                  </div>
-                  <div>
-                    <span className="font-medium">Aktif</span>
-                    <div className="text-xs text-gray-500">Pengguna aktif</div>
-                  </div>
-                </div>
-                <div className="text-xl font-bold text-green-600">
-                  {stats.users.active}
-                </div>
-              </div>
-
-              {/* New Today */}
-              <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                    <Users className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <span className="font-medium">Baru Hari Ini</span>
-                    <div className="text-xs text-gray-500">
-                      Registrasi hari ini
-                    </div>
-                  </div>
-                </div>
-                <div className="text-xl font-bold text-blue-600">
-                  {stats.users.newToday}
-                </div>
-              </div>
-
-              {/* New This Week */}
-              <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
-                    <Users className="h-4 w-4 text-purple-600" />
-                  </div>
-                  <div>
-                    <span className="font-medium">Baru Minggu Ini</span>
-                    <div className="text-xs text-gray-500">
-                      Registrasi minggu ini
-                    </div>
-                  </div>
-                </div>
-                <div className="text-xl font-bold text-purple-600">
-                  {stats.users.newThisWeek}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* TOTAL USERS */}
+        <KPICard
+          title="Total Users"
+          value={stats.users.total}
+          subtitle={`${stats.users.newToday} Baru hari ini`}
+          icon={Users}
+          colorClass="bg-purple-100/80"
+          iconColorClass="text-purple-600"
+        />
       </div>
 
-      {/* QUICK LINKS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Link href="/admin/product">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
-            <CardContent className="p-6 flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Package className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <div className="font-medium">Kelola Produk</div>
-                <div className="text-sm text-gray-500">
-                  Lihat dan edit semua produk
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/admin/product/category">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
-            <CardContent className="p-6 flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <Package className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <div className="font-medium">Kelola Kategori</div>
-                <div className="text-sm text-gray-500">
-                  Tambah/edit kategori produk
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
-            <CardContent className="p-6 flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Users className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <div className="font-medium">Kelola Pengguna</div>
-                <div className="text-sm text-gray-500">
-                  Lihat dan kelola pengguna
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+      {/* QUICK ACTIONS SECTION */}
+      <div className="pt-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-black text-gray-400 uppercase tracking-[0.2em]">Pintasan Cepat</h2>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Link href="/admin/order">
+            <Button variant="outline" className="w-full justify-start font-bold text-xs uppercase tracking-wider py-6 bg-white border-dashed border-2 hover:border-gray-900 transition-colors">
+              <Package className="mr-2 h-4 w-4" />
+              Kelola Pesanan
+            </Button>
+          </Link>
+          <Link href="/admin/product/create">
+            <Button variant="outline" className="w-full justify-start font-bold text-xs uppercase tracking-wider py-6 bg-white border-dashed border-2 hover:border-gray-900 transition-colors">
+              <Plus className="mr-2 h-4 w-4" />
+              Tambah Produk
+            </Button>
+          </Link>
+          <Link href="/admin/users">
+            <Button variant="outline" className="w-full justify-start font-bold text-xs uppercase tracking-wider py-6 bg-white border-dashed border-2 hover:border-gray-900 transition-colors">
+              <Users className="mr-2 h-4 w-4" />
+              Kelola User
+            </Button>
+          </Link>
+          <Link href="/admin/product">
+            <Button variant="outline" className="w-full justify-start font-bold text-xs uppercase tracking-wider py-6 bg-white border-dashed border-2 hover:border-gray-900 transition-colors">
+              <Package className="mr-2 h-4 w-4" />
+              Kelola Produk
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );

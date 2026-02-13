@@ -44,7 +44,7 @@ export function TabelCategory({ categories }: { categories: any[] }) {
                 height={50}
               />
             </TableCell>
-            <TableCell>{category.creator_name || "Unknown"}</TableCell>
+            <TableCell>{category.creator_name}</TableCell>
             {/* <TableCell>{category.created_at || ""}</TableCell> */}
             <TableCell className="text-right">
               <DropdownMenu>
