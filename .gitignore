@@ -44,3 +44,5 @@ next-env.d.ts
 
 # Goggle client
 client_secret.json
+kasir.http
+implementation_plan.md

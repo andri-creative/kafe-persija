@@ -1,8 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import redis from "@/lib/redis";
+
+const CACHE_KEY = "cache:dashboard:stats";
+const CACHE_TTL = 300; // 5 minutes
 
 export async function GET(request: NextRequest) {
   try {
+    // 1. Check Redis Cache
+    const cachedData = await redis.get(CACHE_KEY);
+    if (cachedData) {
+      console.log("[DASHBOARD] Cache hit - Returning stats from Redis");
+      return NextResponse.json({
+        ...JSON.parse(cachedData),
+        _source: "cache"
+      });
+    }
+
+    console.log("[DASHBOARD] Cache miss - Querying database...");
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -56,7 +72,19 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    return NextResponse.json(dashboardData);
+    // 2. Store in Redis
+    await redis.set(
+      CACHE_KEY,
+      JSON.stringify(dashboardData),
+      "EX",
+      CACHE_TTL
+    );
+    console.log("[DASHBOARD] Database results cached in Redis");
+
+    return NextResponse.json({
+      ...dashboardData,
+      _source: "database"
+    });
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
     return NextResponse.json(

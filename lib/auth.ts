@@ -4,6 +4,8 @@ import Credentials from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import AppleProvider from "next-auth/providers/apple";
 import { authService } from "@/services/auth-service";
+import { rateLimit, resetRateLimit } from "./rate-limit";
+import redis from "./redis";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -34,6 +36,16 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
+          // Rate Limit check
+          console.log(`[AUTH] Checking rate limit for: ${credentials.email}`);
+          const { allowed, retryAfter } = await rateLimit(credentials.email);
+
+          if (!allowed) {
+            console.error(`[AUTH] Rate limit exceeded for: ${credentials.email}`);
+            throw new Error(`Terlalu banyak percobaan login. Silakan coba lagi dalam ${retryAfter} detik.`);
+          }
+
+          console.log(`[AUTH] Rate limit OK. Proceeding to login for: ${credentials.email}`);
           const user = await authService.loginWithEmail(
             credentials.email,
             credentials.password,
@@ -43,6 +55,10 @@ export const authOptions: NextAuthOptions = {
             console.error("User returned null from service");
             throw new Error("Email atau password salah");
           }
+
+          // Reset rate limit on success
+          console.log(`[AUTH] Login success for ${credentials.email}. Resetting Redis rate limit.`);
+          await resetRateLimit(credentials.email);
 
           console.log("Authorize success:", user.email);
           return user;
@@ -78,44 +94,74 @@ export const authOptions: NextAuthOptions = {
       }
     },
 
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account }: any) {
+      // 1. On initial login, store user data in Redis
       if (user) {
+        let userData: any = user;
+
+        // If social login, refresh data from DB to get roles
         if (account?.provider === "google" || account?.provider === "apple") {
-          const dbUser: any = await authService.getUserByEmail(user.email!);
-          if (dbUser) {
-            token.id = dbUser.id;
-            token.nickname = dbUser.nickname;
-            token.email = dbUser.email;
-            token.picture = dbUser.picture;
-            token.roles = dbUser.roles;
-            token.auth_token = dbUser.auth_token;
-            token.type = dbUser.type;
-          }
-        } else {
-          const u = user as any;
-          token.id = u.id;
-          token.nickname = u.nickname;
-          token.email = u.email;
-          token.picture = u.picture;
-          token.roles = u.roles;
-          token.auth_token = u.auth_token;
-          token.type = u.type;
+          const dbUser = await authService.getUserByEmail(user.email!);
+          if (dbUser) userData = dbUser;
         }
+
+        // Generate a stable Session ID (using the user ID or a random UUID)
+        const sessionId = `sess_${userData.id}_${Date.now()}`;
+
+        console.log(`[REDIS SESSION] Storing data for session: ${sessionId}`);
+
+        // Store the full user object in Redis (30 days TTL)
+        await redis.set(
+          `persistent_session:${sessionId}`,
+          JSON.stringify(userData),
+          "EX",
+          30 * 24 * 60 * 60
+        );
+
+        // JWT stores sessionId AND essential fields for middleware (Edge runtime)
+        token.sessionId = sessionId;
+        token.id = userData.id;
+        token.email = userData.email;
+        token.roles = userData.roles;
+        token.type = userData.type;
       }
       return token;
     },
 
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = (token.id as string) || "";
-        session.user.nickname = (token.nickname as string) || "";
-        session.user.email = (token.email as string) || "";
-        session.user.picture = (token.picture as string) || "";
-        session.user.roles = token.roles as string[];
-        session.user.auth_token = token.auth_token as string;
-        session.user.type = token.type as string;
+    async session({ session, token }: any) {
+      if (token.sessionId) {
+        console.log(`[REDIS SESSION] Fetching data for session: ${token.sessionId}`);
+
+        // Retrieve the full user data from Redis
+        const data = await redis.get(`persistent_session:${token.sessionId}`);
+
+        if (data) {
+          const userData = JSON.parse(data);
+          session.user.id = userData.id;
+          session.user.nickname = userData.nickname;
+          session.user.email = userData.email;
+          session.user.picture = userData.picture || "";
+          session.user.roles = userData.roles;
+          session.user.auth_token = userData.auth_token;
+          session.user.type = userData.type;
+
+          console.log(`[REDIS SESSION] Session restored from Redis for: ${userData.email}`);
+        } else {
+          console.warn(`[REDIS SESSION] Session key not found or expired: ${token.sessionId}`);
+          // Fallback: If Redis fails, we might want to logout or re-fetch from DB
+          // For now, return incomplete session to trigger logout on client side if handled
+        }
       }
       return session;
+    },
+  },
+
+  events: {
+    async signOut({ token }: any) {
+      if (token.sessionId) {
+        console.log(`[REDIS SESSION] Logging out: Deleting session ${token.sessionId}`);
+        await redis.del(`persistent_session:${token.sessionId}`);
+      }
     },
   },
 
