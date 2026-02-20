@@ -33,7 +33,13 @@ export async function middleware(req: NextRequest) {
   }
 
   if (pathname.startsWith("/staff")) {
-    if (!roles.includes("STAFF")) {
+    if (!roles.includes("STAFF") && !roles.includes("MANAGER") && !roles.includes("ADMIN") && !roles.includes("SUPER_ADMIN")) {
+      return NextResponse.redirect(new URL("/403", req.url));
+    }
+  }
+
+  if (pathname.startsWith("/manager")) {
+    if (!roles.includes("MANAGER") && !roles.includes("ADMIN") && !roles.includes("SUPER_ADMIN")) {
       return NextResponse.redirect(new URL("/403", req.url));
     }
   }
@@ -46,6 +52,7 @@ export const config = {
     "/admin/:path*",
     "/super-admin/:path*",
     "/staff/:path*",
+    "/manager/:path*",
     "/products/:path*",
     "/transactions/:path*",
     "/promo/:path*",
