@@ -53,6 +53,8 @@ export function LoginDialog({
       router.push("/super-admin/order");
     } else if (roles.includes("ADMIN")) {
       router.push("/admin/order");
+    } else if (roles.includes("MANAGER")) {
+      router.push("/manager/order");
     } else if (roles.includes("STAFF")) {
       router.push("/staff/order");
     } else {
@@ -180,6 +182,8 @@ export function LoginDialog({
           router.push("/super-admin/dashboard");
         } else if (roles.includes("ADMIN")) {
           router.push("/admin/dashboard");
+        } else if (roles.includes("MANAGER")) {
+          router.push("/manager/dashboard");
         } else if (roles.includes("STAFF")) {
           router.push("/staff/dashboard");
         } else {
@@ -230,6 +234,8 @@ export function LoginDialog({
           router.push("/super-admin/dashboard");
         } else if (roles.includes("ADMIN")) {
           router.push("/admin/dashboard");
+        } else if (roles.includes("MANAGER")) {
+          router.push("/manager/dashboard");
         } else if (roles.includes("STAFF")) {
           router.push("/staff/dashboard");
         } else {

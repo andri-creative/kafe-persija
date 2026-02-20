@@ -1,5 +1,3 @@
-import Image from "next/image";
-import Navbar from "@/components/Navbar";
 import { LoginForm } from "@/components/login-form";
 import prisma from "@/lib/prisma";
 
@@ -15,13 +13,26 @@ export default async function Home() {
   }
 
   return (
-    <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
+    <div className="relative flex min-h-svh flex-col items-center justify-center p-6 md:p-10 isolation-auto">
+      {/* Background Image with Overlay */}
+      <div
+        className="absolute inset-0 -z-10"
+        style={{
+          backgroundImage: 'url("/home-page.webp")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
+      </div>
+
       <script
         dangerouslySetInnerHTML={{
           __html: `console.log("--- [DB STATUS] ${dbStatus} ---");`,
         }}
       />
-      <div className="w-full max-w-sm md:max-w-4xl">
+      <div className="w-full max-w-sm">
         <LoginForm />
       </div>
     </div>
