@@ -27,10 +27,10 @@ export const useSocketOrders = (initialOrders: any[] = []) => {
         const token = session?.user?.auth_token;
         const userId = session?.user?.id;
 
-        console.log('👤 Socket Session Data (from DB):', {
-            auth_token: token,
-            id: userId
-        });
+        // console.log('👤 Socket Session Data (from DB):', {
+        //     auth_token: token,
+        //     id: userId
+        // });
 
         const socket = getSocket(token, userId);
 

@@ -5,6 +5,8 @@ import {
   deleteCategory,
 } from "@/services/category.service";
 import { uploadFile } from "@/lib/file-upload";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 type Params = {
   params: Promise<{ id: string }>;
@@ -39,9 +41,16 @@ export async function PUT(req: NextRequest, { params }: Params) {
       imageUrl = await uploadFile(imageFile, "category", true); // Save filename only
     }
 
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const updated_by = parseInt(session.user.id);
+
     const category = await updateCategory(id, {
       name: name || undefined,
       image: imageUrl,
+      updated_by,
     });
 
     return NextResponse.json(category);

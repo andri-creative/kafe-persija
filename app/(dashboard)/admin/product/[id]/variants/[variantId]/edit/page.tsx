@@ -25,6 +25,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { getVariantImageUrl } from "@/lib/variant-helper";
+import { getProductSocket as getSocket } from "@/lib/product-socket";
+import { useSession } from "next-auth/react";
 
 // Type untuk variant
 type Variant = {
@@ -45,6 +48,7 @@ type Variant = {
 };
 
 export default function ProductVariantEditPage() {
+    const { data: session } = useSession();
   const params = useParams();
   const router = useRouter();
 
@@ -202,6 +206,10 @@ export default function ProductVariantEditPage() {
       }
 
       toast.success("Varian berhasil diperbarui");
+      
+      // Notify other clients
+      const socket = getSocket(session?.user?.auth_token, session?.user?.id);
+      socket.emit('product_updated', { action: 'variant_updated', productId, variantId, data: result.data });
 
       setTimeout(() => {
         router.push(`/admin/product/${productId}/variants`);
@@ -370,7 +378,7 @@ export default function ProductVariantEditPage() {
                     {formData.existingImages.map((img, index) => (
                       <div key={`existing-${index}`} className="relative aspect-square border rounded-lg overflow-hidden bg-gray-50 group">
                         <img
-                          src={img.image}
+                          src={getVariantImageUrl(img.image)}
                           alt="Existing"
                           className="w-full h-full object-cover"
                         />

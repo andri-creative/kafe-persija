@@ -2,19 +2,19 @@ import Redis from "ioredis";
 
 const redisClientSingleton = () => {
     const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
-    console.log("Initializing Redis client with URL:", redisUrl);
+    // console.log("Initializing Redis client with URL:", redisUrl);
 
     const client = new Redis(redisUrl, {
-        maxRetriesPerRequest: 3, // Limited retries to avoid hanging
-        connectTimeout: 5000,    // 5 seconds timeout
+        maxRetriesPerRequest: 3, 
+        connectTimeout: 5000,    
     });
 
     client.on("error", (err) => {
-        console.error("Redis Client Error:", err);
+        // console.error('\x1b[31m%s\x1b[0m', `--- [REDIS STATUS] ERROR: ${err.message} ---`);
     });
 
     client.on("connect", () => {
-        console.log("Redis Client Connected");
+        // console.log('\x1b[32m%s\x1b[0m', '--- [REDIS STATUS] Redis connected successfully ---');
     });
 
     return client;

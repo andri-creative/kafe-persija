@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Minus, Plus, Trash2, Utensils } from "lucide-react";
 import Image from "next/image";
+import { getVariantImageUrl } from "@/lib/variant-helper";
+
+import { useState } from "react";
 
 interface CartItem {
     id: number;
@@ -19,9 +22,11 @@ interface OrderSidebarProps {
     cart: CartItem[];
     onUpdateQuantity: (variantId: number, delta: number) => void;
     onRemoveItem: (variantId: number) => void;
+    onConfirm: (customerName: string) => void;
 }
 
-export function OrderSidebar({ cart, onUpdateQuantity, onRemoveItem }: OrderSidebarProps) {
+export function OrderSidebar({ cart, onUpdateQuantity, onRemoveItem, onConfirm }: OrderSidebarProps) {
+    const [customerName, setCustomerName] = useState("");
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const taxes = subtotal * 0.05;
     const total = subtotal + taxes;
@@ -30,14 +35,16 @@ export function OrderSidebar({ cart, onUpdateQuantity, onRemoveItem }: OrderSide
         <div className="h-full flex flex-col bg-white dark:bg-zinc-950">
             <div className="p-5 border-b border-zinc-100 dark:border-zinc-800 space-y-4 pt-8">
                 <h2 className="text-xl font-black text-zinc-900 dark:text-zinc-100">
-                    Order details
+                    Detail Pesanan
                 </h2>
 
                 <div className="grid grid-cols-1 gap-3">
                     <div className="space-y-1.5">
-                        <label className="text-[10px] text-zinc-400 uppercase tracking-wider pl-1 font-black">Customer name</label>
+                        <label className="text-[10px] text-zinc-400 uppercase tracking-wider pl-1 font-black">Nama Pelanggan</label>
                         <input
                             type="text"
+                            value={customerName}
+                            onChange={(e) => setCustomerName(e.target.value)}
                             placeholder="Darius Sinarmulia"
                             className="w-full h-10 px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-bold focus:outline-none focus:ring-1 focus:ring-red-500"
                         />
@@ -47,14 +54,14 @@ export function OrderSidebar({ cart, onUpdateQuantity, onRemoveItem }: OrderSide
 
             <div className="flex-1 overflow-y-auto p-5 no-scrollbar space-y-4">
                 <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-[11px] font-black uppercase text-zinc-400 tracking-widest italic">Ordered menu</h3>
-                    <span className="text-[11px] font-black text-zinc-400">{cart.length} Items</span>
+                    <h3 className="text-[11px] font-black uppercase text-zinc-400 tracking-widest italic">Menu Dipesan</h3>
+                    <span className="text-[11px] font-black text-zinc-400">{cart.length} Item</span>
                 </div>
 
                 {cart.length === 0 ? (
                     <div className="h-32 flex flex-col items-center justify-center border-2 border-dashed border-zinc-100 dark:border-zinc-800 rounded-2xl gap-2 opacity-50">
                         <Trash2 className="h-6 w-6 text-zinc-300" />
-                        <span className="text-[10px] font-bold text-zinc-400 uppercase">Cart is empty</span>
+                        <span className="text-[10px] font-bold text-zinc-400 uppercase">Keranjang Kosong</span>
                     </div>
                 ) : (
                     cart.map((item) => (
@@ -62,7 +69,7 @@ export function OrderSidebar({ cart, onUpdateQuantity, onRemoveItem }: OrderSide
                             <div className="h-16 w-16 bg-zinc-50 dark:bg-zinc-800 rounded-xl shrink-0 flex items-center justify-center overflow-hidden border border-zinc-100 dark:border-zinc-800 relative">
                                 {item.image ? (
                                     <Image
-                                        src={item.image.startsWith('/') ? item.image : `/images/variant/${item.image}`}
+                                        src={getVariantImageUrl(item.image)}
                                         alt={item.name}
                                         fill
                                         className="object-cover"
@@ -134,8 +141,11 @@ export function OrderSidebar({ cart, onUpdateQuantity, onRemoveItem }: OrderSide
                     </div>
                 </div>
 
-                <Button className="w-full h-12 bg-[#ff3535] hover:bg-[#e62e2e] text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-[0_8px_16px_-4px_rgba(255,53,53,0.4)] active:scale-95 transition-transform">
-                    Confirm Order
+                <Button 
+                    onClick={() => onConfirm(customerName)}
+                    className="w-full h-12 bg-[#ff3535] hover:bg-[#e62e2e] text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-[0_8px_16px_-4px_rgba(255,53,53,0.4)] active:scale-95 transition-transform"
+                >
+                    Konfirmasi Pembayaran
                 </Button>
             </div>
         </div>

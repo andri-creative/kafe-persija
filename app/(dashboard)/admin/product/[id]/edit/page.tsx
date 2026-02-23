@@ -39,7 +39,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { getVariantImageUrl } from "@/lib/variant-helper";
 import { Field, FieldLabel } from "@/components/ui/field";
+import { getProductSocket as getSocket } from "@/lib/product-socket";
+import { useSession } from "next-auth/react";
 
 // Type untuk variant
 type VariantFormData = {
@@ -61,6 +64,7 @@ type Category = {
 };
 
 export default function EditProductPage() {
+  const { data: session } = useSession();
   const params = useParams();
   const router = useRouter();
   const productId = params.id as string;
@@ -292,7 +296,6 @@ export default function EditProductPage() {
 
   const addVariant = () => {
     setVariants([
-      ...variants,
       {
         desc: "",
         price: "",
@@ -303,6 +306,7 @@ export default function EditProductPage() {
         existingImages: [],
         removedImageIds: [],
       },
+      ...variants,
     ]);
   };
 
@@ -384,6 +388,10 @@ export default function EditProductPage() {
       }
 
       toast.success("Produk berhasil diupdate!");
+
+      // Notify other clients
+      const socket = getSocket(session?.user?.auth_token, session?.user?.id);
+      socket.emit('product_updated', { action: 'updated', id: productId, product: result.data });
 
       // Clean up URL objects
       // Clean up URL objects
@@ -685,7 +693,7 @@ export default function EditProductPage() {
                               <div key={`existing-${imgIndex}`} className="relative group">
                                 <div className="border rounded-lg overflow-hidden h-24 w-full">
                                   <Image
-                                    src={img.url}
+                                    src={getVariantImageUrl(img.url)}
                                     alt={`Existing ${imgIndex}`}
                                     width={100}
                                     height={100}

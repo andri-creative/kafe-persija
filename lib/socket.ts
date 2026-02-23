@@ -5,10 +5,10 @@ let socket: Socket | null = null;
 
 export const getSocket = (token?: string, userId?: string): Socket => {
     if (!socket) {
-        console.log('🔌 Initializing Socket with Query Params:', {
-            auth: token,
-            'user-id': userId
-        });
+        // console.log('🔌 Initializing Socket with Query Params:', {
+        //     auth: token,
+        //     'user-id': userId
+        // });
 
         socket = io(SOCKET_URL, {
             path: '/v2/kafe/dashboard/socket.io',
@@ -34,11 +34,11 @@ export const getSocket = (token?: string, userId?: string): Socket => {
 
 
         socket.on('order_updated', (data: OrderUpdatedEvent) => {
-            console.log('✅ Socket.IO connected:', socket?.id);
+            // console.log('✅ Socket.IO connected:', socket?.id);
         });
 
         socket.on('disconnect', (reason) => {
-            console.log('❌ Socket.IO disconnected:', reason);
+            // console.log('❌ Socket.IO disconnected:', reason);
         });
 
         socket.on('connect_error', (error) => {
@@ -46,7 +46,7 @@ export const getSocket = (token?: string, userId?: string): Socket => {
         });
 
         socket.on('reconnect', (attemptNumber) => {
-            console.log('🔄 Socket.IO reconnected after', attemptNumber, 'attempts');
+            // console.log('🔄 Socket.IO reconnected after', attemptNumber, 'attempts');
         });
     }
 

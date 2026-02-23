@@ -2,27 +2,17 @@
 
 import { cn } from "@/lib/utils";
 import {
-    LayoutGrid,
     Coffee,
     CupSoda,
-    Cookie,
-    UtensilsCrossed,
     IceCream,
-    Beer,
     Pizza,
-    Croissant,
-    Soup,
-    Salad,
     Utensils,
-    Star,
-    Egg,
     Beef,
-    Minus,
     Plus,
     Search,
     Loader2
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
@@ -33,27 +23,12 @@ import {
 } from "@/components/ui/sheet";
 import { ShoppingBag } from "lucide-react";
 
-import { CurrentOrderBar } from "../../_components/CurrentOrderBar";
 import { OrderSidebar } from "../../_components/OrderSidebar";
 import { VariantSelector } from "../../_components/VariantSelector";
+import { getVariantImageUrl } from "@/lib/variant-helper";
+import { useSession } from "next-auth/react";
 
-const iconMap: Record<string, any> = {
-    LayoutGrid,
-    Coffee,
-    CupSoda,
-    Cookie,
-    UtensilsCrossed,
-    IceCream,
-    Beer,
-    Pizza,
-    Croissant,
-    Soup,
-    Salad,
-    Utensils,
-    Star,
-    Egg,
-    Beef
-};
+
 
 interface CartItem {
     id: number; // For product context
@@ -108,51 +83,65 @@ export default function MenuPage() {
 
     const [selectedProductForVariant, setSelectedProductForVariant] = useState<DBProduct | null>(null);
     const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
+    const { data: session } = useSession();
+
+    const fetchData = async (showLoading = true) => {
+        try {
+            if (showLoading) setIsLoading(true);
+            const [prodRes, catRes] = await Promise.all([
+                axios.get("/api/products"),
+                axios.get("/api/categories")
+            ]);
+            setProducts(prodRes.data);
+            setCategories(catRes.data);
+        } catch (error) {
+            console.error("Failed to fetch menu data:", error);
+        } finally {
+            if (showLoading) setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setIsLoading(true);
-                const [prodRes, catRes] = await Promise.all([
-                    axios.get("/api/products"),
-                    axios.get("/api/categories")
-                ]);
-                setProducts(prodRes.data);
-                setCategories(catRes.data);
-            } catch (error) {
-                console.error("Failed to fetch menu data:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
         fetchData();
     }, []);
 
-    // Filter products
-    const filteredProducts = products.filter(p => {
-        const matchesCategory = activeCategory === "all" || p.product_category_trx.some(trx => trx.product_category.id === activeCategory);
-        const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesCategory && matchesSearch;
-    });
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchData(false);
+        }, 1000);
 
-    // Cart Handlers
+        return () => clearInterval(interval);
+    }, []);
+
+    const filteredProducts = products
+        .filter(p => p.status.toLowerCase() === "active")
+        .map(p => ({
+            ...p,
+            product_variants: p.product_variants.filter(v => 
+                (v.stok === null || v.stok > 0) && !v.status
+            )
+        }))
+        .filter(p => p.product_variants.length > 0)
+        .filter(p => {
+            const matchesCategory = activeCategory === "all" || p.product_category_trx.some(trx => trx.product_category.id === activeCategory);
+            const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchesCategory && matchesSearch;
+        });
+
     const addToCart = (product: DBProduct) => {
-        // If product has multiple variants, open variant selector
         if (product.product_variants.length > 1) {
             setSelectedProductForVariant(product);
             setIsVariantModalOpen(true);
             return;
         }
 
-        // If only one variant, add directly
         const variant = product.product_variants[0];
 
-        // Stock check
         const currentInCart = cart.find(item => item.variantId === variant.id)?.quantity || 0;
         const availableStock = variant.stok === null ? 999 : variant.stok - currentInCart;
 
-        if (!variant.status || availableStock <= 0) {
-            return; // Out of stock or disabled
+        if (variant.status || availableStock <= 0) {
+            return; 
         }
 
         handleVariantAdd(product, variant);
@@ -162,11 +151,10 @@ export default function MenuPage() {
         setCart(prev => {
             const existing = prev.find(item => item.variantId === variant.id);
 
-            // Re-check stock just in case
             const currentQty = existing?.quantity || 0;
             const availableStock = variant.stok === null ? 999 : variant.stok - currentQty;
 
-            if (!variant.status || availableStock <= 0) {
+            if (variant.status || availableStock <= 0) {
                 return prev;
             }
 
@@ -191,7 +179,6 @@ export default function MenuPage() {
     const updateQuantity = (variantId: number, delta: number) => {
         setCart(prev => prev.map(item => {
             if (item.variantId === variantId) {
-                // Find corresponding product and variant to check stock
                 const product = products.find(p => p.id === item.id);
                 const variant = product?.product_variants.find(v => v.id === variantId);
 
@@ -212,9 +199,36 @@ export default function MenuPage() {
     };
 
     const getItemQuantity = (productId: number) => {
-        // For the product card display, we sum all variants of this product in cart
         return cart.filter(item => item.id === productId).reduce((acc, item) => acc + item.quantity, 0);
     };
+
+    const handleConfirm = (customerName: string) => {
+        if (!customerName) {
+            alert("Silakan masukkan nama pelanggan");
+            return;
+        }
+
+        // Generate Order Number: ORD-[Timestamp]-[Random3]
+        const orderNumber = `ORD-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
+
+        const orderData = {
+            order_number: orderNumber,
+            customer_name: customerName,
+            items: cart,
+            subtotal,
+            taxes,
+            total,
+            status: "ORDERED",
+            created_at: new Date().toISOString()
+        };
+
+        console.log("ORDER JSON:", orderData);
+        alert(JSON.stringify(orderData, null, 2));
+    };
+
+    const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    const taxes = subtotal * 0.05;
+    const total = subtotal + taxes;
 
     if (isLoading) {
         return (
@@ -232,15 +246,15 @@ export default function MenuPage() {
                     <div className="space-y-4 shrink-0 px-2 sm:px-0">
                         <div className="flex items-center justify-between px-1">
                             <h2 className="text-sm font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-widest">
-                                Categories
+                                Kategori
                             </h2>
-                            <div className="relative w-48 sm:w-64">
+                            <div className="relative w-48 sm:w-64 cursor-pointer">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
                                 <input
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Search menu..."
+                                    placeholder="Cari menu..."
                                     className="w-full h-9 pl-9 pr-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-bold focus:outline-none focus:ring-1 focus:ring-red-500 transition-all"
                                 />
                             </div>
@@ -249,7 +263,7 @@ export default function MenuPage() {
                         <div className="flex flex-row overflow-x-auto gap-4 sm:gap-6 pb-2 no-scrollbar scroll-smooth px-1">
                             {/* All Menu Category */}
                             <button
-                                className="group flex flex-col items-center gap-2.5 outline-none shrink-0"
+                                className="group flex flex-col items-center gap-2.5 outline-none shrink-0 cursor-pointer"
                                 onClick={() => setActiveCategory("all")}
                             >
                                 <div className={cn(
@@ -259,17 +273,24 @@ export default function MenuPage() {
                                         : "bg-[#fff8f8] dark:bg-zinc-900 border-transparent text-zinc-400 hover:border-zinc-100 dark:hover:border-zinc-800 hover:text-zinc-600 dark:hover:text-zinc-300"
                                 )}>
                                     <div className={cn(
-                                        "transition-all duration-300",
-                                        activeCategory === "all" ? "text-[#ff3535]" : "opacity-30"
+                                        "relative transition-all duration-300 flex items-center justify-center",
+                                        activeCategory === "all"
+                                            ? "w-8 h-8 sm:w-10 sm:h-10"
+                                            : "w-7 h-7 sm:w-8 sm:h-8 opacity-40 grayscale group-hover:grayscale-0 group-hover:opacity-60"
                                     )}>
-                                        <LayoutGrid className="h-5 w-5 sm:h-6 sm:w-6" />
+                                        <Image
+                                            src="/all.png"
+                                            alt="Semua Menu"
+                                            fill
+                                            className="object-contain"
+                                        />
                                     </div>
                                 </div>
                                 <span className={cn(
                                     "text-[10px] font-black uppercase tracking-tighter transition-colors",
                                     activeCategory === "all" ? "text-[#ff3535]" : "text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100"
                                 )}>
-                                    All Menu
+                                    Semua Menu
                                 </span>
                             </button>
 
@@ -289,7 +310,7 @@ export default function MenuPage() {
                                 return (
                                     <button
                                         key={cat.id}
-                                        className="group flex flex-col items-center gap-2.5 outline-none shrink-0"
+                                        className="group flex flex-col items-center gap-2.5 outline-none shrink-0 cursor-pointer"
                                         onClick={() => setActiveCategory(cat.id)}
                                     >
                                         <div className={cn(
@@ -345,51 +366,49 @@ export default function MenuPage() {
                                     <div
                                         key={product.id}
                                         onClick={() => addToCart(product)}
-                                        className="bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-3xl p-3 shadow-sm hover:shadow-md transition-all group flex flex-col gap-3 cursor-pointer active:scale-[0.98]"
+                                        className="bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-3xl p-3 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col gap-3 cursor-pointer active:scale-[0.98]"
                                     >
                                         <div className="aspect-4/3 w-full rounded-2xl bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center relative overflow-hidden shrink-0">
                                             {firstVariant?.product_variant_images[0]?.image ? (
                                                 <Image
-                                                    src={firstVariant.product_variant_images[0].image.startsWith('/')
-                                                        ? firstVariant.product_variant_images[0].image
-                                                        : `/images/variant/${firstVariant.product_variant_images[0].image}`}
+                                                    src={getVariantImageUrl(firstVariant.product_variant_images[0].image)}
                                                     alt={product.name}
                                                     fill
-                                                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                                                    className="object-cover group-hover:scale-110 transition-transform duration-700"
                                                 />
                                             ) : (
                                                 <Utensils className="h-10 w-10 text-zinc-100 dark:text-zinc-700 opacity-50" />
                                             )}
                                             {hasMultipleVariants && (
-                                                <div className="absolute top-2 left-2 bg-white/90 dark:bg-black/80 backdrop-blur-sm text-zinc-900 dark:text-white px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tight shadow-sm">
+                                                <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md text-white px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider shadow-lg">
                                                     {product.product_variants.length} Varian
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="space-y-1">
-                                            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter italic opacity-70">
+                                        <div className="space-y-1.5 px-0.5">
+                                            <p className="text-[9px] font-bold text-[#ff3535] uppercase tracking-widest opacity-80">
                                                 {product.product_category_trx[0]?.product_category.name || "Menu"}
                                             </p>
-                                            <h3 className="text-xs font-black text-zinc-900 dark:text-zinc-100 line-clamp-1 leading-tight">
+                                            <h3 className="text-sm font-black text-zinc-900 dark:text-zinc-100 line-clamp-2 leading-snug h-[2.8rem]">
                                                 {product.name}
                                             </h3>
 
-                                            <div className="flex items-center justify-between pt-1">
+                                            <div className="flex items-center justify-between pt-2">
                                                 <div className="flex flex-col">
-                                                    <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-tight leading-none mb-1">mulai</span>
-                                                    <span className="text-sm font-black text-zinc-900 dark:text-zinc-100">
+                                                    <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider leading-none mb-1">Mulai dari</span>
+                                                    <span className="text-base font-black text-zinc-900 dark:text-zinc-100">
                                                         Rp {firstVariant?.price.toLocaleString('id-ID')}
                                                     </span>
                                                 </div>
 
                                                 <div className={cn(
-                                                    "h-8 w-8 flex items-center justify-center bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl group-hover:bg-[#ff3535] group-hover:text-white transition-all shadow-sm",
+                                                    "h-9 w-9 flex items-center justify-center bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-2xl group-hover:bg-[#ff3535] group-hover:text-white transition-all shadow-md active:scale-90",
                                                     qty > 0 && "bg-[#ff3535] scale-110"
                                                 )}>
                                                     {qty > 0 ? (
-                                                        <span className="text-xs font-black">{qty}</span>
+                                                        <span className="text-sm font-black">{qty}</span>
                                                     ) : (
-                                                        <Plus className="h-4 w-4" />
+                                                        <Plus className="h-5 w-5" />
                                                     )}
                                                 </div>
                                             </div>
@@ -427,6 +446,7 @@ export default function MenuPage() {
                         cart={cart}
                         onUpdateQuantity={updateQuantity}
                         onRemoveItem={removeFromCart}
+                        onConfirm={handleConfirm}
                     />
                 </SheetContent>
             </Sheet>

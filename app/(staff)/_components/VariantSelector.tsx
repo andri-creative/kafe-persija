@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Utensils, X } from "lucide-react";
 import Image from "next/image";
+import { getVariantImageUrl } from "@/lib/variant-helper";
 
 interface DBVariant {
     id: number;
@@ -57,9 +58,7 @@ export function VariantSelector({ isOpen, onOpenChange, product, cart, onSelect 
                 <div className="relative h-56 w-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center">
                     {product.product_variants[0]?.product_variant_images[0]?.image ? (
                         <Image
-                            src={product.product_variants[0].product_variant_images[0].image.startsWith('/')
-                                ? product.product_variants[0].product_variant_images[0].image
-                                : `/images/variant/${product.product_variants[0].product_variant_images[0].image}`}
+                            src={getVariantImageUrl(product.product_variants[0].product_variant_images[0].image)}
                             alt={product.name}
                             fill
                             className="object-cover"
@@ -96,7 +95,7 @@ export function VariantSelector({ isOpen, onOpenChange, product, cart, onSelect 
                                 const currentInCart = cart.find(item => item.variantId === variant.id)?.quantity || 0;
                                 const isUnlimited = variant.stok === null;
                                 const remainingStock = isUnlimited ? 99 : variant.stok! - currentInCart;
-                                const isAvailable = variant.status && remainingStock > 0;
+                                const isAvailable = !variant.status && remainingStock > 0;
 
                                 return (
                                     <button
@@ -112,7 +111,7 @@ export function VariantSelector({ isOpen, onOpenChange, product, cart, onSelect 
                                     >
                                         <div className="flex flex-col items-start gap-0.5">
                                             <span className="text-xs font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-tight">
-                                                {variant.desc || "Standard Variant"}
+                                                {variant.desc || "Varian Standar"}
                                             </span>
                                             <div className="flex items-center gap-2">
                                                 <span className={cn(

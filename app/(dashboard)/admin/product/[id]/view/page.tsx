@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { getVariantImageUrl } from "@/lib/variant-helper";
 import {
     ArrowLeft,
     Package,
@@ -244,7 +245,7 @@ export default function ViewProductPage({ params }: { params: Promise<{ id: stri
                                                         <div className="h-12 w-12 rounded-md overflow-hidden bg-gray-100 border relative group">
                                                             {variant.product_variant_images.length > 0 ? (
                                                                 <Image
-                                                                    src={variant.product_variant_images[0].image}
+                                                                    src={getVariantImageUrl(variant.product_variant_images[0].image)}
                                                                     alt={variant.desc || "Variant"}
                                                                     fill
                                                                     className="object-cover"
@@ -289,7 +290,7 @@ export default function ViewProductPage({ params }: { params: Promise<{ id: stri
                         {product.product_variants.flatMap(v => v.product_variant_images).map((img, idx) => (
                             <div key={img.id} className="aspect-square relative rounded-lg overflow-hidden border bg-white group shadow-sm hover:shadow-md transition-shadow">
                                 <Image
-                                    src={img.image}
+                                    src={getVariantImageUrl(img.image)}
                                     alt={`Gallery ${idx}`}
                                     fill
                                     className="object-cover"

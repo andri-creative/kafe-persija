@@ -129,32 +129,36 @@ export default function OrderBaruPage() {
         const currentStatus = product?.status || "ORDERED";
         const nextStatus = getNextStatus(currentStatus, PRODUCT_STATUSES);
 
-        // Calculate overall order status
         const updatedProducts = products.map((p: any) =>
             p.id === productId ? { ...p, status: nextStatus } : p
         );
 
-        let nextOrderStatus = order?.status || "ORDERED";
-        const allServed = updatedProducts.every((p: any) => p.status === "SERVED");
-        const anyReady = updatedProducts.some((p: any) => p.status === "READY");
-        const anyProcessing = updatedProducts.some((p: any) => p.status === "PROCESSING");
+        // Logic to calculate effective status (Hierarchical: ORDERED < PROCESSING < READY < SERVED)
+        const getComputedStatus = (productList: any[]) => {
+            if (productList.length === 0) return "ORDERED";
+            const s = productList.map((p: any) => (p.status || "ORDERED").toUpperCase());
 
-        if (allServed) {
-            nextOrderStatus = "SERVED";
-        } else if (anyReady) {
-            nextOrderStatus = "READY";
-        } else if (anyProcessing) {
-            nextOrderStatus = "PROCESSING";
-        } else {
-            nextOrderStatus = "ORDERED";
-        }
+            if (s.every((x: any) => x === "SERVED")) return "SERVED";
+            if (s.some((x: any) => x === "ORDERED")) return "ORDERED";
+            if (s.some((x: any) => x === "PROCESSING")) return "PROCESSING";
+            if (s.some((x: any) => x === "READY")) return "READY";
+            return "ORDERED";
+        };
+
+        const nextOrderStatus = getComputedStatus(updatedProducts);
 
         try {
             setUpdating(true);
+            // Send ALL products statuses to ensure backend sync is correct
+            const allProductUpdates = updatedProducts.map((p: any) => ({
+                id: p.id,
+                status: p.status
+            }));
+
             await updateOrderStatus({
                 order_number: order.order_number,
                 status: nextOrderStatus,
-                products: [{ id: productId, status: nextStatus }],
+                products: allProductUpdates,
             });
 
             toast.success("Product updated");
@@ -194,13 +198,28 @@ export default function OrderBaruPage() {
     const initialOrders = useMemo(() => data?.rows || [], [data]);
     const { orders: rows, isConnected } = useSocketOrders(initialOrders);
 
+    const getEffectiveStatus = (order: any) => {
+        if (order?.status?.toUpperCase() === "CANCELLED") return "CANCELLED";
+        const products = Array.isArray(order?.products) ? order.products : [];
+        if (products.length === 0) return order?.status?.toUpperCase() || "ORDERED";
+
+        const s = products.map((p: any) => (p.status || "ORDERED").toUpperCase());
+        if (s.every((x: any) => x === "SERVED")) return "SERVED";
+        if (s.some((x: any) => x === "ORDERED")) return "ORDERED";
+        if (s.some((x: any) => x === "PROCESSING")) return "PROCESSING";
+        if (s.some((x: any) => x === "READY")) return "READY";
+        return "ORDERED";
+    };
+
     const filterOrders = (status: string) => {
-        return rows.filter((o: any) => o?.status?.toUpperCase() === status.toUpperCase())
-            .sort((a: any, b: any) => {
-                const timeA = new Date(a.updated_at || a.created_at).getTime();
-                const timeB = new Date(b.updated_at || b.created_at).getTime();
-                return timeB - timeA;
-            });
+        return rows.filter((o: any) => {
+            const effectiveStatus = getEffectiveStatus(o);
+            return effectiveStatus === status.toUpperCase();
+        }).sort((a: any, b: any) => {
+            const timeA = new Date(a.updated_at || a.created_at).getTime();
+            const timeB = new Date(b.updated_at || b.created_at).getTime();
+            return timeB - timeA;
+        });
     };
 
     const orderBaru = filterOrders("ORDERED");
@@ -419,20 +438,20 @@ export default function OrderBaruPage() {
                                 <div className="text-center">
                                     <div className="text-[10px] text-gray-400 font-black uppercase tracking-widest leading-none mb-1">Status</div>
                                     <button
-                                        className={`text-xs px-4 py-2 rounded-xl border cursor-pointer font-black transition-all shadow-sm active:scale-95 ${selectedOrder?.status === "ORDERED"
+                                        className={`text-xs px-4 py-2 rounded-xl border cursor-pointer font-black transition-all shadow-sm active:scale-95 ${getEffectiveStatus(selectedOrder) === "ORDERED"
                                             ? "bg-blue-100 text-blue-700 border-blue-200"
-                                            : selectedOrder?.status === "PROCESSING"
+                                            : getEffectiveStatus(selectedOrder) === "PROCESSING"
                                                 ? "bg-amber-100 text-amber-700 border-amber-200"
-                                                : selectedOrder?.status === "READY"
+                                                : getEffectiveStatus(selectedOrder) === "READY"
                                                     ? "bg-green-100 text-green-700 border-green-200"
-                                                    : selectedOrder?.status === "SERVED"
+                                                    : getEffectiveStatus(selectedOrder) === "SERVED"
                                                         ? "bg-indigo-100 text-indigo-700 border-indigo-200 cursor-not-allowed"
                                                         : "bg-gray-100 text-gray-700 border-gray-200"
                                             }`}
-                                        disabled={updating || selectedOrder?.status === "SERVED" || selectedOrder?.status === "CANCELLED"}
+                                        disabled={updating || getEffectiveStatus(selectedOrder) === "SERVED" || selectedOrder?.status === "CANCELLED"}
                                         onClick={() => handleUpdateStatus(selectedOrder)}
                                     >
-                                        {selectedOrder?.status || "ORDERED"}
+                                        {getEffectiveStatus(selectedOrder)}
                                     </button>
                                 </div>
                             </div>
