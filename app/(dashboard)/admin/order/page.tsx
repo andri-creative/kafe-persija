@@ -123,6 +123,13 @@ export default function OrderBaruPage() {
         }).format(d);
     };
 
+    const formatJam = (iso?: string) => {
+        if (!iso) return "-";
+        const d = new Date(iso);
+        if (Number.isNaN(d.getTime())) return "-";
+        return new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit' }).format(d);
+    };
+
     const handleProductStatusChange = async (order: any, productId: number) => {
         const products = Array.isArray(order?.products) ? order.products : [];
         const product = products.find((p: any) => p.id === productId);
@@ -317,7 +324,7 @@ export default function OrderBaruPage() {
                                     <div className="min-w-0 text-right">
                                         <div className="text-[6px] text-gray-400 font-black uppercase tracking-tighter mb-0.5">Time</div>
                                         <div className="text-[8px] text-gray-500 font-bold leading-none">
-                                            {new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit' }).format(new Date(order.created_at))}
+                                            {formatJam(order.created_at)}
                                         </div>
                                     </div>
                                 </div>

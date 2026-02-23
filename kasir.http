@@ -39,7 +39,7 @@ Content-Type: application/json
 
 
 ### PUT Order
-PUT https://api.dev.accolaplay.id/v2/kafe/dashboard/orders
+GET https://api.dev.accolaplay.id/v2/kafe/dashboard/orders
 Content-Type: application/json
 
 {
@@ -56,5 +56,8 @@ Content-Type: application/json
     }
   ]
 }
+
+### GET Poduct
+GET http://localhost:3000/api/products
 
 

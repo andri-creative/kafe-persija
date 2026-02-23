@@ -53,6 +53,11 @@ export async function PUT(req: NextRequest, { params }: Params) {
       updated_by,
     });
 
+    // Emit socket event for real-time update
+    if ((global as any).io) {
+      (global as any).io.emit("menu_updated", { action: "category_updated", category });
+    }
+
     return NextResponse.json(category);
   } catch (error: any) {
     console.error("Error updating category:", error);
@@ -67,6 +72,12 @@ export async function DELETE(_: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
     await deleteCategory(id);
+
+    // Emit socket event for real-time update
+    if ((global as any).io) {
+      (global as any).io.emit("menu_updated", { action: "category_deleted", id });
+    }
+
     return NextResponse.json({ message: "Category deleted successfully" });
   } catch (error: any) {
     if (error.message === "CATEGORY_NOT_FOUND") {

@@ -260,6 +260,10 @@ export async function PUT(
       });
     }
 
+    // Emit socket event for real-time update
+    if ((global as any).io) {
+      (global as any).io.emit("product_updated", { action: "updated", product: updatedProduct });
+    }
 
     return NextResponse.json({
       success: true,
@@ -312,6 +316,11 @@ export async function DELETE(
       where: { id: productId },
     });
 
+    // Emit socket event for real-time update
+    if ((global as any).io) {
+      (global as any).io.emit("product_updated", { action: "deleted", id: productId });
+    }
+
     return NextResponse.json({
       success: true,
       message: "Product deleted successfully",
@@ -360,6 +369,11 @@ export async function PATCH(
         updated_by,
       },
     });
+
+    // Emit socket event for real-time update
+    if ((global as any).io) {
+      (global as any).io.emit("product_updated", { action: "status_updated", id: productId, status });
+    }
 
     return NextResponse.json({
       success: true,
