@@ -37,7 +37,7 @@ export function LoginForm({
         } else if (roles.includes("MANAGER")) {
             router.push("/manager/dashboard")
         } else if (roles.includes("STAFF")) {
-            router.push("/staff/staff");
+            router.push("/staff/menu");
         } else {
             router.push("/")
         }

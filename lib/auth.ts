@@ -29,41 +29,41 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        console.log("Authorize called with:", { email: credentials?.email });
+        // console.log("Authorize called with:", { email: credentials?.email });
         if (!credentials?.email || !credentials?.password) {
-          console.error("Missing credentials");
+          // console.error("Missing credentials");
           throw new Error("Email dan password diperlukan");
         }
 
         try {
           // Rate Limit check
-          console.log(`[AUTH] Checking rate limit for: ${credentials.email}`);
+          // console.log(`[AUTH] Checking rate limit for: ${credentials.email}`);
           const { allowed, retryAfter } = await rateLimit(credentials.email);
 
           if (!allowed) {
-            console.error(`[AUTH] Rate limit exceeded for: ${credentials.email}`);
+            // console.error(`[AUTH] Rate limit exceeded for: ${credentials.email}`);
             throw new Error(`Terlalu banyak percobaan login. Silakan coba lagi dalam ${retryAfter} detik.`);
           }
 
-          console.log(`[AUTH] Rate limit OK. Proceeding to login for: ${credentials.email}`);
+          // console.log(`[AUTH] Rate limit OK. Proceeding to login for: ${credentials.email}`);
           const user = await authService.loginWithEmail(
             credentials.email,
             credentials.password,
           );
 
           if (!user) {
-            console.error("User returned null from service");
+            // console.error("User returned null from service");
             throw new Error("Email atau password salah");
           }
 
           // Reset rate limit on success
-          console.log(`[AUTH] Login success for ${credentials.email}. Resetting Redis rate limit.`);
+          // console.log(`[AUTH] Login success for ${credentials.email}. Resetting Redis rate limit.`);
           await resetRateLimit(credentials.email);
 
-          console.log("Authorize success:", user.email);
+          // console.log("Authorize success:", user.email);
           return user;
         } catch (e: any) {
-          console.error("Authorize error:", e.message);
+          // console.error("Authorize error:", e.message);
           return null;
         }
       },
@@ -89,7 +89,7 @@ export const authOptions: NextAuthOptions = {
 
         return true;
       } catch (error) {
-        console.error("SignIn error:", error);
+        // console.error("SignIn error:", error);
         return false;
       }
     },
@@ -108,7 +108,7 @@ export const authOptions: NextAuthOptions = {
         // Generate a stable Session ID (using the user ID or a random UUID)
         const sessionId = `sess_${userData.id}_${Date.now()}`;
 
-        console.log(`[REDIS SESSION] Storing data for session: ${sessionId}`);
+        // console.log(`[REDIS SESSION] Storing data for session: ${sessionId}`);
 
         // Store the full user object in Redis (30 days TTL)
         await redis.set(
@@ -130,7 +130,7 @@ export const authOptions: NextAuthOptions = {
 
     async session({ session, token }: any) {
       if (token.sessionId) {
-        console.log(`[REDIS SESSION] Fetching data for session: ${token.sessionId}`);
+        // console.log(`[REDIS SESSION] Fetching data for session: ${token.sessionId}`);
 
         // Retrieve the full user data from Redis
         const data = await redis.get(`persistent_session:${token.sessionId}`);
@@ -145,7 +145,7 @@ export const authOptions: NextAuthOptions = {
           session.user.auth_token = userData.auth_token;
           session.user.type = userData.type;
 
-          console.log(`[REDIS SESSION] Session restored from Redis for: ${userData.email}`);
+          // console.log(`[REDIS SESSION] Session restored from Redis for: ${userData.email}`);
         } else {
           console.warn(`[REDIS SESSION] Session key not found or expired: ${token.sessionId}`);
           // Fallback: If Redis fails, we might want to logout or re-fetch from DB
@@ -159,7 +159,7 @@ export const authOptions: NextAuthOptions = {
   events: {
     async signOut({ token }: any) {
       if (token.sessionId) {
-        console.log(`[REDIS SESSION] Logging out: Deleting session ${token.sessionId}`);
+        // console.log(`[REDIS SESSION] Logging out: Deleting session ${token.sessionId}`);
         await redis.del(`persistent_session:${token.sessionId}`);
       }
     },

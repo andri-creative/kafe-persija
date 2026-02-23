@@ -144,15 +144,18 @@ export default function OrderDetailPage() {
     let nextOrderStatus = order?.status || "ORDERED";
 
     const allServed = updatedProducts.every((p: any) => p.status === "SERVED");
-    const anyReady = updatedProducts.some((p: any) => p.status === "READY");
+    const anyOrdered = updatedProducts.some((p: any) => p.status === "ORDERED");
     const anyProcessing = updatedProducts.some((p: any) => p.status === "PROCESSING");
+    const anyReady = updatedProducts.some((p: any) => p.status === "READY");
 
     if (allServed) {
       nextOrderStatus = "SERVED";
-    } else if (anyReady) {
-      nextOrderStatus = "READY";
+    } else if (anyOrdered) {
+      nextOrderStatus = "ORDERED";
     } else if (anyProcessing) {
       nextOrderStatus = "PROCESSING";
+    } else if (anyReady) {
+      nextOrderStatus = "READY";
     } else {
       nextOrderStatus = "ORDERED";
     }

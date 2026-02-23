@@ -99,6 +99,7 @@ export async function updateCategory(id: string, data: UpdateCategoryInput) {
     data: {
       name: data.name,
       image: data.image,
+      updated_by: data.updated_by ? Number(data.updated_by) : undefined,
       updated_at: new Date(),
     },
   });

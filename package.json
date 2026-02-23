@@ -47,7 +47,6 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
-    "lightningcss-win32-x64-msvc": "^1.31.1",
     "prisma": "^7.3.0",
     "shadcn": "^3.8.4",
     "tailwindcss": "^4.1.18",

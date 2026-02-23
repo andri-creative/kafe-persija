@@ -1,8 +1,12 @@
 import { LoginForm } from "@/components/login-form";
 import prisma from "@/lib/prisma";
+import redis from "@/lib/redis";
 
 export default async function Home() {
   let dbStatus = "Checking...";
+  let redisStatus = "Checking...";
+
+  // Check Database
   try {
     await prisma.$queryRaw`SELECT 1`;
     dbStatus = "Database connected successfully";
@@ -10,6 +14,16 @@ export default async function Home() {
   } catch (error) {
     dbStatus = "Database connection failed";
     console.error('\x1b[31m%s\x1b[0m', `--- [DB STATUS] ERROR: ${dbStatus} ---`);
+  }
+
+  // Check Redis
+  try {
+    await redis.ping();
+    redisStatus = "Redis connected successfully";
+    console.log('\x1b[32m%s\x1b[0m', `--- [REDIS STATUS] ${redisStatus} ---`);
+  } catch (error) {
+    redisStatus = "Redis connection failed";
+    console.error('\x1b[31m%s\x1b[0m', `--- [REDIS STATUS] ERROR: ${redisStatus} ---`);
   }
 
   return (

@@ -1,4 +1,5 @@
 import { Product } from "@/types/product";
+import { getVariantImageUrl } from "./variant-helper";
 
 export const formatPrice = (price: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -23,7 +24,7 @@ export const getCategories = (product: Product) => {
 export const getVariantImage = (variants: Product["product_variants"]) => {
     for (const variant of variants) {
         if (variant.product_variant_images.length > 0) {
-            return variant.product_variant_images[0].image;
+            return getVariantImageUrl(variant.product_variant_images[0].image);
         }
     }
     return null;

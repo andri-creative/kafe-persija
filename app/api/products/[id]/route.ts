@@ -33,7 +33,7 @@ export async function GET(
             product_variant_images: true,
           },
           orderBy: {
-            created_at: "asc",
+            created_at: "desc",
           },
         },
       },
@@ -337,7 +337,11 @@ export async function PATCH(
     const params = await context.params;
     const productId = parseInt(params.id);
     const body = await request.json();
-    const updated_by = 1;
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const updated_by = parseInt(session.user.id);
 
     const existingProduct = await prisma.product.findUnique({
       where: { id: productId },

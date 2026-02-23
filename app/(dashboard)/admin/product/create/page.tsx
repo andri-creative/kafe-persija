@@ -37,6 +37,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "react-toastify";
+import { getProductSocket as getSocket } from "@/lib/product-socket";
+import { useSession } from "next-auth/react";
 
 // Type untuk variant
 type VariantFormData = {
@@ -50,6 +52,7 @@ type VariantFormData = {
 };
 
 export default function CreateProductPage() {
+  const { data: session } = useSession();
   // State untuk form product
   const [productName, setProductName] = useState("");
   const [description, setDescription] = useState("");
@@ -184,7 +187,6 @@ export default function CreateProductPage() {
   // Tambah variant baru
   const addVariant = () => {
     setVariants([
-      ...variants,
       {
         desc: "",
         price: "",
@@ -193,14 +195,14 @@ export default function CreateProductPage() {
         imageFiles: [],
         imagePreviews: [],
       },
+      ...variants,
     ]);
-    fileInputRefs.current.push(null);
+    fileInputRefs.current.unshift(null);
   };
 
   // Hapus variant
   const removeVariant = (index: number) => {
     if (variants.length > 1) {
-      // Clean up URL objects
       variants[index].imagePreviews.forEach((url) => URL.revokeObjectURL(url));
 
       const newVariants = variants.filter((_, i) => i !== index);
@@ -211,7 +213,6 @@ export default function CreateProductPage() {
     }
   };
 
-  // Toggle category selection
   const toggleCategory = (categoryName: string) => {
     setSelectedCategories((prev) =>
       prev.includes(categoryName)
@@ -290,6 +291,10 @@ export default function CreateProductPage() {
       }
 
       toast.success("Produk berhasil dibuat!");
+      
+      // Notify other clients
+      const socket = getSocket(session?.user?.auth_token, session?.user?.id);
+      socket.emit('product_updated', { action: 'created', product: result.data });
 
       // Clean up semua URL object
       variants.forEach((variant) => {

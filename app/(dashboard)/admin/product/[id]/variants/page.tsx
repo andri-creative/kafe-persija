@@ -30,6 +30,9 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useRef } from "react";
 import { Switch } from "@/components/ui/switch";
+import { getVariantImageUrl } from "@/lib/variant-helper";
+import { getProductSocket as getSocket } from "@/lib/product-socket";
+import { useSession } from "next-auth/react";
 
 // Type untuk variant
 type Variant = {
@@ -59,6 +62,7 @@ type Product = {
 };
 
 export default function ProductVariantsPage() {
+  const { data: session } = useSession();
   const params = useParams();
   const router = useRouter();
   const productId = params.id as string;
@@ -146,6 +150,10 @@ export default function ProductVariantsPage() {
 
       setVariants(variants.filter((v) => v.id !== variantId));
       toast.success("Varian berhasil dihapus");
+
+      // Notify other clients
+      const socket = getSocket(session?.user?.auth_token, session?.user?.id);
+      socket.emit('product_updated', { action: 'variant_deleted', productId, variantId });
     } catch (error) {
       console.error("Error deleting variant:", error);
       toast.error(
@@ -231,8 +239,12 @@ export default function ProductVariantsPage() {
       }
 
       // Add new variant to list
-      setVariants([...variants, result.data]);
+      setVariants([result.data, ...variants]);
       toast.success("Varian berhasil ditambahkan");
+
+      // Notify other clients
+      const socket = getSocket(session?.user?.auth_token, session?.user?.id);
+      socket.emit('product_updated', { action: 'variant_created', productId, variant: result.data });
 
       // Reset form
       setNewVariant({
@@ -286,6 +298,10 @@ export default function ProductVariantsPage() {
       }
 
       toast.success("Status varian berhasil diperbarui");
+
+      // Notify other clients
+      const socket = getSocket(session?.user?.auth_token, session?.user?.id);
+      socket.emit('product_updated', { action: 'variant_status_updated', productId, variantId, status: !checked });
     } catch (error) {
       console.error("Error updating status:", error);
       toast.error("Gagal memperbarui status");
@@ -594,7 +610,7 @@ export default function ProductVariantsPage() {
                             {variant.product_variant_images.slice(0, 3).map((img) => (
                               <div key={img.id} className="inline-block h-10 w-10 rounded-full ring-2 ring-white overflow-hidden bg-gray-100">
                                 <img
-                                  src={img.image}
+                                  src={getVariantImageUrl(img.image)}
                                   alt="Variant"
                                   className="h-full w-full object-cover"
                                 />
@@ -617,7 +633,7 @@ export default function ProductVariantsPage() {
                       </td>
                       <td className="py-4 px-4 flex flex-col gap-2">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium max-w-fit justify-center items-center ${variant.status === false
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium max-w-fit justify-center ${variant.status === false
                             ? "bg-green-100 text-green-800"
                             : "bg-gray-100 text-gray-800"
                             }`}
