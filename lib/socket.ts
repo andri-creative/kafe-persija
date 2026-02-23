@@ -33,8 +33,12 @@ export const getSocket = (token?: string, userId?: string): Socket => {
 
 
 
+        socket.on('connect', () => {
+            console.log('🔌 Socket.IO connected to backend:', socket?.id);
+        });
+
         socket.on('order_updated', (data: OrderUpdatedEvent) => {
-            // console.log('✅ Socket.IO connected:', socket?.id);
+            console.log('📡 Socket: Received order_updated event', data);
         });
 
         socket.on('disconnect', (reason) => {
@@ -47,6 +51,10 @@ export const getSocket = (token?: string, userId?: string): Socket => {
 
         socket.on('reconnect', (attemptNumber) => {
             // console.log('🔄 Socket.IO reconnected after', attemptNumber, 'attempts');
+        });
+
+        socket.on('order_created', (data: OrderUpdatedEvent) => {
+            console.log('📡 Socket: Received order_created event', data);
         });
     }
 

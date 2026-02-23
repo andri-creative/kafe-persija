@@ -53,6 +53,11 @@ export async function POST(req: NextRequest) {
 
     const category = await createCategory(categoryData);
 
+    // Emit socket event for real-time update
+    if ((global as any).io) {
+      (global as any).io.emit("menu_updated", { action: "category_created", category });
+    }
+
     return NextResponse.json(
       {
         success: true,

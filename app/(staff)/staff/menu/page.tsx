@@ -27,11 +27,12 @@ import { OrderSidebar } from "../../_components/OrderSidebar";
 import { VariantSelector } from "../../_components/VariantSelector";
 import { getVariantImageUrl } from "@/lib/variant-helper";
 import { useSession } from "next-auth/react";
+import { getSocket } from "@/lib/socket";
 
 
 
 interface CartItem {
-    id: number; // For product context
+    id: number;
     variantId: number;
     name: string;
     variantName: string | null;
@@ -71,6 +72,13 @@ interface DBCategory {
     image: string | null;
 }
 
+interface Discount {
+    id: number;
+    name: string;
+    type: "PERCENTAGE" | "FIXED";
+    value: number;
+}
+
 export default function MenuPage() {
     const [activeCategory, setActiveCategory] = useState<number | "all">("all");
     const [cart, setCart] = useState<CartItem[]>([]);
@@ -78,22 +86,26 @@ export default function MenuPage() {
 
     const [products, setProducts] = useState<DBProduct[]>([]);
     const [categories, setCategories] = useState<DBCategory[]>([]);
+    const [discounts, setDiscounts] = useState<Discount[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
 
     const [selectedProductForVariant, setSelectedProductForVariant] = useState<DBProduct | null>(null);
     const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const { data: session } = useSession();
 
     const fetchData = async (showLoading = true) => {
         try {
             if (showLoading) setIsLoading(true);
-            const [prodRes, catRes] = await Promise.all([
+            const [prodRes, catRes, discRes] = await Promise.all([
                 axios.get("/api/products"),
-                axios.get("/api/categories")
+                axios.get("/api/categories"),
+                axios.get("/api/discount")
             ]);
             setProducts(prodRes.data);
             setCategories(catRes.data);
+            setDiscounts(discRes.data);
         } catch (error) {
             console.error("Failed to fetch menu data:", error);
         } finally {
@@ -108,7 +120,7 @@ export default function MenuPage() {
     useEffect(() => {
         const interval = setInterval(() => {
             fetchData(false);
-        }, 1000);
+        }, 5000);
 
         return () => clearInterval(interval);
     }, []);
@@ -117,7 +129,7 @@ export default function MenuPage() {
         .filter(p => p.status.toLowerCase() === "active")
         .map(p => ({
             ...p,
-            product_variants: p.product_variants.filter(v => 
+            product_variants: p.product_variants.filter(v =>
                 (v.stok === null || v.stok > 0) && !v.status
             )
         }))
@@ -141,7 +153,7 @@ export default function MenuPage() {
         const availableStock = variant.stok === null ? 999 : variant.stok - currentInCart;
 
         if (variant.status || availableStock <= 0) {
-            return; 
+            return;
         }
 
         handleVariantAdd(product, variant);
@@ -202,33 +214,112 @@ export default function MenuPage() {
         return cart.filter(item => item.id === productId).reduce((acc, item) => acc + item.quantity, 0);
     };
 
-    const handleConfirm = (customerName: string) => {
-        if (!customerName) {
-            alert("Silakan masukkan nama pelanggan");
+    const handleConfirm = async (customerName: string, selectedDiscount: Discount | null, cashAmount: number) => {
+        if (!session) {
+            alert("Sesi berakhir, silakan login kembali.");
             return;
         }
 
-        // Generate Order Number: ORD-[Timestamp]-[Random3]
-        const orderNumber = `ORD-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
+        if (cart.length === 0) {
+            alert("Keranjang masih kosong");
+            return;
+        }
 
-        const orderData = {
-            order_number: orderNumber,
-            customer_name: customerName,
-            items: cart,
-            subtotal,
-            taxes,
-            total,
-            status: "ORDERED",
-            created_at: new Date().toISOString()
-        };
+        try {
+            setIsSubmitting(true);
+            const orderNumber = `ORD-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
 
-        console.log("ORDER JSON:", orderData);
-        alert(JSON.stringify(orderData, null, 2));
+            const productsInOrder = Array.from(new Set(cart.map(item => item.id))).map(productId => {
+                const productItems = cart.filter(item => item.id === productId);
+                const originalProduct = products.find(p => p.id === productId);
+
+                return {
+                    id: Number(productId),
+                    name: productItems[0].name,
+                    categories: originalProduct?.product_category_trx.map(trx => ({
+                        id: Number(trx.product_category.id),
+                        name: trx.product_category.name
+                    })) || [],
+                    variants: productItems.map(item => ({
+                        id: Number(item.variantId),
+                        name: item.variantName,
+                        price: Number(item.price),
+                        image: item.image || "",
+                        quantity: Number(item.quantity),
+                        discount: 0,
+                        total_price: Number(item.price * item.quantity)
+                    })),
+                    discount: 0,
+                    status: "ORDERED"
+                };
+            });
+
+            const discountValue = selectedDiscount
+                ? selectedDiscount.type === "PERCENTAGE"
+                    ? (selectedDiscount.value / 100) * total
+                    : selectedDiscount.value
+                : 0;
+
+            const finalTotal = Math.max(0, total - discountValue);
+
+            const orderData = {
+                order_number: orderNumber,
+                user_id: Number((session as any)?.user?.id || 0),
+                table: [],
+                products: productsInOrder,
+                total_amount: Number(finalTotal),
+                amount: Number(finalTotal),
+                status: "PAID",
+                discount: {
+                    total_amount: discountValue,
+                    sources: selectedDiscount ? [{
+                        name: selectedDiscount.name,
+                        type: selectedDiscount.type,
+                        value: selectedDiscount.value
+                    }] : []
+                },
+                payment: {
+                    status: "PAID",
+                    total_payment: Number(finalTotal),
+                    sources: [{
+                        name: "CASH",
+                        amount: Number(cashAmount)
+                    }],
+                    updated_at: new Date().toISOString()
+                },
+                updated_at: new Date().toISOString(),
+                created_at: new Date().toISOString(),
+                created: new Date().toISOString(),
+                updated: new Date().toISOString()
+            };
+            const socket = getSocket(session?.user?.auth_token, session?.user?.id);
+            console.log("🔌 Staff Menu: Socket state", { connected: socket?.connected, id: socket?.id });
+
+            if (socket) {
+                console.log("📤 Staff Menu: Emitting order_created", { order_number: orderData.order_number });
+                socket.emit("order_created", { action: "created", order: orderData });
+            }
+
+            const response = await axios.post("/api/orders", orderData);
+
+            if (response.status === 200 || response.status === 201) {
+                alert("Pesanan berhasil dikirim!");
+                setCart([]);
+                setIsCartOpen(false);
+            } else {
+                throw new Error("Gagal mengirim pesanan");
+            }
+        } catch (error: any) {
+            console.error("Order submission error:", error);
+            alert(error.response?.data?.message || "Terjadi kesalahan saat mengirim pesanan. Silakan coba lagi.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    const taxes = subtotal * 0.05;
-    const total = subtotal + taxes;
+    // const taxes = subtotal * 0.05;
+    const total = subtotal;
 
     if (isLoading) {
         return (
@@ -444,9 +535,11 @@ export default function MenuPage() {
                 <SheetContent side="right" className="p-0 w-full sm:max-w-md border-l-0">
                     <OrderSidebar
                         cart={cart}
+                        discounts={discounts}
                         onUpdateQuantity={updateQuantity}
                         onRemoveItem={removeFromCart}
                         onConfirm={handleConfirm}
+                        isLoading={isSubmitting}
                     />
                 </SheetContent>
             </Sheet>

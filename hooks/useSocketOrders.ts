@@ -35,10 +35,12 @@ export const useSocketOrders = (initialOrders: any[] = []) => {
         const socket = getSocket(token, userId);
 
         function onConnect() {
+            console.log('🔌 Admin Hook: Connected to socket', socket.id);
             setIsConnected(true);
         }
 
         function onDisconnect() {
+            console.log('❌ Admin Hook: Disconnected');
             setIsConnected(false);
         }
 
@@ -47,44 +49,64 @@ export const useSocketOrders = (initialOrders: any[] = []) => {
 
         // Check initial state
         if (socket.connected) {
+            console.log('🔌 Admin Hook: Already connected', socket.id);
             setIsConnected(true);
         }
 
         const handleOrderUpdate = (data: OrderUpdatedEvent | any) => {
-            console.log('📡 Received order update:', data);
+            console.log('📡 Admin Hook: Received order update event', data);
+
+            if (!data) return;
+
+            // Handle both wrapped { order: ... } and direct order object
             const updatedOrder = data.order || data;
-            const action = data.action || 'updated';
+
+            // Determine action: if explicitly provided, use it. 
+            // If it's the 'order_created' event, treat as 'created' if action missing.
+            let action = data.action;
+            if (!action) {
+                // We'll trust the logic below to determine if it's a new order
+                action = 'updated';
+            }
+
+            console.log(`📝 Admin Hook: Processing order ${updatedOrder.order_number} as ${action}`);
 
             setOrders((prevOrders) => {
                 if (action === 'deleted') {
                     return prevOrders.filter(
                         (order) => order._id !== updatedOrder._id && order.order_number !== updatedOrder.order_number
                     );
-                } else if (action === 'created') {
-                    const exists = prevOrders.some(
-                        (order) => order._id === updatedOrder._id || order.order_number === updatedOrder.order_number
-                    );
-                    if (exists) {
-                        return prevOrders.map((order) =>
-                            order._id === updatedOrder._id || order.order_number === updatedOrder.order_number
-                                ? { ...order, ...updatedOrder }
-                                : order
-                        );
-                    }
-                    return [...prevOrders, updatedOrder];
-                } else {
+                }
+
+                // For created OR updated, try to find existing first
+                const exists = prevOrders.some(
+                    (order) => (updatedOrder._id && order._id === updatedOrder._id) ||
+                        (updatedOrder.order_number && order.order_number === updatedOrder.order_number)
+                );
+
+                if (exists) {
                     return prevOrders.map((order) =>
-                        order._id === updatedOrder._id || order.order_number === updatedOrder.order_number
+                        (updatedOrder._id && order._id === updatedOrder._id) ||
+                            (updatedOrder.order_number && order.order_number === updatedOrder.order_number)
                             ? { ...order, ...updatedOrder }
                             : order
                     );
                 }
+
+                // If it doesn't exist, and it's 'created' or 'updated' (with actual data), add it
+                if (action === 'created' || action === 'updated') {
+                    console.log(`✨ Admin Hook: Adding NEW order ${updatedOrder.order_number} to list`);
+                    return [...prevOrders, updatedOrder];
+                }
+
+                return prevOrders;
             });
         };
 
         socket.on('orderUpdated', handleOrderUpdate);
         socket.on('order:updated', handleOrderUpdate);
         socket.on('order_updated', handleOrderUpdate);
+        socket.on('order_created', handleOrderUpdate);
         socket.on('updateOrder', handleOrderUpdate);
 
         return () => {
@@ -93,6 +115,7 @@ export const useSocketOrders = (initialOrders: any[] = []) => {
             socket.off('orderUpdated', handleOrderUpdate);
             socket.off('order:updated', handleOrderUpdate);
             socket.off('order_updated', handleOrderUpdate);
+            socket.off('order_created', handleOrderUpdate);
             socket.off('updateOrder', handleOrderUpdate);
         };
     }, [session, status]);
