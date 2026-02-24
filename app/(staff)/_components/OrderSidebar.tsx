@@ -6,7 +6,7 @@ import { Minus, Plus, Trash2, Utensils, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { getVariantImageUrl } from "@/lib/variant-helper";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface CartItem {
     id: number;
@@ -18,18 +18,19 @@ interface CartItem {
     image: string | null;
 }
 
-interface Discount {
+export interface Discount {
     id: number;
     name: string;
     type: "PERCENTAGE" | "FIXED";
     value: number;
+    is_active: boolean;
 }
 
 interface OrderSidebarProps {
     cart: CartItem[];
     onUpdateQuantity: (variantId: number, delta: number) => void;
     onRemoveItem: (variantId: number) => void;
-    onConfirm: (customerName: string, selectedDiscount: Discount | null, cashAmount: number) => void;
+    onConfirm: (customerName: string, selectedDiscount: Discount | null, cashAmount: number, paymentMethod: string) => void;
     isLoading?: boolean;
     discounts: Discount[];
 }
@@ -45,7 +46,7 @@ export function OrderSidebar({
     const [customerName, setCustomerName] = useState("");
     const [selectedDiscountId, setSelectedDiscountId] = useState<number | null>(null);
     const [cashAmount, setCashAmount] = useState<number>(0);
-
+    const [paymentMethod, setPaymentMethod] = useState<"CASH" | "NETZME">("CASH");
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
     const selectedDiscount = discounts.find(d => d.id === selectedDiscountId) || null;
@@ -57,6 +58,12 @@ export function OrderSidebar({
 
     const total = Math.max(0, subtotal - discountValue);
     const change = Math.max(0, cashAmount - total);
+
+    useEffect(() => {
+        if (paymentMethod === "NETZME") {
+            setCashAmount(total);
+        }
+    }, [total, paymentMethod]);
 
     return (
         <div className="h-full flex flex-col bg-white dark:bg-zinc-950">
@@ -187,29 +194,73 @@ export function OrderSidebar({
 
                 {/* PAYMENT METHOD SECTION */}
                 <div className="space-y-3">
-                    <h3 className="text-[11px] font-black uppercase text-zinc-400 tracking-widest italic">Pembayaran Tunai (Cash)</h3>
+                    <h3 className="text-[11px] font-black uppercase text-zinc-400 tracking-widest italic">Metode Pembayaran</h3>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setPaymentMethod("CASH")}
+                            className={cn(
+                                "flex-1 px-3 py-3 rounded-xl text-[10px] font-black transition-all border-2",
+                                paymentMethod === "CASH"
+                                    ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 border-zinc-900 dark:border-zinc-100"
+                                    : "bg-transparent text-zinc-400 border-zinc-100 dark:border-zinc-800"
+                            )}
+                        >
+                            CASH (TUNAI)
+                        </button>
+                        <button
+                            onClick={() => setPaymentMethod("NETZME")}
+                            className={cn(
+                                "flex-1 px-3 py-3 rounded-xl text-[10px] font-black transition-all border-2",
+                                paymentMethod === "NETZME"
+                                    ? "bg-[#ff3535] text-white border-[#ff3535]"
+                                    : "bg-transparent text-zinc-400 border-zinc-100 dark:border-zinc-800"
+                            )}
+                        >
+                            NETZME
+                        </button>
+                    </div>
+
                     <div className="bg-zinc-50 dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800 space-y-4">
                         <div className="space-y-1.5">
-                            <label className="text-[9px] text-zinc-400 uppercase font-black pl-1">Uang Diterima (Cash)</label>
+                            <label className="text-[9px] text-zinc-400 uppercase font-black pl-1">
+                                {paymentMethod === "CASH" ? "Uang Diterima (Cash)" : "Nilai Transaksi (Netzme)"}
+                            </label>
                             <div className="relative">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-zinc-400">Rp</span>
                                 <input
                                     type="number"
                                     value={cashAmount || ""}
                                     onChange={(e) => setCashAmount(Number(e.target.value))}
+                                    readOnly={paymentMethod === "NETZME"}
                                     placeholder="0"
-                                    className="w-full h-11 pl-9 pr-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-black focus:outline-none focus:ring-1 focus:ring-red-500"
+                                    className={cn(
+                                        "w-full h-11 pl-9 pr-3 border rounded-xl text-xs font-black focus:outline-none transition-all",
+                                        paymentMethod === "NETZME"
+                                            ? "bg-zinc-100 dark:bg-zinc-800 border-transparent text-zinc-400"
+                                            : "bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 focus:ring-1 focus:ring-red-500"
+                                    )}
                                 />
+                                {paymentMethod === "NETZME" && (
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[8px] font-black bg-[#ff3535] text-white px-2 py-0.5 rounded-full uppercase scale-90">
+                                        Otomatis
+                                    </span>
+                                )}
                             </div>
                         </div>
 
-                        {cashAmount > 0 && (
-                            <div className="flex justify-between items-center px-1">
-                                <span className="text-[10px] font-black text-zinc-400 uppercase">Kembalian</span>
-                                <span className="text-sm font-black text-green-500">
-                                    Rp {change.toLocaleString('id-ID')}
-                                </span>
-                            </div>
+                        {paymentMethod === "CASH" ? (
+                            cashAmount > 0 && (
+                                <div className="flex justify-between items-center px-1">
+                                    <span className="text-[10px] font-black text-zinc-400 uppercase">Kembalian</span>
+                                    <span className="text-sm font-black text-green-500">
+                                        Rp {change.toLocaleString('id-ID')}
+                                    </span>
+                                </div>
+                            )
+                        ) : (
+                            <p className="text-[9px] font-bold text-zinc-500 leading-relaxed italic px-1">
+                                * Pembayaran via <span className="text-[#ff3535] font-black">QRIS Netzme</span> dilakukan dengan nilai transaksi yang disesuaikan otomatis dengan total akhir pesanan.
+                            </p>
                         )}
                     </div>
                 </div>
@@ -234,8 +285,8 @@ export function OrderSidebar({
                 </div>
 
                 <Button
-                    onClick={() => onConfirm(customerName, selectedDiscount, cashAmount)}
-                    disabled={isLoading || cart.length === 0 || (cashAmount < total && total > 0)}
+                    onClick={() => onConfirm(customerName, selectedDiscount, paymentMethod === "NETZME" ? total : cashAmount, paymentMethod)}
+                    disabled={isLoading || cart.length === 0 || (paymentMethod === "CASH" && cashAmount < total && total > 0)}
                     className="w-full h-12 bg-[#ff3535] hover:bg-[#e62e2e] text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-[0_8px_16px_-4px_rgba(255,53,53,0.4)] active:scale-95 transition-transform flex items-center justify-center gap-2"
                 >
                     {isLoading ? (

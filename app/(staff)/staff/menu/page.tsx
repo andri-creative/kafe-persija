@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/sheet";
 import { ShoppingBag } from "lucide-react";
 
-import { OrderSidebar } from "../../_components/OrderSidebar";
+import { OrderSidebar, Discount } from "../../_components/OrderSidebar";
 import { VariantSelector } from "../../_components/VariantSelector";
 import { getVariantImageUrl } from "@/lib/variant-helper";
 import { useSession } from "next-auth/react";
@@ -72,12 +72,6 @@ interface DBCategory {
     image: string | null;
 }
 
-interface Discount {
-    id: number;
-    name: string;
-    type: "PERCENTAGE" | "FIXED";
-    value: number;
-}
 
 export default function MenuPage() {
     const [activeCategory, setActiveCategory] = useState<number | "all">("all");
@@ -105,7 +99,7 @@ export default function MenuPage() {
             ]);
             setProducts(prodRes.data);
             setCategories(catRes.data);
-            setDiscounts(discRes.data);
+            setDiscounts(discRes.data.filter((d: Discount) => d.is_active));
         } catch (error) {
             console.error("Failed to fetch menu data:", error);
         } finally {
@@ -214,7 +208,7 @@ export default function MenuPage() {
         return cart.filter(item => item.id === productId).reduce((acc, item) => acc + item.quantity, 0);
     };
 
-    const handleConfirm = async (customerName: string, selectedDiscount: Discount | null, cashAmount: number) => {
+    const handleConfirm = async (customerName: string, selectedDiscount: Discount | null, cashAmount: number, paymentMethod: string = "CASH") => {
         if (!session) {
             alert("Sesi berakhir, silakan login kembali.");
             return;
@@ -270,6 +264,7 @@ export default function MenuPage() {
                 total_amount: Number(finalTotal),
                 amount: Number(finalTotal),
                 status: "PAID",
+                payment_method: paymentMethod,
                 discount: {
                     total_amount: discountValue,
                     sources: selectedDiscount ? [{
@@ -282,7 +277,7 @@ export default function MenuPage() {
                     status: "PAID",
                     total_payment: Number(finalTotal),
                     sources: [{
-                        name: "CASH",
+                        name: paymentMethod,
                         amount: Number(cashAmount)
                     }],
                     updated_at: new Date().toISOString()

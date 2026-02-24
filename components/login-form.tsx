@@ -30,12 +30,8 @@ export function LoginForm({
         const session = await fetch("/api/auth/session").then((res) => res.json())
         const roles: string[] = session?.user?.roles || []
 
-        if (roles.includes("SUPER_ADMIN")) {
-            router.push("/super-admin/dashboard")
-        } else if (roles.includes("ADMIN")) {
-            router.push("/admin/dashboard")
-        } else if (roles.includes("MANAGER")) {
-            router.push("/manager/dashboard")
+        if (roles.includes("SUPER_ADMIN") || roles.includes("ADMIN") || roles.includes("MANAGER")) {
+            router.push("/dashboard")
         } else if (roles.includes("STAFF")) {
             router.push("/staff/menu");
         } else {

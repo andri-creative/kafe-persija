@@ -87,11 +87,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const basePath = getBasePathByRole(role);
 
+  const getFullUrl = (url: string) => {
+    if (url === "#") return "#";
+    // If it's an absolute path starting with /staff or similar, keep it as is
+    if (url.startsWith('/staff') || url.startsWith('/layar-tv')) return url;
+    return `${basePath}${url}`;
+  };
+
   const isActive = (url: string, items?: Array<{ url: string }>) => {
+    const fullUrl = getFullUrl(url);
     if (url === "#" && items) {
-      return items.some((item) => pathname === `${basePath}${item.url}`);
+      return items.some((item) => pathname === getFullUrl(item.url));
     }
-    return pathname === `${basePath}${url}`;
+    return pathname === fullUrl;
   };
 
   return (
@@ -100,7 +108,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href={`${basePath}/dashboard`}>
+              <Link href="/dashboard">
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   {/* <GalleryVerticalEnd className="size-4" /> */}
                   <Avatar className="rounded-md">
@@ -150,9 +158,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             <SidebarMenuSubItem key={subItem.title}>
                               <SidebarMenuSubButton
                                 asChild
-                                isActive={pathname === `${basePath}${subItem.url}`}
+                                isActive={pathname === getFullUrl(subItem.url)}
                               >
-                                <Link href={`${basePath}${subItem.url}`}>
+                                <Link href={getFullUrl(subItem.url)}>
                                   <span>{subItem.title}</span>
                                 </Link>
                               </SidebarMenuSubButton>
@@ -172,7 +180,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     isActive={itemIsActive}
                     tooltip={item.title}
                   >
-                    <Link href={`${basePath}${item.url}`}>
+                    <Link href={getFullUrl(item.url)}>
                       <IconComponent className="size-4" />
                       <span>{item.title}</span>
                     </Link>
