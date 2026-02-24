@@ -2,19 +2,15 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { useState, useEffect, useRef, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { getOrders } from "@/lib/order-api";
 import { useSocketOrders } from "@/hooks/useSocketOrders";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import LayarTv from "@/components/tv/layar-tv";
 
-export default function LayarTv({ role = "STAFF" }: { role?: "ADMIN" | "STAFF" | "MANAGER" }) {
-    const router = useRouter();
+export default function ScreenPage() {
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
-
 
     const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
@@ -192,50 +188,8 @@ export default function LayarTv({ role = "STAFF" }: { role?: "ADMIN" | "STAFF" |
     );
 
     return (
-        <div
-            ref={containerRef}
-            onClick={toggleFullscreen}
-            className="grid grid-cols-3 h-screen w-full overflow-hidden bg-gray-100 relative font-sans cursor-pointer select-none"
-            title={isFullscreen ? "Klik untuk keluar Fullscreen" : "Klik untuk masuk Fullscreen"}
-        >
-
-            {/* Connection Status Indicator */}
-            <div className="absolute top-2 right-2 z-[60] flex items-center gap-2 bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full pointer-events-none border border-white/10">
-                <div className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-pulse'}`}></div>
-                <span className="text-[10px] font-bold text-white tracking-wider uppercase opacity-90">
-                    {isConnected ? 'LIVE' : 'DISCONNECTED'}
-                </span>
-            </div>
-
-            <StatusColumn
-                title="ORDERED"
-                count={orderBaru.length}
-                orders={orderBaru}
-                bgColor="bg-blue-50"
-                headerColor="bg-blue-600"
-                textColor="#2563eb"
-                emptyText="No new orders"
-            />
-
-            <StatusColumn
-                title="PROCESSING"
-                count={processing.length}
-                orders={processing}
-                bgColor="bg-orange-50"
-                headerColor="bg-orange-500"
-                textColor="#f97316"
-                emptyText="No orders in process"
-            />
-
-            <StatusColumn
-                title="READY"
-                count={ready.length}
-                orders={ready}
-                bgColor="bg-green-50"
-                headerColor="bg-green-600"
-                textColor="#16a34a"
-                emptyText="No ready orders"
-            />
-        </div>
+        <>
+            <LayarTv role="ADMIN" />
+        </>
     );
 }

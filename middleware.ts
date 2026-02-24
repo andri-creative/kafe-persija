@@ -20,14 +20,14 @@ export async function middleware(req: NextRequest) {
 
   const roles = token.roles as string[];
 
-  if (pathname.startsWith("/admin")) {
-    if (!roles.includes("ADMIN") && !roles.includes("SUPER_ADMIN")) {
-      return NextResponse.redirect(new URL("/403", req.url));
-    }
-  }
-
-  if (pathname.startsWith("/super-admin")) {
-    if (!roles.includes("SUPER_ADMIN")) {
+  if (pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/product") ||
+    pathname.startsWith("/order") ||
+    pathname.startsWith("/order-lama") ||
+    pathname.startsWith("/users") ||
+    pathname.startsWith("/profile") ||
+    pathname.startsWith("/layar-tv")) {
+    if (!roles.includes("MANAGER") && !roles.includes("ADMIN") && !roles.includes("SUPER_ADMIN")) {
       return NextResponse.redirect(new URL("/403", req.url));
     }
   }
@@ -38,24 +38,18 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  if (pathname.startsWith("/manager")) {
-    if (!roles.includes("MANAGER") && !roles.includes("ADMIN") && !roles.includes("SUPER_ADMIN")) {
-      return NextResponse.redirect(new URL("/403", req.url));
-    }
-  }
-
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    "/admin/:path*",
-    "/super-admin/:path*",
+    "/dashboard/:path*",
+    "/product/:path*",
+    "/order/:path*",
+    "/order-lama/:path*",
+    "/users/:path*",
+    "/profile/:path*",
+    "/layar-tv/:path*",
     "/staff/:path*",
-    "/manager/:path*",
-    "/products/:path*",
-    "/transactions/:path*",
-    "/promo/:path*",
-    "/reports/:path*",
   ],
 };

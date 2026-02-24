@@ -97,10 +97,22 @@ export function Navbar() {
                         <span className="text-[10px] font-bold text-zinc-900 dark:text-zinc-100 leading-tight">
                             {session?.user?.nickname || "Staff"}
                         </span>
-                        <span className="text-[8px] text-zinc-400 font-extrabold uppercase tracking-tighter">Account</span>
+                        <span className="text-[8px] text-[#ff3535] font-black uppercase tracking-tighter">
+                            {session?.user?.roles?.includes("ADMIN") ? "Admin Account" : "Staff Account"}
+                        </span>
                     </div>
 
                     <div className="flex items-center gap-1">
+                        {(session?.user?.roles?.includes("ADMIN") || session?.user?.roles?.includes("SUPER_ADMIN") || session?.user?.roles?.includes("MANAGER")) && (
+                            <Link
+                                href="/dashboard"
+                                className="h-7 w-7 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-blue-500 dark:text-blue-400 border border-zinc-200/50 dark:border-zinc-700/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all shadow-sm group"
+                                title="Ke Admin Panel"
+                            >
+                                <Layers className="h-3.5 w-3.5 group-hover:scale-110 transition-transform" />
+                            </Link>
+                        )}
+
                         <div className="h-7 w-7 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 dark:text-zinc-400 border border-zinc-200/50 dark:border-zinc-700/50 overflow-hidden shadow-inner">
                             {session?.user?.picture ? (
                                 <img src={session.user.picture} alt="Avatar" className="w-full h-full object-cover" />
