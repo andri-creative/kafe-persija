@@ -58,7 +58,11 @@ export function LoginForm({
             })
 
             if (result?.error) {
-                setError("Email atau password salah")
+                if (result.error === "ACCOUNT_INACTIVE") {
+                    setError("Akun Anda dinonaktifkan. Silakan hubungi admin.")
+                } else {
+                    setError("Email atau password salah")
+                }
                 return
             }
 

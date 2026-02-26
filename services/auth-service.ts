@@ -3,6 +3,12 @@ import prisma from "@/lib/prisma";
 import { hash, compare } from "bcryptjs";
 import { randomUUID } from "crypto";
 
+const INACTIVE_MSG = "ACCOUNT_INACTIVE";
+
+function isInactive(status: string) {
+  return status === "INACTIVE" || status === "inactive";
+}
+
 export const authService = {
   async getUserByEmail(email: string) {
     try {
@@ -60,6 +66,11 @@ export const authService = {
 
       if (!isValidPassword) {
         throw new Error("Password salah");
+      }
+
+      // Status check — block inactive users
+      if (isInactive(user.status)) {
+        throw new Error(INACTIVE_MSG);
       }
 
       // Ambil token dari DB jika sudah ada, atau generate baru jika kosong
@@ -127,6 +138,11 @@ export const authService = {
       const authToken = randomUUID();
 
       if (existingUser) {
+        // Status check — block inactive users
+        if (isInactive(existingUser.status)) {
+          throw new Error(INACTIVE_MSG);
+        }
+
         await prisma.user.update({
           where: { id: existingUser.id },
           data: {
@@ -170,6 +186,11 @@ export const authService = {
       const authToken = randomUUID();
 
       if (existingUser) {
+        // Status check — block inactive users
+        if (isInactive(existingUser.status)) {
+          throw new Error(INACTIVE_MSG);
+        }
+
         await prisma.user.update({
           where: { id: existingUser.id },
           data: {

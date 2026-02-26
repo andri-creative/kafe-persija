@@ -84,7 +84,7 @@ async function main() {
   const passwordSuperAdmin = await bcrypt.hash("superasmin", 12);
   const passwordAdmin = await bcrypt.hash("admin", 12);
   const passwordManager = await bcrypt.hash("manager", 12);
-  const passwordStaff = await bcrypt.hash("staff", 12); // user wrote 'pass staff'
+  const passwordStaff = await bcrypt.hash("staff", 12);
 
   const usersData = [
     {

@@ -10,30 +10,32 @@ import {
   FolderTree,
   Palette,
   GalleryVerticalEnd,
-  ChevronRight,
   LucideIcon,
   User,
   Users,
+  ShieldAlert,
+  ShieldCheck,
+  Settings,
+  History,
+  UserCog,
+  Percent,
+  Ticket,
+  Archive,
+  ClipboardList,
+  Tv,
 } from "lucide-react";
 
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { navCafe } from "@/config/nav-cafe";
 import { getBasePathByRole } from "@/lib/role-path";
 
@@ -61,14 +63,24 @@ import Link from "next/link";
 const getIcon = (iconName: string | React.ComponentType<any>) => {
   if (typeof iconName === "string") {
     const iconMap: Record<string, React.ComponentType<any>> = {
-      LayoutDashboard: LayoutDashboard,
-      ShoppingCart: ShoppingCart,
-      Package: Package,
-      BarChart3: BarChart3,
-      FolderTree: FolderTree,
-      Palette: Palette,
-      User: User,
-      Users: Users,
+      LayoutDashboard,
+      ShoppingCart,
+      Package,
+      BarChart3,
+      FolderTree,
+      Palette,
+      User,
+      Users,
+      ShieldAlert,
+      ShieldCheck,
+      Settings,
+      History,
+      UserCog,
+      Percent,
+      Ticket,
+      Archive,
+      ClipboardList,
+      Tv,
     };
     return iconMap[iconName] || LayoutDashboard;
   }
@@ -89,18 +101,43 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const getFullUrl = (url: string) => {
     if (url === "#") return "#";
-    // If it's an absolute path starting with /staff or similar, keep it as is
-    if (url.startsWith('/staff') || url.startsWith('/layar-tv')) return url;
-    return `${basePath}${url}`;
+    // If it's an absolute path starting with these prefixes, keep it as is
+    if (
+      url.startsWith('/staff') ||
+      url.startsWith('/admin') ||
+      url.startsWith('/super-admin') ||
+      url.startsWith('/manager') ||
+      url.startsWith('/dashboard') ||
+      url.startsWith('/layar-tv')
+    ) return url;
+
+    // For relative paths, prepend the basePath
+    const path = url.startsWith('/') ? url : `/${url}`;
+    return `${basePath}${path}`;
   };
 
-  const isActive = (url: string, items?: Array<{ url: string }>) => {
+  const isActive = (url: string) => {
     const fullUrl = getFullUrl(url);
-    if (url === "#" && items) {
-      return items.some((item) => pathname === getFullUrl(item.url));
-    }
     return pathname === fullUrl;
   };
+
+  const getNavItems = (): any[] => {
+    if (role === "SUPER_ADMIN") {
+      return navCafe.superAdmin;
+    }
+    if (role === "ADMIN") {
+      return navCafe.admin;
+    }
+    if (role === "MANAGER") {
+      return navCafe.manager;
+    }
+    if (role === "STAFF") {
+      return navCafe.staff;
+    }
+    return [];
+  };
+
+  const navGroups = getNavItems();
 
   return (
     <Sidebar {...props}>
@@ -127,69 +164,36 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarMenu>
-            {navCafe.navMain.map((item) => {
-              const IconComponent = getIcon(item.icon);
-              const itemIsActive = isActive(item.url, item.items);
+        {navGroups.map((group, index) => (
+          <SidebarGroup key={group.title || index} className={index > 0 ? "pt-0" : ""}>
+            {group.title && (
+              <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+                {group.title}
+              </SidebarGroupLabel>
+            )}
+            <SidebarMenu>
+              {group.items.map((item: any) => {
+                const IconComponent = getIcon(item.icon);
+                const isActiveItem = isActive(item.url);
 
-              if (item.items && item.items.length > 0) {
                 return (
-                  <Collapsible
-                    key={item.title}
-                    asChild
-                    defaultOpen={itemIsActive}
-                    className="group/collapsible"
-                  >
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton
-                          tooltip={item.title}
-                          isActive={itemIsActive}
-                        >
-                          <IconComponent className="size-4" />
-                          <span>{item.title}</span>
-                          <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {item.items.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.title}>
-                              <SidebarMenuSubButton
-                                asChild
-                                isActive={pathname === getFullUrl(subItem.url)}
-                              >
-                                <Link href={getFullUrl(subItem.url)}>
-                                  <span>{subItem.title}</span>
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActiveItem}
+                      tooltip={item.title}
+                    >
+                      <Link href={getFullUrl(item.url)}>
+                        <IconComponent className="size-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                 );
-              }
-
-              return (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={itemIsActive}
-                    tooltip={item.title}
-                  >
-                    <Link href={getFullUrl(item.url)}>
-                      <IconComponent className="size-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
-            })}
-          </SidebarMenu>
-        </SidebarGroup>
+              })}
+            </SidebarMenu>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
       <SidebarRail />
     </Sidebar>

@@ -1,57 +1,55 @@
-import { title } from "process";
-
 export const navCafe = {
-  navMain: [
+  superAdmin: [
     {
-      title: "Order",
-      url: "/order",
-      icon: "ShoppingCart",
-    },
-    {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: "LayoutDashboard",
-    },
-
-    {
-      title: "Product",
-      icon: "Package",
-      url: "#",
+      title: "Super Admin Panel",
+      group: "super-admin",
       items: [
-        {
-          title: "Product",
-          url: "/product",
-        },
-        {
-          title: "Category",
-          url: "/product/category",
-        },
+        { title: "Dashboard", url: "/dashboard", icon: "LayoutDashboard" },
+        { title: "Settings", url: "/super-admin/settings", icon: "Settings" },
+        { title: "Audit Logs", url: "/super-admin/audit-logs", icon: "History" },
+        { title: "Admin Manage", url: "/super-admin/admin-manage", icon: "UserCog" },
       ],
     },
+
+  ],
+  admin: [
     {
-      title: "Users",
-      url: "/users",
-      icon: "Users",
-    },
-    {
-      title: "Profile",
-      url: "/profile",
-      icon: "User",
-    },
-    {
-      title: "Monitoring",
-      url: "#",
-      icon: "BarChart3",
+      title: "Admin Panel",
+      group: "admin",
       items: [
-        {
-          title: "Staff Menu / POS",
-          url: "/staff/menu",
-        },
-        {
-          title: "Layar TV",
-          url: "/layar-tv",
-        },
-      ]
+        { title: "Dashboard", url: "/dashboard", icon: "LayoutDashboard" },
+        { title: "Product", url: "/admin/product", icon: "Package" },
+        { title: "Category", url: "/admin/product/category", icon: "FolderTree" },
+        { title: "Discount", url: "/admin/discount", icon: "Percent" },
+        { title: "Promo", url: "/admin/promo", icon: "Ticket" },
+        { title: "Accounts", url: "/admin/accounts", icon: "Users" },
+        { title: "Order List", url: "/admin/order", icon: "ClipboardList" },
+        { title: "TV Display", url: "/admin/layar-tv", icon: "Tv" },
+      ],
+    },
+  ],
+  manager: [
+    {
+      title: "Manager Panel",
+      group: "manager",
+      items: [
+        { title: "Dashboard", url: "/dashboard", icon: "LayoutDashboard" },
+        { title: "Sales Reports", url: "/manager/sales-reports", icon: "BarChart3" },
+        { title: "Inventory", url: "/manager/inventory", icon: "Archive" },
+        { title: "Product List", url: "/admin/product", icon: "Package" },
+      ],
+    },
+  ],
+  staff: [
+    {
+      title: "POS / Kasir",
+      group: "staff",
+      items: [
+        { title: "Dashboard", url: "/dashboard", icon: "LayoutDashboard" },
+        { title: "Menu / POS", url: "/staff/menu", icon: "ShoppingCart" },
+        { title: "Order List", url: "/admin/order", icon: "ClipboardList" },
+        { title: "TV Display", url: "/admin/layar-tv", icon: "Tv" },
+      ],
     },
   ],
 };

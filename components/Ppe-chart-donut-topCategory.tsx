@@ -36,7 +36,7 @@ export function TopCategoryChart({ data }: { data?: any[] }) {
     const processedData = displayData.map((item, index) => ({
         ...item,
         fill: item.fill || [
-            "#f97316", // Orange
+            "#f97316",
             "#27272a", // Dark
             "#ffedd5", // Peach
             "#e4e4e7", // Grey

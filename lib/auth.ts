@@ -63,6 +63,8 @@ export const authOptions: NextAuthOptions = {
           // console.log("Authorize success:", user.email);
           return user;
         } catch (e: any) {
+          // Re-throw inactive error so NextAuth surfaces it to the client
+          if (e.message === "ACCOUNT_INACTIVE") throw e;
           // console.error("Authorize error:", e.message);
           return null;
         }
@@ -88,8 +90,9 @@ export const authOptions: NextAuthOptions = {
         }
 
         return true;
-      } catch (error) {
+      } catch (error: any) {
         // console.error("SignIn error:", error);
+        if (error.message === "ACCOUNT_INACTIVE") throw error;
         return false;
       }
     },
