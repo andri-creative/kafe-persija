@@ -20,23 +20,35 @@ export async function middleware(req: NextRequest) {
 
   const roles = token.roles as string[];
 
-  if (pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/product") ||
-    pathname.startsWith("/order") ||
-    pathname.startsWith("/order-lama") ||
-    pathname.startsWith("/users") ||
-    pathname.startsWith("/profile") ||
-    pathname.startsWith("/layar-tv")) {
-    if (!roles.includes("MANAGER") && !roles.includes("ADMIN") && !roles.includes("SUPER_ADMIN")) {
+  // 1. SUPER_ADMIN ONLY
+  if (pathname.startsWith("/super-admin")) {
+    if (!roles.includes("SUPER_ADMIN")) {
       return NextResponse.redirect(new URL("/403", req.url));
     }
   }
 
-  if (pathname.startsWith("/staff")) {
-    if (!roles.includes("STAFF") && !roles.includes("MANAGER") && !roles.includes("ADMIN") && !roles.includes("SUPER_ADMIN")) {
+  // 2. ADMIN (and Super Admin / Staff for specific sub-routes)
+  if (pathname.startsWith("/admin")) {
+    const isStaffAllowed = pathname.startsWith("/admin/order") || pathname.startsWith("/admin/layar-tv");
+    if (!roles.includes("ADMIN") && !roles.includes("SUPER_ADMIN") && !(roles.includes("STAFF") && isStaffAllowed)) {
       return NextResponse.redirect(new URL("/403", req.url));
     }
   }
+
+  // 3. DASHBOARD & MANAGER (and Super Admin)
+  if (pathname.startsWith("/manager") || pathname.startsWith("/dashboard")) {
+    if (!roles.includes("MANAGER") && !roles.includes("ADMIN") && !roles.includes("SUPER_ADMIN") && !roles.includes("STAFF")) {
+      return NextResponse.redirect(new URL("/403", req.url));
+    }
+  }
+
+  // 4. STAFF ONLY (and Super Admin)
+  if (pathname.startsWith("/staff")) {
+    if (!roles.includes("STAFF") && !roles.includes("SUPER_ADMIN")) {
+      return NextResponse.redirect(new URL("/403", req.url));
+    }
+  }
+
 
   return NextResponse.next();
 }
@@ -44,12 +56,10 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     "/dashboard/:path*",
-    "/product/:path*",
-    "/order/:path*",
-    "/order-lama/:path*",
-    "/users/:path*",
-    "/profile/:path*",
-    "/layar-tv/:path*",
+    "/super-admin/:path*",
+    "/admin/:path*",
+    "/manager/:path*",
     "/staff/:path*",
   ],
 };
+
