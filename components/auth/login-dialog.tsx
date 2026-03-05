@@ -179,9 +179,9 @@ export function LoginDialog({
         const roles: string[] = session.user.roles || [];
 
         if (roles.includes("SUPER_ADMIN")) {
-          router.push("/super-admin/dashboard");
+          router.push("/dashboard");
         } else if (roles.includes("ADMIN")) {
-          router.push("/admin/dashboard");
+          router.push("/dashboard");
         } else if (roles.includes("MANAGER")) {
           router.push("/manager/dashboard");
         } else if (roles.includes("STAFF")) {
@@ -231,9 +231,9 @@ export function LoginDialog({
         const roles: string[] = session.user.roles || [];
 
         if (roles.includes("SUPER_ADMIN")) {
-          router.push("/super-admin/dashboard");
+          router.push("/dashboard");
         } else if (roles.includes("ADMIN")) {
-          router.push("/admin/dashboard");
+          router.push("/dashboard");
         } else if (roles.includes("MANAGER")) {
           router.push("/manager/dashboard");
         } else if (roles.includes("STAFF")) {

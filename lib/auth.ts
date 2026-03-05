@@ -98,7 +98,7 @@ export const authOptions: NextAuthOptions = {
     },
 
     async jwt({ token, user, account }: any) {
-      // 1. On initial login, store user data in Redis
+      // 1. On initial login, store user data in Redis (optional/persistent) and JWT
       if (user) {
         let userData: any = user;
 
@@ -108,52 +108,46 @@ export const authOptions: NextAuthOptions = {
           if (dbUser) userData = dbUser;
         }
 
-        // Generate a stable Session ID (using the user ID or a random UUID)
+        // Generate a stable Session ID
         const sessionId = `sess_${userData.id}_${Date.now()}`;
 
-        // console.log(`[REDIS SESSION] Storing data for session: ${sessionId}`);
+        // Store the full user object in Redis in the background (TTL 30 days)
+        // We don't await this if we want it to be even faster, but NextAuth callbacks might expect completion
+        try {
+          await redis.set(
+            `persistent_session:${sessionId}`,
+            JSON.stringify(userData),
+            "EX",
+            30 * 24 * 60 * 60
+          );
+        } catch (e) {
+          console.error("[REDIS ERROR]", e);
+        }
 
-        // Store the full user object in Redis (30 days TTL)
-        await redis.set(
-          `persistent_session:${sessionId}`,
-          JSON.stringify(userData),
-          "EX",
-          30 * 24 * 60 * 60
-        );
-
-        // JWT stores sessionId AND essential fields for middleware (Edge runtime)
+        // JWT stores all essential fields for fast access
         token.sessionId = sessionId;
         token.id = userData.id;
         token.email = userData.email;
+        token.nickname = userData.nickname || userData.name;
         token.roles = userData.roles;
         token.type = userData.type;
+        token.picture = userData.picture || userData.image || "";
       }
       return token;
     },
 
     async session({ session, token }: any) {
-      if (token.sessionId) {
-        // console.log(`[REDIS SESSION] Fetching data for session: ${token.sessionId}`);
-
-        // Retrieve the full user data from Redis
-        const data = await redis.get(`persistent_session:${token.sessionId}`);
-
-        if (data) {
-          const userData = JSON.parse(data);
-          session.user.id = userData.id;
-          session.user.nickname = userData.nickname;
-          session.user.email = userData.email;
-          session.user.picture = userData.picture || "";
-          session.user.roles = userData.roles;
-          session.user.auth_token = userData.auth_token;
-          session.user.type = userData.type;
-
-          // console.log(`[REDIS SESSION] Session restored from Redis for: ${userData.email}`);
-        } else {
-          console.warn(`[REDIS SESSION] Session key not found or expired: ${token.sessionId}`);
-          // Fallback: If Redis fails, we might want to logout or re-fetch from DB
-          // For now, return incomplete session to trigger logout on client side if handled
-        }
+      // FAST SESSION: Use data directly from JWT token instead of waiting for Redis
+      if (token) {
+        session.user = {
+          ...session.user,
+          id: token.id,
+          nickname: token.nickname,
+          email: token.email,
+          roles: token.roles,
+          type: token.type,
+          picture: token.picture,
+        };
       }
       return session;
     },

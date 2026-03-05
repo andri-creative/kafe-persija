@@ -122,19 +122,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
 
   const getNavItems = (): any[] => {
-    if (role === "SUPER_ADMIN") {
-      return navCafe.superAdmin;
-    }
-    if (role === "ADMIN") {
-      return navCafe.admin;
-    }
-    if (role === "MANAGER") {
-      return navCafe.manager;
-    }
-    if (role === "STAFF") {
-      return navCafe.staff;
-    }
-    return [];
+    return navCafe;
   };
 
   const navGroups = getNavItems();
