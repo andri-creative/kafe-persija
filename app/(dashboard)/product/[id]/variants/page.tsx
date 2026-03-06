@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { ButtonsComponentsBack, ButtonsComponentsAdd } from "@/components/buttons-conponents";
+import ActionsButtons from "@/components/acctions-buttons";
 import {
   Card,
   CardContent,
@@ -361,25 +363,20 @@ export default function ProductVariantsPage() {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/product">
-              <ChevronLeft size={20} className="mr-1" />
-              Kembali
-            </Link>
-          </Button>
+          <ButtonsComponentsBack backUrl="/product" title="Produk" showText />
           <Separator orientation="vertical" className="mx-2 h-4" />
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-xl font-bold text-gray-900">
               Varian Produk: {product.name}
             </h1>
             {product.description && (
-              <p className="text-gray-600 mt-1 text-sm">{product.description}</p>
+              <p className="text-gray-600 mt-1 text-xs">{product.description}</p>
             )}
             <div className="flex flex-wrap gap-2 mt-2">
               {product.product_category_trx.map((trx, index) => (
                 <span
                   key={index}
-                  className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
+                  className="inline-block bg-blue-100 text-blue-800 text-[10px] px-2 py-1 rounded"
                 >
                   {trx.product_category.name}
                 </span>
@@ -391,9 +388,9 @@ export default function ProductVariantsPage() {
         <div className="flex gap-2">
           <Button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600 hover:bg-blue-700 h-8 text-xs"
           >
-            <Plus size={20} className="mr-2" />
+            <Plus className="h-4 w-4 mr-2" />
             Tambah Varian
           </Button>
         </div>
@@ -403,15 +400,15 @@ export default function ProductVariantsPage() {
       {showAddForm && (
         <Card>
           <CardHeader>
-            <CardTitle>Tambah Varian Baru</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-sm">Tambah Varian Baru</CardTitle>
+            <CardDescription className="text-xs">
               Tambah varian baru untuk produk ini
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="desc">Deskripsi Varian *</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="desc" className="text-[10px]">Deskripsi Varian *</Label>
                 <Input
                   id="desc"
                   placeholder="Contoh: Kopi Hitam Es, Large Size"
@@ -420,11 +417,12 @@ export default function ProductVariantsPage() {
                     setNewVariant({ ...newVariant, desc: e.target.value })
                   }
                   disabled={addingVariant}
+                  className="h-8 text-xs"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="price">Harga (Rp) *</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="price" className="text-[10px]">Harga (Rp) *</Label>
                 <Input
                   id="price"
                   type="number"
@@ -435,11 +433,12 @@ export default function ProductVariantsPage() {
                   }
                   disabled={addingVariant}
                   min="0"
+                  className="h-8 text-xs"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="stok">Stok</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="stok" className="text-[10px]">Stok</Label>
                 <Input
                   id="stok"
                   type="number"
@@ -450,11 +449,12 @@ export default function ProductVariantsPage() {
                   }
                   disabled={addingVariant}
                   min="0"
+                  className="h-8 text-xs"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="size">Size (Opsional)</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="size" className="text-[10px]">Size (Opsional)</Label>
                 <Input
                   id="size"
                   placeholder="Contoh: Large, 350ml"
@@ -463,6 +463,7 @@ export default function ProductVariantsPage() {
                     setNewVariant({ ...newVariant, size: e.target.value })
                   }
                   disabled={addingVariant}
+                  className="h-8 text-xs"
                 />
               </div>
             </div>
@@ -512,9 +513,8 @@ export default function ProductVariantsPage() {
             <div className="flex gap-2 pt-2">
               <Button
                 onClick={handleAddVariant}
-                disabled={
-                  addingVariant || !newVariant.desc || !newVariant.price
-                }
+                disabled={addingVariant || !newVariant.desc || !newVariant.price}
+                className="bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg border-none transition-all hover:scale-105 active:scale-95 cursor-pointer h-8 text-[10px]"
               >
                 {addingVariant ? (
                   <>
@@ -522,13 +522,17 @@ export default function ProductVariantsPage() {
                     Menyimpan...
                   </>
                 ) : (
-                  "Simpan Varian"
+                  <>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Simpan Varian
+                  </>
                 )}
               </Button>
               <Button
                 variant="outline"
                 onClick={() => setShowAddForm(false)}
                 disabled={addingVariant}
+                className="h-8 text-[10px]"
               >
                 Batal
               </Button>
@@ -589,26 +593,26 @@ export default function ProductVariantsPage() {
                 </thead>
                 <tbody>
                   {variants.map((variant) => (
-                    <tr key={variant.id} className="border-b hover:bg-gray-50">
-                      <td className="py-4 px-4">
+                    <tr key={variant.id} className="border-b hover:bg-gray-50 text-xs">
+                      <td className="py-2 px-4">
                         <div className="font-medium">
                           {variant.desc || "-"}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-[10px] text-gray-500">
                           Added: {formatDate(variant.created_at)}
                         </div>
                       </td>
-                      <td className="py-4 px-4 text-sm">
+                      <td className="py-2 px-4 text-xs">
                         {variant.size || "-"}
                       </td>
-                      <td className="py-4 px-4 text-sm">
+                      <td className="py-2 px-4 text-xs">
                         {variant.stok || 0}
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-2 px-4">
                         {variant.product_variant_images.length > 0 ? (
                           <div className="flex -space-x-2 overflow-hidden">
                             {variant.product_variant_images.slice(0, 3).map((img) => (
-                              <div key={img.id} className="inline-block h-10 w-10 rounded-full ring-2 ring-white overflow-hidden bg-gray-100">
+                              <div key={img.id} className="inline-block h-8 w-8 rounded-full ring-2 ring-white overflow-hidden bg-gray-100">
                                 <img
                                   src={getVariantImageUrl(img.image)}
                                   alt="Variant"
@@ -617,23 +621,23 @@ export default function ProductVariantsPage() {
                               </div>
                             ))}
                             {variant.product_variant_images.length > 3 && (
-                              <div className="flex items-center justify-center h-10 w-10 rounded-full ring-2 ring-white bg-gray-200 text-xs font-medium text-gray-600">
+                              <div className="flex items-center justify-center h-8 w-8 rounded-full ring-2 ring-white bg-gray-200 text-[10px] font-medium text-gray-600">
                                 +{variant.product_variant_images.length - 3}
                               </div>
                             )}
                           </div>
                         ) : (
-                          <span className="text-gray-400 text-xs">No image</span>
+                          <span className="text-gray-400 text-[10px]">No image</span>
                         )}
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-2 px-4">
                         <div className="font-bold">
                           {formatPrice(variant.price)}
                         </div>
                       </td>
-                      <td className="py-4 px-4 flex flex-col gap-2">
+                      <td className="py-2 px-4 flex flex-col gap-2">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium max-w-fit justify-center ${variant.status === false
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium max-w-fit justify-center ${variant.status === false
                             ? "bg-green-100 text-green-800"
                             : "bg-gray-100 text-gray-800"
                             }`}
@@ -643,32 +647,15 @@ export default function ProductVariantsPage() {
                         <Switch
                           checked={variant.status === false}
                           onCheckedChange={(checked) => handleToggleStatus(variant.id, checked)}
+                          className="scale-75 origin-left"
                         />
                       </td>
-                      <td className="py-4 px-4">
-                        <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditVariant(variant.id)}
-                            className="text-blue-600 hover:text-blue-800"
-                          >
-                            <Edit size={16} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteVariant(variant.id)}
-                            disabled={deletingId === variant.id}
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            {deletingId === variant.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Trash2 size={16} />
-                            )}
-                          </Button>
-                        </div>
+                      <td className="py-2 px-4">
+                        <ActionsButtons
+                          editUrl={`/product/${productId}/variants/${variant.id}/edit`}
+                          onDelete={() => handleDeleteVariant(variant.id)}
+                          showView={false}
+                        />
                       </td>
                     </tr>
                   ))}
@@ -684,7 +671,7 @@ export default function ProductVariantsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardContent className="pt-6">
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-base font-bold text-gray-900">
                 {variants.length}
               </div>
               <div className="text-gray-600">Total Varian</div>
@@ -692,7 +679,7 @@ export default function ProductVariantsPage() {
           </Card>
           <Card>
             <CardContent className="pt-6">
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-base font-bold text-green-600">
                 {formatPrice(Math.min(...variants.map((v) => v.price)))}
               </div>
               <div className="text-gray-600">Harga Terendah</div>
@@ -700,7 +687,7 @@ export default function ProductVariantsPage() {
           </Card>
           <Card>
             <CardContent className="pt-6">
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-base font-bold text-blue-600">
                 {formatPrice(Math.max(...variants.map((v) => v.price)))}
               </div>
               <div className="text-gray-600">Harga Tertinggi</div>

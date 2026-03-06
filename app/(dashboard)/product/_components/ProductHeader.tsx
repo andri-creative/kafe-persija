@@ -1,28 +1,27 @@
 "use client";
 
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { usePermissions } from "@/hooks/use-permissions";
+import { SYSTEM_PERMISSIONS } from "@/types/rbac";
+import { ButtonsComponentsAdd } from "@/components/buttons-conponents";
 
 interface ProductHeaderProps {
     totalProducts: number;
 }
 
 export const ProductHeader = ({ totalProducts }: ProductHeaderProps) => {
+    const { can } = usePermissions();
+
     return (
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Produk</h1>
-                <p className="text-xs sm:text-sm text-gray-600">
+                <h1 className="text-xl font-bold text-gray-900">Produk</h1>
+                <p className="text-xs text-gray-500">
                     {totalProducts} produk • Kelola produk, kategori, dan varian
                 </p>
             </div>
-            <Link href="/product/create">
-                <Button className="h-9 px-3 text-xs sm:h-10 sm:px-4 sm:text-sm gap-1.5">
-                    <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    Tambah Produk
-                </Button>
-            </Link>
+            {can(SYSTEM_PERMISSIONS.PRODUCT_CREATE || "product_create") && (
+                <ButtonsComponentsAdd addUrl="/product/create" title="Produk" showText />
+            )}
         </div>
     );
 };

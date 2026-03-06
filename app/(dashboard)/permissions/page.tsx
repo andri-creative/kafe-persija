@@ -97,13 +97,13 @@ export default function PermissionsPage() {
     };
 
     return (
-        <div className="flex-1 space-y-6 p-4 md:p-6 pt-2 min-h-screen">
+        <div className="flex-1 space-y-4 p-3 md:p-4 pt-2 mb-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="space-y-1">
-                    <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-400 to-indigo-600 bg-clip-text text-transparent">
+                <div className="space-y-0.5">
+                    <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-400 to-indigo-600 bg-clip-text text-transparent">
                         Management Permissions
                     </h2>
-                    <p className="text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                         List of all granular access permissions for each system module.
                     </p>
                 </div>
@@ -117,10 +117,10 @@ export default function PermissionsPage() {
 
             <div className="flex items-center gap-4 py-2">
                 <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                     <Input
-                        placeholder="Cari permission..."
-                        className="pl-10 bg-white/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 focus:ring-blue-500"
+                        placeholder="Search permission..."
+                        className="pl-8 h-9 text-xs bg-white/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 focus:ring-blue-500"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -129,13 +129,13 @@ export default function PermissionsPage() {
 
             <Card className="border-none shadow-xl bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md overflow-hidden">
                 <Table>
-                    <TableHeader className="bg-zinc-50 dark:bg-zinc-800/50">
+                    <TableHeader className="bg-zinc-50 dark:bg-zinc-800/50 text-xs text-muted-foreground">
                         <TableRow>
-                            <TableHead className="w-[80px] text-center font-semibold">No</TableHead>
-                            <TableHead className="w-[250px] font-semibold">Name Permission</TableHead>
+                            <TableHead className="w-[60px] text-center font-semibold">No</TableHead>
+                            <TableHead className="w-[200px] font-semibold">Name Permission</TableHead>
                             <TableHead className="font-semibold">Description</TableHead>
-                            <TableHead className="w-[200px] font-semibold">Created At</TableHead>
-                            <TableHead className="w-[120px] text-right font-semibold pr-6">Actions</TableHead>
+                            <TableHead className="w-[150px] font-semibold">Created At</TableHead>
+                            <TableHead className="w-[100px] text-right font-semibold pr-4">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -154,10 +154,10 @@ export default function PermissionsPage() {
                         ) : (
                             permissions.map((perm, index) => (
                                 <TableRow key={perm.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors">
-                                    <TableCell className="text-center font-mono text-xs text-muted-foreground">
+                                    <TableCell className="text-center font-serif text-xs text-muted-foreground py-2">
                                         #{(index + 1).toString().padStart(3, '0')}
                                     </TableCell>
-                                    <TableCell className="font-medium">
+                                    <TableCell className="font-medium text-xs py-2">
                                         <div className="flex items-center gap-2">
                                             <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                                                 <Key className="h-3 w-3" />
@@ -165,13 +165,13 @@ export default function PermissionsPage() {
                                             {perm.name}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-muted-foreground italic">
+                                    <TableCell className="text-muted-foreground italic text-xs py-2">
                                         {perm.description || "No description"}
                                     </TableCell>
-                                    <TableCell className="text-muted-foreground">
+                                    <TableCell className="text-muted-foreground text-xs py-2">
                                         {new Date(perm.created_at).toLocaleDateString()}
                                     </TableCell>
-                                    <TableCell className="text-right pr-6">
+                                    <TableCell className="text-right pr-4 py-2">
                                         <ActionsButtons
                                             viewUrl={can(SYSTEM_PERMISSIONS.PERMISSION_VIEW) ? `/permissions/${perm.id}/show` : undefined}
                                             editUrl={can(SYSTEM_PERMISSIONS.PERMISSION_EDIT) ? `/permissions/${perm.id}/edit` : undefined}

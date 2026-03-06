@@ -61,7 +61,7 @@ export default function ActionsButtons({
                 variant={variant}
                 size={size}
                 onClick={onClick}
-                className={`${getButtonClasses(type)} h-8 w-8 md:h-9 md:w-9 p-0`}
+                className={`${getButtonClasses(type)} h-7 w-7 p-0`}
             >
                 {icon}
                 <span className="sr-only">{tooltipText}</span>
@@ -80,21 +80,21 @@ export default function ActionsButtons({
         <Button
             variant={variant}
             size={size}
-            className={`${getButtonClasses("delete")} h-8 w-8 md:h-9 md:w-9 p-0`}
+            className={`${getButtonClasses("delete")} h-7 w-7 p-0`}
         >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-2 w-2" />
             <span className="sr-only">Delete</span>
         </Button>
     );
 
     return (
         <TooltipProvider>
-            <div className="flex items-center gap-1.5 md:gap-2">
+            <div className="flex items-center gap-1.5 justify-end">
                 {/* View */}
                 {showView && (
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            {renderButton("view", <Eye className="h-4 w-4" />, "View", viewUrl, onView)}
+                            {renderButton("view", <Eye className="h-2 w-2" />, "View", viewUrl, onView)}
                         </TooltipTrigger>
                         <TooltipContent side="top" className="text-xs">
                             <p>View</p>
@@ -106,7 +106,7 @@ export default function ActionsButtons({
                 {showEdit && (
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            {renderButton("edit", <Edit2 className="h-4 w-4" />, "Edit", editUrl, onEdit)}
+                            {renderButton("edit", <Edit2 className="h-2 w-2" />, "Edit", editUrl, onEdit)}
                         </TooltipTrigger>
                         <TooltipContent side="top" className="text-xs">
                             <p>Edit</p>

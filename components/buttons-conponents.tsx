@@ -23,13 +23,13 @@ const ButtonsComponentsAdd = ({ addUrl, title, showText = true, variant = "defau
                 className={
                     showText
                         ? `gap-2 ${mergedClass}`
-                        : `h-8 w-8 md:h-9 md:w-9 p-0 ${mergedClass}`
+                        : `h-8 w-8 p-0 ${mergedClass}`
                 }
             >
                 <Plus className="h-4 w-4" />
                 {showText
                     ? <span>Add {title}</span>
-                    : <span className="sr-only">Add {title}</span>
+                    : <span className="sr-only text-sm">Add {title}</span>
                 }
             </Button>
         </Link>
@@ -57,7 +57,7 @@ const ButtonsComponentsBack = ({ backUrl, title, showText = false, variant = "ou
                 className={
                     showText
                         ? `gap-2 ${mergedClass}`
-                        : `h-8 w-8 md:h-9 md:w-9 p-0 ${mergedClass}`
+                        : `h-8 w-8 p-0 ${mergedClass}`
                 }
             >
                 <ArrowLeft className="h-4 w-4" />
@@ -103,7 +103,7 @@ const ButtonsComponentsSave = ({
             className={
                 showText
                     ? `gap-2 min-w-[120px] ${mergedClass}`
-                    : `h-8 w-8 md:h-9 md:w-9 p-0 ${mergedClass}`
+                    : `h-8 w-8 p-0 ${mergedClass}`
             }
         >
             {isLoading ? (

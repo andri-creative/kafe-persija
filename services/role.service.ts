@@ -21,7 +21,20 @@ export async function getRoles(page = 1, search = "") {
                 role_permission_trx: {
                     include: { permission: true },
                 },
-                user_role_trx: true,
+                child_roles: {
+                    include: {
+                        child_role: {
+                            include: {
+                                role_permission_trx: {
+                                    include: { permission: true }
+                                }
+                            }
+                        }
+                    },
+                },
+                user_role_trx: {
+                    include: { user: true },
+                },
             },
         }),
         prisma.role.count({ where }),
@@ -54,6 +67,17 @@ export async function getRoleById(id: number) {
             role_permission_trx: {
                 include: { permission: true },
             },
+            child_roles: {
+                include: {
+                    child_role: {
+                        include: {
+                            role_permission_trx: {
+                                include: { permission: true }
+                            }
+                        }
+                    }
+                },
+            },
         },
     });
 }
@@ -79,6 +103,21 @@ export async function syncRolePermissions(roleId: number, permissionIds: number[
             data: permissionIds.map((permission_id) => ({
                 role_id: roleId,
                 permission_id,
+            })),
+        });
+    }
+
+    return getRoleById(roleId);
+}
+
+export async function syncRoleRoles(roleId: number, childRoleIds: number[]) {
+    await prisma.role_role_trx.deleteMany({ where: { parent_role_id: roleId } });
+
+    if (childRoleIds.length > 0) {
+        await prisma.role_role_trx.createMany({
+            data: childRoleIds.map((child_role_id) => ({
+                parent_role_id: roleId,
+                child_role_id,
             })),
         });
     }

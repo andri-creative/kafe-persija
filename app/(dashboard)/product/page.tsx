@@ -10,7 +10,7 @@ import { ProductFilters } from "./_components/ProductFilters";
 import { ProductTable } from "./_components/ProductTable";
 import { ProductEmptyState } from "./_components/ProductEmptyState";
 import { ProductLoading } from "./_components/ProductLoading"
-import { ProductPagination } from "./_components/ProductPagination";
+import { PaginationGlobal } from "@/components/paginate-global";
 import { AccessControl } from "@/components/rbac/AccessControl";
 import { Separator } from "@/components/ui/separator";
 
@@ -23,6 +23,11 @@ export default function ProductPage() {
     setSelectedStatus,
     filteredProducts,
     uniqueStatuses,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    pageSize,
+    paginatedProducts,
   } = useProductFilter(products);
 
   if (loading) return <ProductLoading />;
@@ -54,17 +59,19 @@ export default function ProductPage() {
         ) : (
           <>
             <ProductTable
-              products={filteredProducts}
+              products={paginatedProducts}
               onStatusChange={updateProductStatus}
               onDelete={deleteProduct}
             />
 
             {filteredProducts.length > 0 && (
-              <ProductPagination
-                total={products.length}
-                filtered={filteredProducts.length}
-                search={search}
-                status={selectedStatus}
+              <PaginationGlobal
+                currentPage={currentPage}
+                totalPages={totalPages}
+                total={filteredProducts.length}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+                label="produk"
               />
             )}
           </>

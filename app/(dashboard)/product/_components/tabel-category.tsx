@@ -58,63 +58,67 @@ export function TabelCategory({
   return (
     <Table>
       <TableHeader>
-        <TableRow>
-          <TableHead>No</TableHead>
-          <TableHead>Name</TableHead>
-          <TableHead>Image</TableHead>
-          <TableHead>Created By</TableHead>
-          {/* <TableHead>Updated At</TableHead> */}
-          <TableHead className="text-right">Actions</TableHead>
+        <TableRow className="text-xs">
+          <TableHead className="w-[50px]">No</TableHead>
+          <TableHead>Nama Kategori</TableHead>
+          <TableHead>Gambar</TableHead>
+          <TableHead>Dibuat Oleh</TableHead>
+          <TableHead className="text-right px-4">Aksi</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {categories.map((category, index) => (
-          <TableRow key={category.id}>
+          <TableRow key={category.id} className="text-xs border-b">
             <TableCell>{index + 1}</TableCell>
             <TableCell className="font-medium">{category.name}</TableCell>
             <TableCell>
-              <Image
-                src={getCategoryImageUrl(category.image)}
-                alt={category.name}
-                width={50}
-                height={50}
-              />
+              {category.image ? (
+                <div className="relative w-8 h-8 rounded overflow-hidden border bg-gray-50">
+                  <Image
+                    src={getCategoryImageUrl(category.image)}
+                    alt={category.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ) : (
+                <span className="text-[10px] text-gray-400">Tanpa Gambar</span>
+              )}
             </TableCell>
-            <TableCell>{category.creator_name}</TableCell>
-            {/* <TableCell>{category.created_at || ""}</TableCell> */}
-            <TableCell className="text-right">
+            <TableCell className="text-gray-500">{category.creator_name || "-"}</TableCell>
+            <TableCell className="text-right pr-4">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="size-8">
-                    <MoreHorizontalIcon />
+                  <Button variant="ghost" size="icon" className="h-7 w-7">
+                    <MoreHorizontalIcon className="h-3 w-3" />
                     <span className="sr-only">Open menu</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="text-xs w-32">
                   <Link
                     href={`/product/category/${category.id}/edit`}
                     className="cursor-pointer"
                   >
-                    <DropdownMenuItem className="cursor-pointer">
-                      Edit
+                    <DropdownMenuItem className="cursor-pointer text-xs">
+                      Ubah
                     </DropdownMenuItem>
                   </Link>
                   <Link
                     href={`/product/category/${category.id}/view`}
                     className="cursor-pointer"
                   >
-                    <DropdownMenuItem className="cursor-pointer">
-                      View
+                    <DropdownMenuItem className="cursor-pointer text-xs">
+                      Detail
                     </DropdownMenuItem>
                   </Link>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     variant="destructive"
-                    className="cursor-pointer"
+                    className="cursor-pointer text-xs text-red-600 focus:text-red-700"
                     disabled={category.product_count > 0}
                     onClick={() => handleDelete(category.id, category.name)}
                   >
-                    Delete {category.product_count > 0 && "(In Use)"}
+                    Hapus {category.product_count > 0 && "(Digunakan)"}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

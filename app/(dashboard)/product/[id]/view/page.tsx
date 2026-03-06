@@ -11,10 +11,16 @@ import {
     Layers,
     Info,
     Loader2,
-    AlertCircle
+    AlertCircle,
+    Edit2,
+    Calendar,
+    CheckCircle2,
+    XCircle,
+    ShoppingBag
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ButtonsComponentsBack } from "@/components/buttons-conponents";
 import {
     Card,
     CardContent,
@@ -22,6 +28,7 @@ import {
     CardHeader,
     CardTitle
 } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import {
     Table,
     TableBody,
@@ -133,75 +140,86 @@ export default function ViewProductPage({ params }: { params: Promise<{ id: stri
             <ToastContainer />
 
             {/* Header & Back Button */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    <Button variant="outline" size="icon" asChild>
-                        <Link href="/product">
-                            <ArrowLeft className="h-4 w-4" />
-                        </Link>
-                    </Button>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="flex items-center gap-2">
+                    <ButtonsComponentsBack backUrl="/product" title="Produk" showText />
+                    <Separator orientation="vertical" className="mx-2 h-4 hidden sm:block" />
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight">{product.name}</h1>
-                        <p className="text-muted-foreground italic truncate max-w-md">
-                            Detail lengkap produk dan variannya
+                        <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">{product.name}</h1>
+                        <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-widest font-bold">
+                            Informasi Detail Produk
                         </p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Badge className={
-                        product.status === "active"
-                            ? "bg-green-100 text-green-800 hover:bg-green-100 hover:text-green-800"
-                            : "bg-red-100 text-red-800 hover:bg-red-100 hover:text-red-800"
-                    }>
-                        {product.status.toUpperCase()}
+                <div className="flex items-center gap-3">
+                    <Badge className={`text-[10px] font-black px-3 py-1 border-none shadow-sm ${product.status === "active"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-rose-100 text-rose-700"
+                        }`}>
+                        {product.status === "active" ? (
+                            <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> AKTIF</span>
+                        ) : (
+                            <span className="flex items-center gap-1"><XCircle className="w-3 h-3" /> NONAKTIF</span>
+                        )}
                     </Badge>
-                    <Button asChild variant="outline">
-                        <Link href={`/product/${product.id}/edit`}>Edit Produk</Link>
-                    </Button>
+                    <Link href={`/product/${product.id}/edit`}>
+                        <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg transition-all hover:scale-105 active:scale-95 h-8 text-xs gap-2 cursor-pointer font-bold px-4">
+                            <Edit2 className="h-3 w-3" />
+                            Ubah Produk
+                        </Button>
+                    </Link>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Basic Info & Categories */}
-                <div className="lg:col-span-1 space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Info className="h-4 w-4" />
+                <div className="lg:col-span-1 space-y-6 animate-in fade-in slide-in-from-left-4 duration-500 delay-150">
+                    <Card className="border-none shadow-xl overflow-hidden bg-white">
+                        <CardHeader className="bg-slate-50/50 border-b border-slate-50">
+                            <CardTitle className="flex items-center gap-2 text-sm font-black text-slate-800">
+                                <Info className="h-4 w-4 text-indigo-500" />
                                 Informasi Umum
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <label className="text-sm font-medium text-muted-foreground block mb-1">Nama Produk</label>
-                                <p className="text-base font-medium">{product.name}</p>
+                        <CardContent className="p-6 space-y-6">
+                            <div className="space-y-1.5 px-4 py-3 bg-slate-50 rounded-xl border border-slate-100/50">
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">ID Produk</span>
+                                <p className="text-xs font-black text-slate-700">#{product.id}</p>
                             </div>
-                            <div>
-                                <label className="text-sm font-medium text-muted-foreground block mb-1">Deskripsi</label>
-                                <p className="text-base text-gray-700 break-words">
-                                    {product.description || <span className="text-gray-400 italic">Tidak ada deskripsi</span>}
+
+                            <div className="space-y-1.5 px-4 py-3 bg-slate-50 rounded-xl border border-slate-100/50">
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Nama Produk</span>
+                                <p className="text-sm font-black text-slate-900">{product.name}</p>
+                            </div>
+
+                            <div className="space-y-1.5 px-4 py-3 bg-slate-50 rounded-xl border border-slate-100/50">
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Deskripsi Detail</span>
+                                <p className="text-xs text-slate-600 leading-relaxed italic">
+                                    {product.description || "Tidak ada deskripsi yang tersedia untuk produk ini."}
                                 </p>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Tag className="h-4 w-4" />
-                                Kategori
+                    <Card className="border-none shadow-xl bg-white">
+                        <CardHeader className="bg-slate-50/50 border-b border-slate-50">
+                            <CardTitle className="flex items-center gap-2 text-sm font-black text-slate-800">
+                                <Tag className="h-4 w-4 text-indigo-500" />
+                                Penempatan Kategori
                             </CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-6">
                             <div className="flex flex-wrap gap-2">
                                 {product.product_category_trx.length > 0 ? (
                                     product.product_category_trx.map((trx, index) => (
-                                        <Badge key={index} variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100">
+                                        <Badge key={index} className="bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-indigo-100 text-[10px] px-3 py-1 font-bold">
                                             {trx.product_category.name}
                                         </Badge>
                                     ))
                                 ) : (
-                                    <p className="text-sm text-gray-400 italic">Belum ada kategori</p>
+                                    <div className="text-center w-full py-4 border-2 border-dashed rounded-xl">
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase italic">Tanpa Kategori</p>
+                                    </div>
                                 )}
                             </div>
                         </CardContent>
@@ -209,73 +227,80 @@ export default function ViewProductPage({ params }: { params: Promise<{ id: stri
                 </div>
 
                 {/* Variants Section */}
-                <div className="lg:col-span-2">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2 overflow-auto">
+                <div className="lg:col-span-2 space-y-6 animate-in fade-in slide-in-from-right-4 duration-500 delay-300">
+                    <Card className="border-none shadow-xl bg-white h-fit">
+                        <CardHeader className="flex flex-row items-center justify-between border-b border-slate-50 py-4">
                             <div>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Layers className="h-4 w-4" />
+                                <CardTitle className="flex items-center gap-2 text-sm font-black text-slate-800">
+                                    <Layers className="h-4 w-4 text-indigo-500" />
                                     Varian Produk
                                 </CardTitle>
-                                <CardDescription>
-                                    Daftar semua varian, stok, dan harga
+                                <CardDescription className="text-[10px] font-medium uppercase tracking-wider">
+                                    Total: {product.product_variants.length} Varian Terdaftar
                                 </CardDescription>
                             </div>
-                            <Badge variant="outline" className="ml-auto">
-                                {product.product_variants.length} Varian
-                            </Badge>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-0">
                             <div className="overflow-x-auto">
                                 <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="w-[80px]">Gambar</TableHead>
-                                            <TableHead>Varian / Deskripsi</TableHead>
-                                            <TableHead>Ukuran</TableHead>
-                                            <TableHead>Stok</TableHead>
-                                            <TableHead className="text-right">Harga</TableHead>
+                                    <TableHeader className="bg-slate-50/50">
+                                        <TableRow className="border-none">
+                                            <TableHead className="w-[80px] text-[10px] font-black uppercase tracking-wider py-4">Visual</TableHead>
+                                            <TableHead className="text-[10px] font-black uppercase tracking-wider">Informasi Varian</TableHead>
+                                            <TableHead className="text-[10px] font-black uppercase tracking-wider">Ukuran</TableHead>
+                                            <TableHead className="text-[10px] font-black uppercase tracking-wider text-center">Stok</TableHead>
+                                            <TableHead className="text-[10px] font-black uppercase tracking-wider text-right px-6">Harga</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {product.product_variants.length > 0 ? (
                                             product.product_variants.map((variant) => (
-                                                <TableRow key={variant.id}>
-                                                    <TableCell>
-                                                        <div className="h-12 w-12 rounded-md overflow-hidden bg-gray-100 border relative group">
+                                                <TableRow key={variant.id} className="hover:bg-slate-50/50 transition-colors border-slate-50">
+                                                    <TableCell className="py-4">
+                                                        <div className="h-12 w-12 rounded-xl overflow-hidden bg-slate-100 border-2 border-white shadow-md relative group cursor-zoom-in">
                                                             {variant.product_variant_images.length > 0 ? (
                                                                 <Image
                                                                     src={getVariantImageUrl(variant.product_variant_images[0].image)}
                                                                     alt={variant.desc || "Variant"}
                                                                     fill
-                                                                    className="object-cover"
+                                                                    className="object-cover transition-transform group-hover:scale-110"
                                                                 />
                                                             ) : (
                                                                 <div className="h-full w-full flex items-center justify-center">
-                                                                    <Package className="h-6 w-6 text-gray-300" />
+                                                                    <ShoppingBag className="h-5 w-5 text-slate-300" />
                                                                 </div>
                                                             )}
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <div className="font-medium">{variant.desc || "Standard"}</div>
-                                                        <div className="text-xs text-muted-foreground">ID: {variant.id}</div>
+                                                        <div className="font-black text-xs text-slate-800 uppercase tracking-tight">{variant.desc || "Standard"}</div>
+                                                        <div className="text-[9px] font-bold text-slate-400 mt-0.5">VARIANT ID: #{variant.id}</div>
                                                     </TableCell>
-                                                    <TableCell>{variant.size || "-"}</TableCell>
                                                     <TableCell>
-                                                        <Badge variant={variant.stok && variant.stok > 0 ? "outline" : "destructive"}>
-                                                            {variant.stok ?? 0}
+                                                        <Badge variant="outline" className="text-[9px] font-bold border-slate-200">
+                                                            {variant.size || "ALL SIZE"}
                                                         </Badge>
                                                     </TableCell>
-                                                    <TableCell className="text-right font-bold text-blue-600">
-                                                        {formatPrice(variant.price)}
+                                                    <TableCell className="text-center">
+                                                        <div className={`text-xs font-black ${variant.stok && variant.stok > 0 ? "text-green-600" : "text-rose-500"}`}>
+                                                            {variant.stok ?? 0}
+                                                        </div>
+                                                        <div className="text-[8px] font-bold text-slate-400 uppercase">Unit</div>
+                                                    </TableCell>
+                                                    <TableCell className="text-right pr-6">
+                                                        <div className="text-sm font-black text-indigo-600/90 tracking-tight">
+                                                            {formatPrice(variant.price)}
+                                                        </div>
                                                     </TableCell>
                                                 </TableRow>
                                             ))
                                         ) : (
                                             <TableRow>
-                                                <TableCell colSpan={5} className="text-center py-6 text-muted-foreground italic">
-                                                    Belum ada varian untuk produk ini
+                                                <TableCell colSpan={5} className="text-center py-12">
+                                                    <div className="flex flex-col items-center gap-2 opacity-30">
+                                                        <Package className="w-10 h-10" />
+                                                        <p className="text-[10px] font-black uppercase tracking-widest">Kosong</p>
+                                                    </div>
                                                 </TableCell>
                                             </TableRow>
                                         )}

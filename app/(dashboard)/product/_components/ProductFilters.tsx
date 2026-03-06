@@ -34,13 +34,13 @@ export const ProductFilters = ({
                         placeholder="Cari produk..."
                         value={search}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        className="pl-9 h-9 text-sm"
+                        className="pl-9 h-8 text-xs"
                     />
                 </div>
 
                 {/* Status Filter */}
                 <Select value={selectedStatus} onValueChange={onStatusChange}>
-                    <SelectTrigger className="h-9 text-sm">
+                    <SelectTrigger className="h-8 text-xs">
                         <SelectValue placeholder="Semua Status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -58,11 +58,11 @@ export const ProductFilters = ({
                 {/* Actions */}
                 <div className="flex gap-2">
                     <Link href="/product/category" className="flex-1">
-                        <Button variant="outline" className="w-full h-9 text-xs">
+                        <Button variant="outline" className="w-full h-8 text-xs">
                             Kategori
                         </Button>
                     </Link>
-                    <Button variant="outline" onClick={onRefresh} className="flex-1 h-9 text-xs">
+                    <Button variant="outline" onClick={onRefresh} className="flex-1 h-8 text-xs">
                         Refresh
                     </Button>
                 </div>
