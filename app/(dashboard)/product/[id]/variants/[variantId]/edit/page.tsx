@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { ButtonsComponentsBack, ButtonsComponentsSave } from "@/components/buttons-conponents";
 import {
   Card,
   CardContent,
@@ -162,8 +163,8 @@ export default function ProductVariantEditPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
 
     if (!formData.desc.trim() || !formData.price) {
       toast.error("Deskripsi dan harga harus diisi");
@@ -266,37 +267,21 @@ export default function ProductVariantEditPage() {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link href={`/admin/product/${productId}/variants`}>
-              <ChevronLeft size={20} className="mr-2" />
-              Kembali
-            </Link>
-          </Button>
+          <ButtonsComponentsBack backUrl={`/admin/product/${productId}/variants`} title="Varian" showText />
           <Separator orientation="vertical" className="mx-2 h-4" />
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-xl font-bold text-gray-900">
               Edit Varian: {variant.product.name}
             </h1>
           </div>
         </div>
 
-        <Button
-          onClick={handleSubmit}
-          disabled={saving}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          {saving ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Menyimpan...
-            </>
-          ) : (
-            <>
-              <Save className="h-4 w-4 mr-2" />
-              Simpan Perubahan
-            </>
-          )}
-        </Button>
+        <ButtonsComponentsSave
+          title="Perubahan"
+          isLoading={saving}
+          onClick={() => handleSubmit()}
+          className="h-8 text-xs"
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -304,25 +289,26 @@ export default function ProductVariantEditPage() {
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Informasi Varian</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-sm">Informasi Varian</CardTitle>
+              <CardDescription className="text-xs">
                 Ubah detail varian produk ini
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="desc">Deskripsi Varian</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="desc" className="text-[10px]">Deskripsi Varian</Label>
                 <Input
                   id="desc"
                   placeholder="Contoh: Kopi Hitam Es, Large Size"
                   value={formData.desc}
                   onChange={(e) => setFormData({ ...formData, desc: e.target.value })}
                   disabled={saving}
+                  className="h-8 text-xs"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="price">Harga (Rp)</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="price" className="text-[10px]">Harga (Rp)</Label>
                 <Input
                   id="price"
                   type="number"
@@ -331,11 +317,12 @@ export default function ProductVariantEditPage() {
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                   disabled={saving}
                   min="0"
+                  className="h-8 text-xs"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="stok">Stok</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="stok" className="text-[10px]">Stok</Label>
                 <Input
                   id="stok"
                   type="number"
@@ -344,17 +331,19 @@ export default function ProductVariantEditPage() {
                   onChange={(e) => setFormData({ ...formData, stok: e.target.value })}
                   disabled={saving}
                   min="0"
+                  className="h-8 text-xs"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="size">Size (Opsional)</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="size" className="text-[10px]">Size (Opsional)</Label>
                 <Input
                   id="size"
                   placeholder="Contoh: Large, 350ml"
                   value={formData.size}
                   onChange={(e) => setFormData({ ...formData, size: e.target.value })}
                   disabled={saving}
+                  className="h-8 text-xs"
                 />
               </div>
             </CardContent>
@@ -365,8 +354,8 @@ export default function ProductVariantEditPage() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Gambar Varian</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-sm">Gambar Varian</CardTitle>
+              <CardDescription className="text-xs">
                 Upload gambar untuk varian ini
               </CardDescription>
             </CardHeader>
@@ -432,11 +421,11 @@ export default function ProductVariantEditPage() {
                   <div className="p-3 bg-gray-100 rounded-full mb-2">
                     <Upload className="h-6 w-6 text-gray-500" />
                   </div>
-                  <p className="text-sm font-medium text-gray-700">
-                    {(formData.existingImages.length > 0 || formData.imagePreviews.length > 0) ? "Tambah Gambar Lain" : "Upload Gambar"}
+                  <p className="text-xs font-medium text-gray-700">
+                    {(formData.existingImages.length > 0 || formData.imagePreviews.length > 0) ? "Tambah Gambar" : "Upload Gambar"}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Maksimal 5MB per file
+                  <p className="text-[10px] text-gray-500 mt-1">
+                    Maks. 5MB
                   </p>
                 </div>
               </div>

@@ -5,10 +5,12 @@ import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Upload, X, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { ButtonsComponentsBack, ButtonsComponentsSave } from "@/components/buttons-conponents";
 import { useRouter } from "next/navigation";
 import { getCategoryImageUrl } from "@/lib/category-helper";
 
@@ -118,14 +120,11 @@ export default function EditCategory({ category }: { category: Category }) {
         <div className="container max-w-2xl mx-auto px-3 py-4">
             {/* Header */}
             <div className="flex items-center gap-2 mb-4">
-                <Button variant="ghost" size="icon" asChild className="h-7 w-7">
-                    <Link href="/product/category">
-                        <ArrowLeft className="h-3.5 w-3.5" />
-                    </Link>
-                </Button>
+                <ButtonsComponentsBack backUrl="/product/category" title="Kategori" showText />
+                <Separator orientation="vertical" className="mx-2 h-4" />
                 <div>
-                    <h1 className="text-base font-medium">Edit Category</h1>
-                    <p className="text-xs text-muted-foreground">{category.name}</p>
+                    <h1 className="text-sm font-bold">Ubah Kategori</h1>
+                    <p className="text-[10px] text-muted-foreground">{category.name}</p>
                 </div>
             </div>
 
@@ -135,8 +134,8 @@ export default function EditCategory({ category }: { category: Category }) {
                     <CardContent className="p-4 space-y-4">
                         {/* Name Field */}
                         <div className="space-y-1.5">
-                            <Label htmlFor="name" className="text-xs font-medium">
-                                Name <span className="text-destructive">*</span>
+                            <Label htmlFor="name" className="text-[10px] font-medium">
+                                Nama Kategori <span className="text-destructive">*</span>
                             </Label>
                             <Input
                                 id="name"
@@ -151,8 +150,8 @@ export default function EditCategory({ category }: { category: Category }) {
 
                         {/* Image Upload */}
                         <div className="space-y-1.5">
-                            <Label htmlFor="image" className="text-xs font-medium">
-                                Image
+                            <Label htmlFor="image" className="text-[10px] font-medium">
+                                Gambar
                             </Label>
                             <div
                                 className={`relative border border-dashed rounded-md transition-all ${isDragging
@@ -217,30 +216,21 @@ export default function EditCategory({ category }: { category: Category }) {
 
                         {/* Actions */}
                         <div className="flex items-center gap-2 pt-2">
-                            <Button
-                                type="submit"
-                                size="sm"
+                            <ButtonsComponentsSave
+                                title="Perubahan"
+                                isLoading={uploading}
                                 disabled={uploading || !formData.name}
-                                className="h-7 text-xs px-3 cursor-pointer"
-                            >
-                                {uploading ? (
-                                    <>
-                                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                                        Saving
-                                    </>
-                                ) : (
-                                    "Save"
-                                )}
-                            </Button>
+                                className="h-8 text-xs min-w-[100px]"
+                            />
                             <Button
                                 type="button"
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
                                 onClick={() => router.push("/product/category")}
                                 disabled={uploading}
-                                className="h-7 text-xs px-3 cursor-pointer"
+                                className="h-8 text-xs px-4 cursor-pointer"
                             >
-                                Cancel
+                                Batal
                             </Button>
                         </div>
                     </CardContent>

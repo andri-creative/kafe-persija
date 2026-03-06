@@ -130,12 +130,12 @@ export default function CreateCategory({
     <>
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="space-y-4">
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <label
               htmlFor="name"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-[10px] font-medium text-gray-700"
             >
-              Category Name *
+              Nama Kategori *
             </label>
             <input
               type="text"
@@ -144,16 +144,16 @@ export default function CreateCategory({
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              placeholder="Enter category name"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-xs"
+              placeholder="Contoh: Makanan, Minuman"
               disabled={uploading}
               required
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Category Image *
+          <div className="space-y-1.5">
+            <label className="block text-[10px] font-medium text-gray-700">
+              Gambar Kategori *
             </label>
 
             {/* Upload Area */}
@@ -224,13 +224,13 @@ export default function CreateCategory({
                       />
                     </svg>
                   </div>
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-700">
-                      Drag & drop your image here
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-gray-700">
+                      Tarik & lepas gambar di sini
                     </p>
-                    <p className="text-xs text-gray-500">or click to browse</p>
-                    <p className="text-xs text-gray-400">
-                      Supports: JPG, PNG, WebP (Max 5MB)
+                    <p className="text-[10px] text-gray-500">atau klik untuk mencari</p>
+                    <p className="text-[10px] text-gray-400">
+                      JPG, PNG, WebP (Maks 5MB)
                     </p>
                   </div>
                 </div>
@@ -242,12 +242,12 @@ export default function CreateCategory({
         <Button
           type="submit"
           disabled={uploading || !formData.name || !imageFile}
-          className={`w-full py-3 font-medium rounded-lg transition-colors cursor-pointer ${uploading || !formData.name || !imageFile
+          className={`w-full h-9 text-xs font-medium rounded-lg transition-colors cursor-pointer ${uploading || !formData.name || !imageFile
             ? "bg-gray-400 cursor-not-allowed"
             : "bg-blue-600 hover:bg-blue-700 text-white"
             }`}
         >
-          {uploading ? "Creating..." : "Create Category"}
+          {uploading ? "Sedang Membuat..." : "Buat Kategori"}
         </Button>
       </form>
     </>

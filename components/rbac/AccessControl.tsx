@@ -1,19 +1,18 @@
 "use client";
 
 import React from "react";
-import { useSession } from "next-auth/react";
 import { Permission } from "@/types/rbac";
-import { hasPermission, hasAnyPermission } from "@/lib/rbac";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface AccessControlProps {
     /**
      * Single permission required to see the content.
      */
-    permission?: Permission;
+    permission?: Permission | string;
     /**
      * List of permissions where at least one is required.
      */
-    anyPermission?: Permission[];
+    anyPermission?: (Permission | string)[];
     /**
      * Fallback content to show if the user doesn't have permission.
      */
@@ -26,7 +25,7 @@ interface AccessControlProps {
 
 /**
  * A wrapper component that conditionally renders children based on the user's permissions.
- * It uses the NextAuth session to get the user's roles and permissions.
+ * It uses the usePermissions hook to get the user's dynamically updated permissions.
  */
 export const AccessControl: React.FC<AccessControlProps> = ({
     permission,
@@ -34,21 +33,17 @@ export const AccessControl: React.FC<AccessControlProps> = ({
     fallback = null,
     children,
 }) => {
-    const { data: session, status } = useSession();
+    const { can, canAny, loading } = usePermissions();
 
-    // While checking session, show nothing (or a loading skeleton if needed)
-    if (status === "loading") return null;
-
-    const userPermissions = (session as any)?.user?.permissions || (session as any)?.user?.roles || [];
+    if (loading) return null;
 
     let allowed = false;
 
     if (permission) {
-        allowed = hasPermission(userPermissions, permission);
+        allowed = can(permission as string);
     } else if (anyPermission) {
-        allowed = hasAnyPermission(userPermissions, anyPermission);
+        allowed = canAny(anyPermission as string[]);
     } else {
-        // If no permission specified, allow by default (or handle as needed)
         allowed = true;
     }
 

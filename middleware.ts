@@ -15,7 +15,7 @@ export async function middleware(req: NextRequest) {
   });
 
   // Allow static assets (images, etc.) to load without auth
-  const isPublicAsset = /\.(png|jpg|jpeg|gif|webp|svg|ico|json|js|css)$/.test(pathname);
+  const isPublicAsset = /\.(png|jpg|jpeg|gif|webp|svg|ico|json|js|css|webmanifest)$/.test(pathname);
   if (isPublicAsset) {
     return NextResponse.next();
   }
@@ -46,7 +46,7 @@ export const config = {
      * - public (public images/assets)
      */
     {
-      source: '/((?!api|_next/static|_next/image|favicon.ico|public|manifest.json|sw.js).*)',
+      source: '/((?!api|_next/static|_next/image|favicon.ico|public|manifest.json|manifest.webmanifest|sw.js).*)',
       missing: [
         { type: 'header', key: 'next-router-prefetch' },
         { type: 'header', key: 'purpose', value: 'prefetch' },

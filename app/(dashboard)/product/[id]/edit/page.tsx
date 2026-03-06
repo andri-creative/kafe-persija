@@ -41,6 +41,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getVariantImageUrl } from "@/lib/variant-helper";
 import { Field, FieldLabel } from "@/components/ui/field";
+import { ButtonsComponentsBack, ButtonsComponentsSave } from "@/components/buttons-conponents";
 import { getProductSocket as getSocket } from "@/lib/product-socket";
 import { useSession } from "next-auth/react";
 
@@ -445,39 +446,22 @@ export default function EditProductPage() {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/product">
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Kembali
-            </Link>
-          </Button>
+          <ButtonsComponentsBack backUrl="/product" title="Produk" showText />
           <Separator orientation="vertical" className="mx-2 h-4" />
           <div>
-            <h1 className="text-2xl font-bold">Edit Produk</h1>
-            <p className="text-gray-500 text-sm">Ubah informasi produk dan variannya</p>
+            <h1 className="text-xl font-bold">Edit Produk</h1>
+            <p className="text-gray-500 text-xs">Ubah informasi produk dan variannya</p>
           </div>
         </div>
         <div className="flex gap-2">
           <Link href="/product">
-            <Button variant="outline">Batal</Button>
+            <Button variant="outline" className="h-8 text-xs">Batal</Button>
           </Link>
-          <Button
-            onClick={handleSave}
-            className="cursor-pointer"
-            disabled={saving}
-          >
-            {saving ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Menyimpan...
-              </>
-            ) : (
-              <>
-                <Save size={20} className="mr-2" />
-                Simpan Perubahan
-              </>
-            )}
-          </Button>
+          <ButtonsComponentsSave
+            title="Produk"
+            isLoading={saving}
+            className="h-8 text-xs"
+          />
         </div>
       </div>
 
@@ -486,11 +470,11 @@ export default function EditProductPage() {
           {/* LEFT COLUMN - PRODUCT INFO */}
           <Card className="lg:w-2/3">
             <CardHeader>
-              <CardTitle>Informasi Produk</CardTitle>
+              <CardTitle className="text-sm">Informasi Produk</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <Field>
-                <FieldLabel htmlFor="name">
+                <FieldLabel htmlFor="name" className="text-xs">
                   Nama Produk <span className="text-red-500">*</span>
                 </FieldLabel>
                 <Input
@@ -500,11 +484,12 @@ export default function EditProductPage() {
                   onChange={(e) => handleFormChange("name", e.target.value)}
                   required
                   disabled={saving}
+                  className="h-8 text-xs"
                 />
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="description">
+                <FieldLabel htmlFor="description" className="text-xs">
                   Deskripsi <span className="text-red-500">*</span>
                 </FieldLabel>
                 <Textarea
@@ -516,12 +501,13 @@ export default function EditProductPage() {
                   }
                   rows={3}
                   disabled={saving}
+                  className="text-xs"
                 />
               </Field>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                 <Field>
-                  <FieldLabel htmlFor="status">
+                  <FieldLabel htmlFor="status" className="text-xs">
                     Status <span className="text-red-500">*</span>
                   </FieldLabel>
                   <Select
@@ -529,42 +515,43 @@ export default function EditProductPage() {
                     onValueChange={(value) => handleFormChange("status", value)}
                     disabled={saving}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-8 text-xs">
                       <SelectValue placeholder="Pilih status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="active">Aktif</SelectItem>
-                      <SelectItem value="inactive">Nonaktif</SelectItem>
-                      <SelectItem value="Non Stok">Non Stok</SelectItem>
+                      <SelectItem value="active" className="text-xs">Aktif</SelectItem>
+                      <SelectItem value="inactive" className="text-xs">Nonaktif</SelectItem>
+                      <SelectItem value="Non Stok" className="text-xs">Non Stok</SelectItem>
                     </SelectContent>
                   </Select>
                 </Field>
 
                 <Field>
-                  <FieldLabel htmlFor="category">
+                  <FieldLabel htmlFor="category" className="text-xs">
                     Kategori <span className="text-red-500">*</span>
                   </FieldLabel>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="outline"
-                        className="w-full justify-between font-normal"
+                        className="w-full justify-between font-normal h-8 text-xs"
                         disabled={saving}
                       >
                         {formData.categories.length > 0
                           ? formData.categories.join(", ")
                           : "Pilih kategori"}
-                        <ChevronDown className="h-4 w-4 opacity-50" />
+                        <ChevronDown className="h-3 w-3 opacity-50" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-[200px]">
-                      <DropdownMenuLabel>Kategori Produk</DropdownMenuLabel>
+                      <DropdownMenuLabel className="text-xs">Kategori Produk</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       {categoriesList.map((category) => (
                         <DropdownMenuCheckboxItem
                           key={category.id}
                           checked={formData.categories.includes(category.name)}
                           onCheckedChange={() => toggleCategory(category.name)}
+                          className="text-xs"
                         >
                           {category.name}
                         </DropdownMenuCheckboxItem>
@@ -578,29 +565,29 @@ export default function EditProductPage() {
 
           {/* RIGHT COLUMN - VARIANTS */}
           <Card className="lg:w-1/3">
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
               <div>
-                <CardTitle>Varian Produk</CardTitle>
-                <p className="text-sm text-gray-500">Minimal 1 varian</p>
+                <CardTitle className="text-sm">Varian Produk</CardTitle>
+                <p className="text-[10px] text-gray-500">Minimal 1 varian</p>
               </div>
               <Button
                 type="button"
                 size="sm"
                 onClick={addVariant}
-                className="cursor-pointer"
+                className="cursor-pointer h-7 text-[10px] px-2"
                 disabled={saving}
               >
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus className="h-3 w-3 mr-1" />
                 Tambah
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               {variants.map((variant, index) => (
-                <div key={index} className="border rounded-lg p-4 space-y-3">
+                <div key={index} className="border rounded-lg p-3 space-y-3">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
                       <Package className="h-4 w-4 text-gray-500" />
-                      <Label className="font-medium">
+                      <Label className="text-xs font-semibold">
                         Varian {index + 1} {variant.id && `(ID: ${variant.id})`}
                       </Label>
                     </div>
@@ -619,8 +606,8 @@ export default function EditProductPage() {
                   </div>
 
                   <div className="space-y-3">
-                    <div className="space-y-2">
-                      <Label>
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px]">
                         Deskripsi Varian <span className="text-red-500">*</span>
                       </Label>
                       <Input
@@ -631,12 +618,13 @@ export default function EditProductPage() {
                         }
                         required
                         disabled={saving}
+                        className="h-8 text-xs"
                       />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label>
+                      <div className="space-y-1.5">
+                        <Label className="text-[10px]">
                           Harga (Rp) <span className="text-red-500">*</span>
                         </Label>
                         <Input
@@ -649,11 +637,12 @@ export default function EditProductPage() {
                           required
                           min="0"
                           disabled={saving}
+                          className="h-8 text-xs"
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label>
+                      <div className="space-y-1.5">
+                        <Label className="text-[10px]">
                           Stok <span className="text-red-500">*</span>
                         </Label>
                         <Input
@@ -666,12 +655,13 @@ export default function EditProductPage() {
                           required
                           min="0"
                           disabled={saving}
+                          className="h-8 text-xs"
                         />
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label>Size <span className="text-gray-400">(Opsional)</span></Label>
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px]">Size <span className="text-gray-400">(Opsional)</span></Label>
                       <Input
                         placeholder="Contoh: Large, 500ml"
                         value={variant.size}
@@ -679,11 +669,12 @@ export default function EditProductPage() {
                           handleVariantChange(index, "size", e.target.value)
                         }
                         disabled={saving}
+                        className="h-8 text-xs"
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label>Gambar (Opsional - Bisa banyak)</Label>
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px]">Gambar (Opsional)</Label>
                       <div className="space-y-4">
                         {/* Image Grid */}
                         {(variant.existingImages.length > 0 || variant.imagePreviews.length > 0) && (
@@ -767,17 +758,17 @@ export default function EditProductPage() {
 
               {/* Info tambahan jika belum ada variant */}
               {variants.length === 0 && (
-                <div className="text-center py-8 border-2 border-dashed rounded-lg">
-                  <Package className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500 mb-2">Belum ada varian</p>
+                <div className="text-center py-6 border-2 border-dashed rounded-lg">
+                  <Package className="h-10 w-10 text-gray-300 mx-auto mb-2" />
+                  <p className="text-gray-500 mb-2 text-xs">Belum ada varian</p>
                   <Button
                     type="button"
                     variant="outline"
                     onClick={addVariant}
-                    className="cursor-pointer"
+                    className="cursor-pointer h-8 text-xs"
                     disabled={saving}
                   >
-                    <Plus className="h-4 w-4 mr-1" />
+                    <Plus className="h-3 w-3 mr-1" />
                     Tambah Varian Pertama
                   </Button>
                 </div>
@@ -785,7 +776,7 @@ export default function EditProductPage() {
 
               {/* Total harga variant */}
               {variants.length > 0 && (
-                <div className="border-t pt-4 mt-4">
+                <div className="border-t pt-4 mt-4 text-xs">
                   <div className="flex justify-between items-center">
                     <span className="font-medium">Total Variant:</span>
                     <span className="font-bold">{variants.length} varian</span>

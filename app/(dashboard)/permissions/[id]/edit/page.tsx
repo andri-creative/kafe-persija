@@ -116,23 +116,23 @@ export default function PermissionEditPage({ params }: { params: Promise<{ id: s
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Nama Izin</label>
+                            <label className="text-xs font-medium">Nama Izin</label>
                             <Input
                                 placeholder="contoh: product_view"
                                 value={form.name}
                                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                                className="bg-white/50 dark:bg-zinc-900/50"
+                                className="text-xs bg-white/50 dark:bg-zinc-900/50"
                                 required
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Deskripsi</label>
+                            <label className="text-xs font-medium">Deskripsi</label>
                             <Textarea
                                 placeholder="Jelaskan fungsi dari izin ini..."
                                 value={form.description}
                                 onChange={(e) => setForm({ ...form, description: e.target.value })}
-                                className="bg-white/50 dark:bg-zinc-900/50 min-h-[100px]"
+                                className="text-xs bg-white/50 dark:bg-zinc-900/50 min-h-[100px]"
                             />
                         </div>
 

@@ -69,7 +69,7 @@ interface Role {
     description?: string;
     created_at: string;
     role_permission_trx: { permission: Permission }[];
-    user_role_trx: { id: number }[];
+    user_role_trx: { user: { id: number; nickname: string; email: string } }[];
 }
 
 export default function RolesPage() {
@@ -99,7 +99,7 @@ export default function RolesPage() {
             const params = new URLSearchParams({ page: String(page), search });
             const [rolesRes, permsRes] = await Promise.all([
                 fetch(`/api/roles?${params}`),
-                fetch("/api/permissions?all=true"),  // semua permissions tanpa paginasi
+                fetch("/api/permissions?all=true"),
             ]);
             const rolesData = await rolesRes.json();
             const permsData = await permsRes.json();
@@ -155,7 +155,7 @@ export default function RolesPage() {
                 body: JSON.stringify({ permissionIds: Array.from(checkedIds) }),
             });
             if (!res.ok) throw new Error();
-            clearPermissionsCache(); // Paksa fetch ulang dari DB
+            clearPermissionsCache();
             toast.success(`Permissions untuk "${selectedRole.name}" berhasil disimpan`);
             setIsAssignOpen(false);
             fetchData(currentPage, searchTerm);
@@ -214,7 +214,7 @@ export default function RolesPage() {
             (r.description || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Group permissions by prefix (e.g. "product_view" → group "Product")
+    // Group permissions by prefix ("product_view" → group "Product")
     const grouped = allPermissions.reduce<Record<string, Permission[]>>((acc, p) => {
         const group = p.name.split("_")[0].toUpperCase();
         if (!acc[group]) acc[group] = [];
@@ -241,10 +241,10 @@ export default function RolesPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1">
-                    <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-400 to-indigo-600 bg-clip-text text-transparent">
+                    <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-400 to-indigo-600 bg-clip-text text-transparent">
                         Management Roles
                     </h2>
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                         Manage user roles and their access permission configurations.
                     </p>
                 </div>
@@ -275,12 +275,12 @@ export default function RolesPage() {
                 <Table>
                     <TableHeader className="bg-zinc-50 dark:bg-zinc-800/50">
                         <TableRow>
-                            <TableHead className="w-[200px] font-semibold">Name Roles</TableHead>
-                            <TableHead className="font-semibold">Description</TableHead>
-                            <TableHead className="w-[150px] text-center font-semibold">Permissions</TableHead>
-                            <TableHead className="w-[100px] text-center font-semibold">Users</TableHead>
-                            <TableHead className="w-[150px] font-semibold">Created At</TableHead>
-                            <TableHead className="w-[70px] text-center font-semibold">Actions</TableHead>
+                            <TableHead className="w-[200px] font-semibold text-xs">Name Roles</TableHead>
+                            <TableHead className="font-semibold text-xs">Description</TableHead>
+                            <TableHead className="w-[150px] text-left font-semibold text-xs">Permissions</TableHead>
+                            <TableHead className="w-[100px] text-center font-semibold text-xs">Users</TableHead>
+                            <TableHead className="w-[150px] font-semibold text-xs">Created At</TableHead>
+                            <TableHead className="w-[70px] text-center font-semibold text-xs">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -299,15 +299,15 @@ export default function RolesPage() {
                         ) : (
                             filteredRoles.map((role) => (
                                 <TableRow key={role.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors">
-                                    <TableCell className="font-medium">
-                                        <div className="flex items-center gap-2">
+                                    <TableCell className="font-medium text-xs">
+                                        <div className="flex items-center gap-2 text-xs">
                                             <div className="p-1.5 rounded-lg bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
                                                 <ShieldCheck className="h-4 w-4" />
                                             </div>
                                             {role.name}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-muted-foreground whitespace-normal max-w-[300px]">
+                                    <TableCell className="text-muted-foreground whitespace-normal max-w-[300px] text-xs">
                                         {role.description || <span className="italic">—</span>}
                                     </TableCell>
                                     <TableCell className="text-center">
@@ -316,13 +316,23 @@ export default function RolesPage() {
                                             className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-none cursor-pointer hover:scale-105 transition-transform"
                                             onClick={() => openAssignModal(role)}
                                         >
-                                            {role.role_permission_trx.length} Perms
+                                            {new Set(role.role_permission_trx.map(trx => trx.permission.id)).size} Perms
                                         </Badge>
                                     </TableCell>
-                                    <TableCell className="text-center font-medium">
-                                        {role.user_role_trx.length}
+                                    <TableCell className="text-center">
+                                        <div className="flex flex-wrap items-center justify-center gap-1.5 min-w-[120px]">
+                                            {role.user_role_trx.length > 0 ? (
+                                                role.user_role_trx.map((trx) => (
+                                                    <Badge key={trx.user?.id} variant="outline" className="bg-zinc-100 dark:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 font-medium cursor-help text-xs" title={trx.user?.email}>
+                                                        {trx.user?.nickname || "Unknown"}
+                                                    </Badge>
+                                                ))
+                                            ) : (
+                                                <span className="text-muted-foreground italic text-xs">—</span>
+                                            )}
+                                        </div>
                                     </TableCell>
-                                    <TableCell className="text-muted-foreground">
+                                    <TableCell className="text-muted-foreground text-xs">
                                         {new Date(role.created_at).toLocaleDateString("en-US")}
                                     </TableCell>
                                     <TableCell>

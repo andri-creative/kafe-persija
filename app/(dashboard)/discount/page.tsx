@@ -4,9 +4,11 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-    Search, RefreshCw, Tag, Plus, Pencil, Trash2, X, AlertTriangle,
+    Search, RefreshCw, Tag, X, AlertTriangle,
     PercentIcon, Hash,
 } from "lucide-react";
+import { ButtonsComponentsAdd } from "@/components/buttons-conponents";
+import ActionsButtons from "@/components/acctions-buttons";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Discount {
@@ -26,17 +28,17 @@ function formatValue(type: string, value: number) {
     return `Rp ${value.toLocaleString("id-ID")}`;
 }
 function formatDate(iso: string) {
-    return new Date(iso).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
+    return new Date(iso).toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
 }
 
 // ─── Badges ───────────────────────────────────────────────────────────────────
 function ActiveBadge({ active }: { active: boolean }) {
     return (
-        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${active
+        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${active
             ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
             : "bg-gray-100 text-gray-400 ring-1 ring-gray-200"
             }`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${active ? "bg-emerald-500" : "bg-gray-400"}`} />
+            <span className={`w-1 h-1 rounded-full ${active ? "bg-emerald-500" : "bg-gray-400"}`} />
             {active ? "Aktif" : "Nonaktif"}
         </span>
     );
@@ -44,12 +46,12 @@ function ActiveBadge({ active }: { active: boolean }) {
 function TypeBadge({ type }: { type: string }) {
     const isPercent = type === "percentage";
     return (
-        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${isPercent
+        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${isPercent
             ? "bg-violet-50 text-violet-700 ring-1 ring-violet-200"
             : "bg-blue-50 text-blue-700 ring-1 ring-blue-200"
             }`}>
-            {isPercent ? <PercentIcon className="w-2.5 h-2.5" /> : <Hash className="w-2.5 h-2.5" />}
-            {isPercent ? "Persentase" : "Nominal"}
+            {isPercent ? <PercentIcon className="w-2 h-2" /> : <Hash className="w-2 h-2" />}
+            {isPercent ? "Persen" : "Nominal"}
         </span>
     );
 }
@@ -193,30 +195,25 @@ export default function DiscountPage() {
             <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-5">
 
                 {/* ── Header ── */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-xl border border-gray-100 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
                     <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-sm">
-                            <Tag className="w-4 h-4 text-white" strokeWidth={2} />
+                        <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                            <Tag className="w-4 h-4 text-white" strokeWidth={2.5} />
                         </div>
                         <div>
-                            <h1 className="text-lg font-semibold text-gray-900 leading-none">Diskon</h1>
-                            <p className="text-[12px] text-gray-400 mt-0.5">
-                                {loading ? "Memuat…" : `${discounts.length} diskon · ${active} aktif · ${inactive} nonaktif`}
+                            <h1 className="text-sm font-black text-gray-900 leading-none">Manajemen Diskon</h1>
+                            <p className="text-[10px] text-gray-400 mt-1.5 font-bold uppercase tracking-widest">
+                                {loading ? "Memuat…" : `${active} Aktif · ${inactive} Nonaktif`}
                             </p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                    <div className="flex items-center gap-2">
                         <button onClick={fetchDiscounts}
-                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-gray-500 bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
-                            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+                            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider text-gray-500 bg-white border border-gray-200 hover:bg-gray-50 transition-all active:scale-95 cursor-pointer">
+                            <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
                             Refresh
                         </button>
-                        {/* ── Navigate to create page ── */}
-                        <Link href="/discount/create"
-                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm">
-                            <Plus className="w-3.5 h-3.5" />
-                            Tambah Diskon
-                        </Link>
+                        <ButtonsComponentsAdd addUrl="/discount/create" title="Diskon" className="h-8 text-[10px] font-bold uppercase tracking-wider" />
                     </div>
                 </div>
 
@@ -224,13 +221,13 @@ export default function DiscountPage() {
                 {!loading && discounts.length > 0 && (
                     <div className="grid grid-cols-3 gap-3">
                         {[
-                            { label: "Total", value: discounts.length, color: "text-gray-700", bg: "bg-white" },
-                            { label: "Aktif", value: active, color: "text-emerald-600", bg: "bg-emerald-50" },
-                            { label: "Nonaktif", value: inactive, color: "text-gray-400", bg: "bg-white" },
+                            { label: "Total Unit", value: discounts.length, color: "text-blue-600", bg: "bg-white" },
+                            { label: "Aktif", value: active, color: "text-emerald-600", bg: "bg-emerald-50/50" },
+                            { label: "Nonaktif", value: inactive, color: "text-rose-400", bg: "bg-white" },
                         ].map((s) => (
-                            <div key={s.label} className={`${s.bg} rounded-xl border border-gray-100 px-4 py-3`}>
-                                <p className="text-[11px] text-gray-400 font-medium">{s.label}</p>
-                                <p className={`text-2xl font-bold mt-0.5 ${s.color}`}>{s.value}</p>
+                            <div key={s.label} className={`${s.bg} rounded-xl border border-gray-100/80 px-4 py-3 shadow-xs`}>
+                                <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest">{s.label}</p>
+                                <p className={`text-xl font-black mt-0.5 tracking-tight ${s.color}`}>{s.value}</p>
                             </div>
                         ))}
                     </div>
@@ -239,18 +236,18 @@ export default function DiscountPage() {
                 {/* ── Filters ── */}
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 flex flex-col sm:flex-row gap-2">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-                        <input type="text" placeholder="Cari diskon…" value={search} onChange={(e) => setSearch(e.target.value)}
-                            className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 placeholder:text-gray-400 transition-all" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
+                        <input type="text" placeholder="Cari Nama Diskon…" value={search} onChange={(e) => setSearch(e.target.value)}
+                            className="w-full pl-8 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-100 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500/50 placeholder:text-gray-400 transition-all italic" />
                     </div>
                     <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}
-                        className="px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 text-gray-600 cursor-pointer transition-all">
+                        className="px-3 py-1.5 text-[11px] font-bold bg-white border border-gray-100 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500/50 text-gray-600 cursor-pointer transition-all uppercase tracking-tight">
                         <option value="">Semua Tipe</option>
                         <option value="percentage">Persentase</option>
                         <option value="nominal">Nominal</option>
                     </select>
                     <select value={activeFilter} onChange={(e) => setActiveFilter(e.target.value)}
-                        className="px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 text-gray-600 cursor-pointer transition-all">
+                        className="px-3 py-1.5 text-[11px] font-bold bg-white border border-gray-100 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500/50 text-gray-600 cursor-pointer transition-all uppercase tracking-tight">
                         <option value="">Semua Status</option>
                         <option value="true">Aktif</option>
                         <option value="false">Nonaktif</option>
@@ -262,9 +259,9 @@ export default function DiscountPage() {
                     <div className="overflow-x-auto">
                         <table className="w-full min-w-[640px] text-sm">
                             <thead>
-                                <tr className="border-b border-gray-100">
+                                <tr className="bg-slate-50/50 border-b border-gray-50">
                                     {["Nama", "Tipe", "Nilai", "Status", "Dibuat", "Aksi"].map((col) => (
-                                        <th key={col} className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                                        <th key={col} className="px-4 py-3 text-left text-[9px] font-black text-gray-400 uppercase tracking-widest">
                                             {col}
                                         </th>
                                     ))}
@@ -291,17 +288,17 @@ export default function DiscountPage() {
                                 ) : (
                                     discounts.map((d) => (
                                         <tr key={d.id} className="border-b border-gray-50 hover:bg-gray-50/60 transition-colors">
-                                            <td className="px-4 py-3">
+                                            <td className="px-4 py-4">
                                                 <div>
-                                                    <p className="font-medium text-gray-800 text-[13px] leading-none">{d.name}</p>
+                                                    <p className="font-black text-gray-800 text-xs uppercase tracking-tight leading-none">{d.name}</p>
                                                     {d.description && (
-                                                        <p className="text-[11px] text-gray-400 mt-0.5 line-clamp-1">{d.description}</p>
+                                                        <p className="text-[10px] text-gray-400 mt-1.5 line-clamp-1 italic">{d.description}</p>
                                                     )}
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3"><TypeBadge type={d.type} /></td>
                                             <td className="px-4 py-3">
-                                                <span className="text-[13px] font-semibold text-gray-700 tabular-nums">
+                                                <span className="text-xs font-black text-blue-600 tabular-nums">
                                                     {formatValue(d.type, d.value)}
                                                 </span>
                                             </td>
@@ -311,21 +308,15 @@ export default function DiscountPage() {
                                                 </button>
                                             </td>
                                             <td className="px-4 py-3">
-                                                <span className="text-[12px] text-gray-400">{formatDate(d.created_at)}</span>
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{formatDate(d.created_at)}</span>
                                             </td>
                                             <td className="px-4 py-3">
-                                                <div className="flex items-center gap-1">
-                                                    {/* ── Navigate to edit page ── */}
-                                                    <Link href={`/discount/${d.id}/edit`}
-                                                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                                                        title="Edit">
-                                                        <Pencil className="w-3.5 h-3.5" />
-                                                    </Link>
-                                                    <button onClick={() => { setDeleteDiscount(d); setDeleteError(""); }} title="Hapus"
-                                                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:bg-rose-50 hover:text-rose-600 transition-colors">
-                                                        <Trash2 className="w-3.5 h-3.5" />
-                                                    </button>
-                                                </div>
+                                                <ActionsButtons
+                                                    viewUrl={`/discount/${d.id}/view`}
+                                                    onEdit={() => router.push(`/discount/${d.id}/edit`)}
+                                                    onDelete={() => { setDeleteDiscount(d); setDeleteError(""); }}
+                                                    deleteName={d.name}
+                                                />
                                             </td>
                                         </tr>
                                     ))

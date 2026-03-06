@@ -26,7 +26,7 @@ export default async function PermissionShowPage({
 
     if (!permission) notFound();
 
-    const roles = permission.role_permission_trx?.map((trx) => trx.role) ?? [];
+    const roles = permission.role_permission_trx?.map((trx: any) => trx.role) ?? [];
 
     const formatDate = (date: Date) =>
         new Date(date).toLocaleDateString("id-ID", {
@@ -70,7 +70,7 @@ export default async function PermissionShowPage({
                             <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                                 <Key className="h-4 w-4" />
                             </div>
-                            <span className="text-base font-semibold font-mono">{permission.name}</span>
+                            <span className="text-xs font-semibold font-mono">{permission.name}</span>
                         </div>
                     </div>
 
@@ -81,7 +81,7 @@ export default async function PermissionShowPage({
                         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                             Description
                         </p>
-                        <p className="text-sm text-muted-foreground italic">
+                        <p className="text-xs text-muted-foreground italic">
                             {permission.description || "No description"}
                         </p>
                     </div>
@@ -94,13 +94,13 @@ export default async function PermissionShowPage({
                             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
                                 <Calendar className="h-3 w-3" /> Created At
                             </p>
-                            <p className="text-sm">{formatDate(permission.created_at)}</p>
+                            <p className="text-xs">{formatDate(permission.created_at)}</p>
                         </div>
                         <div className="space-y-1.5">
                             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
                                 <Clock className="h-3 w-3" /> Updated At
                             </p>
-                            <p className="text-sm">{formatDate(permission.updated_at)}</p>
+                            <p className="text-xs">{formatDate(permission.updated_at)}</p>
                         </div>
                     </div>
                 </CardContent>
@@ -119,18 +119,18 @@ export default async function PermissionShowPage({
                 </CardHeader>
                 <CardContent>
                     {roles.length === 0 ? (
-                        <p className="text-sm text-muted-foreground italic text-center py-6">
+                        <p className="text-xs text-muted-foreground italic text-center py-6">
                             No roles assigned to this permission.
                         </p>
                     ) : (
                         <div className="flex flex-wrap gap-2">
-                            {roles.map((role) => (
+                            {roles.map((role: any, index: number) => (
                                 <div
-                                    key={role.id}
+                                    key={`${role.id}-${index}`}
                                     className="flex items-center gap-2 px-3 py-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800"
                                 >
                                     <Shield className="h-3.5 w-3.5 text-indigo-500" />
-                                    <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+                                    <span className="text-xs font-medium text-indigo-700 dark:text-indigo-300">
                                         {role.name}
                                     </span>
                                     {role.description && (

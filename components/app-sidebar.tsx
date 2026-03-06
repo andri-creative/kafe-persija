@@ -35,6 +35,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { navCafe } from "@/config/nav-cafe";
 import { getBasePathByRole } from "@/lib/role-path";
@@ -90,6 +91,16 @@ const getIcon = (iconName: string | React.ComponentType<any>) => {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const { setOpen, setOpenMobile, isMobile } = useSidebar();
+
+  React.useEffect(() => {
+    if (isMobile) {
+      setOpenMobile(false);
+    } else {
+      setOpen(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   if (!session?.user) return null;
 
