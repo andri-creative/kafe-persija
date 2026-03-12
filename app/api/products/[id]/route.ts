@@ -142,7 +142,7 @@ export async function PUT(
       where: { product_id: productId },
       select: { id: true },
     });
-    const existingVariantIds = existingVariants.map((v) => v.id);
+    const existingVariantIds = existingVariants.map((v: { id: number }) => v.id);
     const processedVariantIds: number[] = [];
 
     let index = 0;
@@ -244,7 +244,7 @@ export async function PUT(
     }
 
     const variantsToDelete = existingVariantIds.filter(
-      (id) => !processedVariantIds.includes(id)
+      (id: number) => !processedVariantIds.includes(id)
     );
 
     for (const deleteId of variantsToDelete) {

@@ -46,9 +46,9 @@ export async function GET(request: NextRequest) {
 
     let filteredProducts = products;
     if (category && category !== "all") {
-      filteredProducts = products.filter((product) =>
+      filteredProducts = products.filter((product: any) =>
         product.product_category_trx.some(
-          (trx) => trx.product_category.name === category,
+          (trx: any) => trx.product_category.name === category,
         ),
       );
     }
