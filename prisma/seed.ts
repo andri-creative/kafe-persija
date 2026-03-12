@@ -16,15 +16,15 @@ async function main() {
   // Cek dulu apakah role sudah ada
   const existingRoles = await prisma.role.findMany();
 
-  let superAdminRole, adminRole, staffRole, customerRole;
+  let superAdminRole, adminRole, managerRole, staffRole;
 
   if (existingRoles.length === 0) {
     // Jika belum ada role, buat dengan createMany
     const rolesData = [
       { name: "SUPER_ADMIN", description: "Akses penuh ke seluruh sistem" },
       { name: "ADMIN", description: "Administrator operasional" },
+      { name: "MANAGER", description: "Pengelola operasional toko/kafe" },
       { name: "STAFF", description: "Staff dengan akses terbatas" },
-      { name: "CUSTOMER", description: "Pelanggan" },
     ];
 
     await prisma.role.createMany({
@@ -35,16 +35,16 @@ async function main() {
     const roles = await prisma.role.findMany();
     superAdminRole = roles.find((r) => r.name === "SUPER_ADMIN");
     adminRole = roles.find((r) => r.name === "ADMIN");
+    managerRole = roles.find((r) => r.name === "MANAGER");
     staffRole = roles.find((r) => r.name === "STAFF");
-    customerRole = roles.find((r) => r.name === "CUSTOMER");
 
     console.log("✅ Roles berhasil dibuat");
   } else {
     // Jika sudah ada, ambil dari database
     superAdminRole = existingRoles.find((r) => r.name === "SUPER_ADMIN");
     adminRole = existingRoles.find((r) => r.name === "ADMIN");
+    managerRole = existingRoles.find((r) => r.name === "MANAGER");
     staffRole = existingRoles.find((r) => r.name === "STAFF");
-    customerRole = existingRoles.find((r) => r.name === "CUSTOMER");
 
     // Jika ada yang belum ada, buat yang belum
     if (!superAdminRole) {
@@ -60,19 +60,19 @@ async function main() {
         data: { name: "ADMIN", description: "Administrator operasional" },
       });
     }
+    if (!managerRole) {
+      managerRole = await prisma.role.create({
+        data: { name: "MANAGER", description: "Pengelola operasional toko/kafe" },
+      });
+    }
     if (!staffRole) {
       staffRole = await prisma.role.create({
         data: { name: "STAFF", description: "Staff dengan akses terbatas" },
       });
     }
-    if (!customerRole) {
-      customerRole = await prisma.role.create({
-        data: { name: "CUSTOMER", description: "Pelanggan" },
-      });
-    }
   }
 
-  if (!superAdminRole || !adminRole || !staffRole || !customerRole) {
+  if (!superAdminRole || !adminRole || !managerRole || !staffRole) {
     throw new Error("Gagal mendapatkan role");
   }
 
@@ -81,10 +81,10 @@ async function main() {
   ========================= */
 
   // Hash passwords
-  const passwordSuperAdmin = await bcrypt.hash("superasmin", 12);
+  const passwordSuperAdmin = await bcrypt.hash("superadmin", 12);
   const passwordAdmin = await bcrypt.hash("admin", 12);
-  const passwordStaff = await bcrypt.hash("staff", 12); // user wrote 'pass staff'
-  const passwordCustomer = await bcrypt.hash("customer", 12);
+  const passwordManager = await bcrypt.hash("manager", 12);
+  const passwordStaff = await bcrypt.hash("staff", 12);
 
   const usersData = [
     {
@@ -106,6 +106,15 @@ async function main() {
       roleId: adminRole.id,
     },
     {
+      nickname: "Manager",
+      email: "manager@persija.id",
+      password: passwordManager,
+      status: "ACTIVE",
+      type: "STAFF",
+      point: 500,
+      roleId: managerRole.id,
+    },
+    {
       nickname: "Staff",
       email: "staff@persija.id",
       password: passwordStaff,
@@ -113,15 +122,6 @@ async function main() {
       type: "STAFF",
       point: 300,
       roleId: staffRole.id,
-    },
-    {
-      nickname: "Customer",
-      email: "customer@persija.id",
-      password: passwordCustomer,
-      status: "ACTIVE",
-      type: "CUSTOMER",
-      point: 0,
-      roleId: customerRole.id,
     },
   ];
 

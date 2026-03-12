@@ -224,6 +224,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Emit socket event for real-time update
+    if ((global as any).io) {
+      (global as any).io.emit("product_updated", { action: "created", product: completeProduct });
+    }
+
     return NextResponse.json({
       success: true,
       message: "Product created successfully",

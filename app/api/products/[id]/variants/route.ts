@@ -31,7 +31,7 @@ export async function GET(
         product_variant_images: true,
       },
       orderBy: {
-        created_at: "asc",
+        created_at: "desc",
       },
     });
 
