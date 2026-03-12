@@ -29,7 +29,7 @@ export const authService = {
         email: user.email,
         picture: user.picture || "",
         auth_token: user.auth_token,
-        roles: user.user_role_trx.map((trx) => trx.role.name),
+        roles: user.user_role_trx.map((trx: any) => trx.role.name),
         type: user.type,
       };
     } catch (error) {
@@ -90,7 +90,7 @@ export const authService = {
         email: user.email,
         picture: user.picture || "",
         auth_token: authToken,
-        roles: user.user_role_trx.map((trx) => trx.role.name),
+        roles: user.user_role_trx.map((trx: any) => trx.role.name),
         type: user.type,
       };
     } catch (error: any) {
@@ -159,7 +159,7 @@ export const authService = {
           email: existingUser.email,
           picture: picture || existingUser.picture || "",
           auth_token: authToken,
-          roles: existingUser.user_role_trx.map((trx) => trx.role.name),
+          roles: existingUser.user_role_trx.map((trx: any) => trx.role.name),
           type: "GOOGLE",
         };
       }
@@ -206,7 +206,7 @@ export const authService = {
           email: existingUser.email,
           picture: existingUser.picture || "",
           auth_token: authToken,
-          roles: existingUser.user_role_trx.map((trx) => trx.role.name),
+          roles: existingUser.user_role_trx.map((trx: any) => trx.role.name),
           type: "APPLE",
         };
       }
@@ -239,7 +239,7 @@ export const authService = {
         nickname: user.nickname,
         email: user.email,
         picture: user.picture || "",
-        roles: user.user_role_trx.map((trx) => trx.role.name),
+        roles: user.user_role_trx.map((trx: any) => trx.role.name),
         type: user.type,
       };
     } catch (error) {

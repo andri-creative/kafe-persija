@@ -15,7 +15,7 @@ export async function createUser(data: CreateUserInput) {
     const { role_id, password, ...userData } = data;
     const hashedPassword = await hash(password, 12);
 
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: any) => {
         const user = await tx.user.create({
             data: {
                 ...userData,
@@ -64,7 +64,7 @@ export async function updateUser(id: number, data: UpdateUserInput) {
         updateData.password = await hash(password, 12);
     }
 
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: any) => {
         const user = await tx.user.update({
             where: { id },
             data: updateData,
@@ -85,7 +85,7 @@ export async function updateUser(id: number, data: UpdateUserInput) {
 
 // ─── Delete ──────────────────────────────────────────────────────────────────
 export async function deleteUser(id: number) {
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: any) => {
         await tx.user_role_trx.deleteMany({ where: { user_id: id } });
         return await tx.user.delete({ where: { id } });
     });
