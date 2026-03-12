@@ -50,15 +50,15 @@ export async function getCategories() {
     orderBy: { created_at: "desc" },
   });
 
-  const creatorIds = Array.from(new Set(categories.map((c) => c.created_by)));
+  const creatorIds = Array.from(new Set(categories.map((c: any) => c.created_by)));
   const users = await prisma.user.findMany({
     where: { id: { in: creatorIds } },
     select: { id: true, nickname: true },
   });
 
-  const userMap = new Map(users.map((u) => [u.id, u.nickname]));
+  const userMap = new Map(users.map((u: any) => [u.id, u.nickname]));
 
-  return categories.map((c) => ({
+  return categories.map((c: any) => ({
     ...c,
     creator_name: userMap.get(c.created_by) || "Unknown",
     product_count: c._count.product_category_trx,
