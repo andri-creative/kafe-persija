@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { uploadVariantImage, deleteVariantImage } from "@/lib/file-upload";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -53,7 +55,11 @@ export async function PUT(
     const params = await context.params;
     const variantId = parseInt(params.id);
     const formData = await request.formData();
-    const updated_by = 1;
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const updated_by = parseInt(session.user.id);
 
     const existingVariant = await prisma.product_variants.findUnique({
       where: { id: variantId },

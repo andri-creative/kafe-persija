@@ -85,7 +85,7 @@ export async function deleteFile(imagePath: string, type?: FileType): Promise<vo
  * @deprecated Use uploadFile(file, 'variant') instead
  */
 export async function uploadVariantImage(file: File): Promise<string> {
-    return uploadFile(file, 'variant');
+    return uploadFile(file, 'variant', true);
 }
 
 /**
@@ -93,7 +93,7 @@ export async function uploadVariantImage(file: File): Promise<string> {
  * @deprecated Use deleteFile(path) instead
  */
 export async function deleteVariantImage(imagePath: string): Promise<void> {
-    return deleteFile(imagePath);
+    return deleteFile(imagePath, 'variant');
 }
 
 /**
@@ -102,10 +102,10 @@ export async function deleteVariantImage(imagePath: string): Promise<void> {
  */
 export async function saveImage(file: File, folder: string): Promise<string> {
     if (folder.includes('category')) {
-        return uploadFile(file, 'category');
+        return uploadFile(file, 'category', true);
     } else if (folder.includes('variant')) {
-        return uploadFile(file, 'variant');
+        return uploadFile(file, 'variant', true);
     }
 
-    return uploadFile(file, 'variant');
+    return uploadFile(file, 'variant', true);
 }
