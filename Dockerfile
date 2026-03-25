@@ -17,6 +17,16 @@ RUN if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
     else echo "Lockfile not found." && exit 1; \
     fi
 
+# Copy the prisma schema file and any other project files
+COPY prisma ./prisma/
+COPY . .
+
+# Generate the Prisma Client
+# This command runs during the image build and the generated client is baked into the image
+RUN npx prisma migrate dev --name init
+RUN npx prisma generate
+RUN npx prisma db seed
+RUN npx prisma db seed-permission
 
 # Rebuild the source code only when needed
 FROM base AS builder
