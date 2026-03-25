@@ -3,6 +3,12 @@ import prisma from "@/lib/prisma";
 import { hash, compare } from "bcryptjs";
 import { randomUUID } from "crypto";
 
+const INACTIVE_MSG = "ACCOUNT_INACTIVE";
+
+function isInactive(status: string) {
+  return status === "INACTIVE" || status === "inactive";
+}
+
 export const authService = {
   async getUserByEmail(email: string) {
     try {
@@ -23,7 +29,7 @@ export const authService = {
         email: user.email,
         picture: user.picture || "",
         auth_token: user.auth_token,
-        roles: user.user_role_trx.map((trx) => trx.role.name),
+        roles: user.user_role_trx.map((trx: any) => trx.role.name),
         type: user.type,
       };
     } catch (error) {
@@ -62,6 +68,11 @@ export const authService = {
         throw new Error("Password salah");
       }
 
+      // Status check — block inactive users
+      if (isInactive(user.status)) {
+        throw new Error(INACTIVE_MSG);
+      }
+
       // Ambil token dari DB jika sudah ada, atau generate baru jika kosong
       const authToken = user.auth_token || randomUUID();
 
@@ -79,7 +90,7 @@ export const authService = {
         email: user.email,
         picture: user.picture || "",
         auth_token: authToken,
-        roles: user.user_role_trx.map((trx) => trx.role.name),
+        roles: user.user_role_trx.map((trx: any) => trx.role.name),
         type: user.type,
       };
     } catch (error: any) {
@@ -88,57 +99,10 @@ export const authService = {
     }
   },
 
-  // REGISTER
+  // REGISTER (DISABLED for public users)
   async registerUser(nickname: string, email: string, password: string) {
     try {
-      const existingUser = await prisma.user.findUnique({
-        where: { email },
-      });
-
-      if (existingUser) {
-        throw new Error("Email sudah terdaftar");
-      }
-      const hashedPassword = await hash(password, 12);
-      const authToken = randomUUID();
-      let customerRole = await prisma.role.findUnique({
-        where: { name: "customer" },
-      });
-      if (!customerRole) {
-        customerRole = await prisma.role.create({
-          data: { name: "customer", description: "Customer role" },
-        });
-      }
-
-      const user = await prisma.user.create({
-        data: {
-          nickname: nickname,
-          email: email,
-          password: hashedPassword,
-          auth_token: authToken,
-          type: "USER",
-          picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname)}`,
-          user_role_trx: {
-            create: {
-              role_id: customerRole.id,
-            },
-          },
-        },
-        include: {
-          user_role_trx: {
-            include: { role: true },
-          },
-        },
-      });
-
-      return {
-        id: user.id.toString(),
-        name: user.nickname,
-        email: user.email,
-        picture: user.picture || "",
-        auth_token: authToken,
-        roles: user.user_role_trx.map((trx) => trx.role.name),
-        type: user.type,
-      };
+      throw new Error("Pendaftaran mandiri dinonaktifkan. Silakan hubungi Admin.");
     } catch (error: any) {
       console.error("Register error:", error.message);
       throw new Error(error.message || "Registrasi gagal");
@@ -174,6 +138,11 @@ export const authService = {
       const authToken = randomUUID();
 
       if (existingUser) {
+        // Status check — block inactive users
+        if (isInactive(existingUser.status)) {
+          throw new Error(INACTIVE_MSG);
+        }
+
         await prisma.user.update({
           where: { id: existingUser.id },
           data: {
@@ -190,52 +159,12 @@ export const authService = {
           email: existingUser.email,
           picture: picture || existingUser.picture || "",
           auth_token: authToken,
-          roles: existingUser.user_role_trx.map((trx) => trx.role.name),
+          roles: existingUser.user_role_trx.map((trx: any) => trx.role.name),
           type: "GOOGLE",
         };
       }
 
-      let customerRole = await prisma.role.findUnique({
-        where: { name: "customer" },
-      });
-
-      if (!customerRole) {
-        customerRole = await prisma.role.create({
-          data: { name: "customer", description: "Customer role" },
-        });
-      }
-
-      const newUser = await prisma.user.create({
-        data: {
-          nickname: nickname,
-          email: email,
-          auth_token: authToken,
-          type: "GOOGLE",
-          picture:
-            picture ||
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname)}`,
-          user_role_trx: {
-            create: {
-              role_id: customerRole.id,
-            },
-          },
-        },
-        include: {
-          user_role_trx: {
-            include: { role: true },
-          },
-        },
-      });
-
-      return {
-        id: newUser.id.toString(),
-        nickname: newUser.nickname,
-        email: newUser.email,
-        picture: newUser.picture || "",
-        auth_token: authToken,
-        roles: newUser.user_role_trx.map((trx) => trx.role.name),
-        type: "GOOGLE",
-      };
+      throw new Error("Akun Google belum terdaftar. Silakan hubungi Admin.");
     } catch (error: any) {
       console.error("Google login error:", error.message);
       throw new Error(error.message || "Google login gagal");
@@ -257,6 +186,11 @@ export const authService = {
       const authToken = randomUUID();
 
       if (existingUser) {
+        // Status check — block inactive users
+        if (isInactive(existingUser.status)) {
+          throw new Error(INACTIVE_MSG);
+        }
+
         await prisma.user.update({
           where: { id: existingUser.id },
           data: {
@@ -272,50 +206,12 @@ export const authService = {
           email: existingUser.email,
           picture: existingUser.picture || "",
           auth_token: authToken,
-          roles: existingUser.user_role_trx.map((trx) => trx.role.name),
+          roles: existingUser.user_role_trx.map((trx: any) => trx.role.name),
           type: "APPLE",
         };
       }
 
-      let customerRole = await prisma.role.findUnique({
-        where: { name: "customer" },
-      });
-
-      if (!customerRole) {
-        customerRole = await prisma.role.create({
-          data: { name: "customer", description: "Customer role" },
-        });
-      }
-
-      const newUser = await prisma.user.create({
-        data: {
-          nickname: nickname || email.split("@")[0],
-          email: email,
-          auth_token: authToken,
-          type: "APPLE",
-          picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname || email.split("@")[0])}`,
-          user_role_trx: {
-            create: {
-              role_id: customerRole.id,
-            },
-          },
-        },
-        include: {
-          user_role_trx: {
-            include: { role: true },
-          },
-        },
-      });
-
-      return {
-        id: newUser.id.toString(),
-        nickname: newUser.nickname,
-        email: newUser.email,
-        picture: newUser.picture || "",
-        auth_token: authToken,
-        roles: newUser.user_role_trx.map((trx) => trx.role.name),
-        type: "APPLE",
-      };
+      throw new Error("Akun Apple belum terdaftar. Silakan hubungi Admin.");
     } catch (error: any) {
       console.error("Apple login error:", error.message);
       throw new Error(error.message || "Apple login gagal");
@@ -343,7 +239,7 @@ export const authService = {
         nickname: user.nickname,
         email: user.email,
         picture: user.picture || "",
-        roles: user.user_role_trx.map((trx) => trx.role.name),
+        roles: user.user_role_trx.map((trx: any) => trx.role.name),
         type: user.type,
       };
     } catch (error) {

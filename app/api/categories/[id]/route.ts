@@ -5,6 +5,8 @@ import {
   deleteCategory,
 } from "@/services/category.service";
 import { uploadFile } from "@/lib/file-upload";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 type Params = {
   params: Promise<{ id: string }>;
@@ -39,10 +41,22 @@ export async function PUT(req: NextRequest, { params }: Params) {
       imageUrl = await uploadFile(imageFile, "category", true); // Save filename only
     }
 
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const updated_by = parseInt(session.user.id);
+
     const category = await updateCategory(id, {
       name: name || undefined,
       image: imageUrl,
+      updated_by,
     });
+
+    // Emit socket event for real-time update
+    if ((global as any).io) {
+      (global as any).io.emit("menu_updated", { action: "category_updated", category });
+    }
 
     return NextResponse.json(category);
   } catch (error: any) {
@@ -58,6 +72,12 @@ export async function DELETE(_: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
     await deleteCategory(id);
+
+    // Emit socket event for real-time update
+    if ((global as any).io) {
+      (global as any).io.emit("menu_updated", { action: "category_deleted", id });
+    }
+
     return NextResponse.json({ message: "Category deleted successfully" });
   } catch (error: any) {
     if (error.message === "CATEGORY_NOT_FOUND") {

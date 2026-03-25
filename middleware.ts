@@ -14,41 +14,59 @@ export async function middleware(req: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   });
 
-  if (!token) {
+  // Allow static assets (images, etc.) to load without auth
+  const isPublicAsset = /\.(png|jpg|jpeg|gif|webp|svg|ico|json|js|css|webmanifest)$/.test(pathname);
+  if (isPublicAsset) {
+    return NextResponse.next();
+  }
+
+  if (!token && pathname !== "/") {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  const roles = token.roles as string[];
-
-  if (pathname.startsWith("/admin")) {
-    if (!roles.includes("ADMIN") && !roles.includes("SUPER_ADMIN")) {
-      return NextResponse.redirect(new URL("/403", req.url));
-    }
+  // If already logged in and at login page, redirect to dashboard
+  if (token && pathname === "/") {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
-  if (pathname.startsWith("/super-admin")) {
-    if (!roles.includes("SUPER_ADMIN")) {
-      return NextResponse.redirect(new URL("/403", req.url));
-    }
-  }
-
-  if (pathname.startsWith("/staff")) {
-    if (!roles.includes("STAFF")) {
-      return NextResponse.redirect(new URL("/403", req.url));
-    }
-  }
+  // Note: Granular RBAC is now handled at the component level
+  // using the AccessControl component or hasPermission helper.
 
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    "/admin/:path*",
-    "/super-admin/:path*",
-    "/staff/:path*",
-    "/products/:path*",
-    "/transactions/:path*",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public (public images/assets)
+     */
+    {
+      source: '/((?!api|_next/static|_next/image|favicon.ico|public|manifest.json|manifest.webmanifest|sw.js).*)',
+      missing: [
+        { type: 'header', key: 'next-router-prefetch' },
+        { type: 'header', key: 'purpose', value: 'prefetch' },
+      ],
+    },
+    "/dashboard/:path*",
+    "/product/:path*",
+    "/order/:path*",
     "/promo/:path*",
-    "/reports/:path*",
+    "/discount/:path*",
+    "/accounts/:path*",
+    "/layar-tv/:path*",
+    "/sales-reports/:path*",
+    "/inventory/:path*",
+    "/settings/:path*",
+    "/audit-logs/:path*",
+    "/admin-manage/:path*",
+    "/roles/:path*",
+    "/permissions/:path*",
+    "/menu/:path*",
   ],
 };
+

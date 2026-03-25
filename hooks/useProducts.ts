@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { Product } from "@/types/product";
+import { getProductSocket as getSocket } from "@/lib/product-socket";
+import { useSession } from "next-auth/react";
 
 export const useProducts = () => {
+    const { data: session } = useSession();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -34,6 +37,10 @@ export const useProducts = () => {
             }
             setProducts(products.filter((p) => p.id !== id));
             toast.success("Produk berhasil dihapus");
+            
+            // Notify other clients
+            const socket = getSocket(session?.user?.auth_token, session?.user?.id);
+            socket.emit('product_updated', { action: 'deleted', id });
         } catch (error) {
             console.error("Error deleting product:", error);
             toast.error(error instanceof Error ? error.message : "Gagal menghapus produk");
@@ -60,6 +67,10 @@ export const useProducts = () => {
                 p.id === id ? { ...p, status: newStatus } : p
             ));
             toast.success("Status berhasil diubah");
+
+            // Notify other clients
+            const socket = getSocket(session?.user?.auth_token, session?.user?.id);
+            socket.emit('product_updated', { action: 'status_updated', id, status: newStatus });
         } catch (error) {
             console.error("Error changing status:", error);
             toast.error(error instanceof Error ? error.message : "Gagal mengubah status");
