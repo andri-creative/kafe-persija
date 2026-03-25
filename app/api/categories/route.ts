@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createCategory, getCategories } from "@/services/category.service";
 import { uploadFile } from "@/lib/file-upload";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function GET() {
   const categories = await getCategories();
@@ -12,7 +14,12 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const name = formData.get("name") as string;
     const imageFile = formData.get("image") as File | null;
-    const created_by = formData.get("created_by") as string;
+
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const created_by = parseInt(session.user.id);
 
     if (!name || !name.trim()) {
       return NextResponse.json(
@@ -41,10 +48,15 @@ export async function POST(req: NextRequest) {
     const categoryData = {
       name: name.trim(),
       image: filename, // Save only filename
-      created_by: parseInt(created_by) || 1,
+      created_by: created_by,
     };
 
     const category = await createCategory(categoryData);
+
+    // Emit socket event for real-time update
+    if ((global as any).io) {
+      (global as any).io.emit("menu_updated", { action: "category_created", category });
+    }
 
     return NextResponse.json(
       {

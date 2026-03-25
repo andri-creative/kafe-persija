@@ -33,7 +33,7 @@ export async function GET(
             product_variant_images: true,
           },
           orderBy: {
-            created_at: "asc",
+            created_at: "desc",
           },
         },
       },
@@ -142,7 +142,7 @@ export async function PUT(
       where: { product_id: productId },
       select: { id: true },
     });
-    const existingVariantIds = existingVariants.map((v) => v.id);
+    const existingVariantIds = existingVariants.map((v: { id: number }) => v.id);
     const processedVariantIds: number[] = [];
 
     let index = 0;
@@ -244,7 +244,7 @@ export async function PUT(
     }
 
     const variantsToDelete = existingVariantIds.filter(
-      (id) => !processedVariantIds.includes(id)
+      (id: number) => !processedVariantIds.includes(id)
     );
 
     for (const deleteId of variantsToDelete) {
@@ -260,6 +260,10 @@ export async function PUT(
       });
     }
 
+    // Emit socket event for real-time update
+    if ((global as any).io) {
+      (global as any).io.emit("product_updated", { action: "updated", product: updatedProduct });
+    }
 
     return NextResponse.json({
       success: true,
@@ -312,6 +316,11 @@ export async function DELETE(
       where: { id: productId },
     });
 
+    // Emit socket event for real-time update
+    if ((global as any).io) {
+      (global as any).io.emit("product_updated", { action: "deleted", id: productId });
+    }
+
     return NextResponse.json({
       success: true,
       message: "Product deleted successfully",
@@ -337,7 +346,11 @@ export async function PATCH(
     const params = await context.params;
     const productId = parseInt(params.id);
     const body = await request.json();
-    const updated_by = 1;
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const updated_by = parseInt(session.user.id);
 
     const existingProduct = await prisma.product.findUnique({
       where: { id: productId },
@@ -356,6 +369,11 @@ export async function PATCH(
         updated_by,
       },
     });
+
+    // Emit socket event for real-time update
+    if ((global as any).io) {
+      (global as any).io.emit("product_updated", { action: "status_updated", id: productId, status });
+    }
 
     return NextResponse.json({
       success: true,

@@ -78,7 +78,7 @@ async function getLast7DaysRevenue() {
   });
 
   // Format data untuk chart
-  return dailyData.map((item) => ({
+  return dailyData.map((item: any) => ({
     date: item.created_at.toISOString().split("T")[0],
     revenue: Number(item._sum.total || 0),
   }));

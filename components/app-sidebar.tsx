@@ -10,30 +10,33 @@ import {
   FolderTree,
   Palette,
   GalleryVerticalEnd,
-  ChevronRight,
   LucideIcon,
   User,
   Users,
+  ShieldAlert,
+  ShieldCheck,
+  Settings,
+  History,
+  UserCog,
+  Percent,
+  Ticket,
+  Archive,
+  ClipboardList,
+  Tv,
 } from "lucide-react";
 
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { navCafe } from "@/config/nav-cafe";
 import { getBasePathByRole } from "@/lib/role-path";
 
@@ -61,14 +64,24 @@ import Link from "next/link";
 const getIcon = (iconName: string | React.ComponentType<any>) => {
   if (typeof iconName === "string") {
     const iconMap: Record<string, React.ComponentType<any>> = {
-      LayoutDashboard: LayoutDashboard,
-      ShoppingCart: ShoppingCart,
-      Package: Package,
-      BarChart3: BarChart3,
-      FolderTree: FolderTree,
-      Palette: Palette,
-      User: User,
-      Users: Users,
+      LayoutDashboard,
+      ShoppingCart,
+      Package,
+      BarChart3,
+      FolderTree,
+      Palette,
+      User,
+      Users,
+      ShieldAlert,
+      ShieldCheck,
+      Settings,
+      History,
+      UserCog,
+      Percent,
+      Ticket,
+      Archive,
+      ClipboardList,
+      Tv,
     };
     return iconMap[iconName] || LayoutDashboard;
   }
@@ -78,6 +91,16 @@ const getIcon = (iconName: string | React.ComponentType<any>) => {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const { setOpen, setOpenMobile, isMobile } = useSidebar();
+
+  React.useEffect(() => {
+    if (isMobile) {
+      setOpenMobile(false);
+    } else {
+      setOpen(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   if (!session?.user) return null;
 
@@ -87,12 +110,33 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const basePath = getBasePathByRole(role);
 
-  const isActive = (url: string, items?: Array<{ url: string }>) => {
-    if (url === "#" && items) {
-      return items.some((item) => pathname === `${basePath}${item.url}`);
-    }
-    return pathname === `${basePath}${url}`;
+  const getFullUrl = (url: string) => {
+    if (url === "#") return "#";
+    // If it's an absolute path starting with these prefixes, keep it as is
+    if (
+      url.startsWith('/staff') ||
+      url.startsWith('/admin') ||
+      url.startsWith('/super-admin') ||
+      url.startsWith('/manager') ||
+      url.startsWith('/dashboard') ||
+      url.startsWith('/layar-tv')
+    ) return url;
+
+    // For relative paths, prepend the basePath
+    const path = url.startsWith('/') ? url : `/${url}`;
+    return `${basePath}${path}`;
   };
+
+  const isActive = (url: string) => {
+    const fullUrl = getFullUrl(url);
+    return pathname === fullUrl;
+  };
+
+  const getNavItems = (): any[] => {
+    return navCafe;
+  };
+
+  const navGroups = getNavItems();
 
   return (
     <Sidebar {...props}>
@@ -100,7 +144,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href={`${basePath}/dashboard`}>
+              <Link href="/dashboard">
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   {/* <GalleryVerticalEnd className="size-4" /> */}
                   <Avatar className="rounded-md">
@@ -119,69 +163,36 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarMenu>
-            {navCafe.navMain.map((item) => {
-              const IconComponent = getIcon(item.icon);
-              const itemIsActive = isActive(item.url, item.items);
+        {navGroups.map((group, index) => (
+          <SidebarGroup key={group.title || index} className={index > 0 ? "pt-0" : ""}>
+            {group.title && (
+              <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+                {group.title}
+              </SidebarGroupLabel>
+            )}
+            <SidebarMenu>
+              {group.items.map((item: any) => {
+                const IconComponent = getIcon(item.icon);
+                const isActiveItem = isActive(item.url);
 
-              if (item.items && item.items.length > 0) {
                 return (
-                  <Collapsible
-                    key={item.title}
-                    asChild
-                    defaultOpen={itemIsActive}
-                    className="group/collapsible"
-                  >
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton
-                          tooltip={item.title}
-                          isActive={itemIsActive}
-                        >
-                          <IconComponent className="size-4" />
-                          <span>{item.title}</span>
-                          <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {item.items.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.title}>
-                              <SidebarMenuSubButton
-                                asChild
-                                isActive={pathname === `${basePath}${subItem.url}`}
-                              >
-                                <Link href={`${basePath}${subItem.url}`}>
-                                  <span>{subItem.title}</span>
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActiveItem}
+                      tooltip={item.title}
+                    >
+                      <Link href={getFullUrl(item.url)}>
+                        <IconComponent className="size-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                 );
-              }
-
-              return (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={itemIsActive}
-                    tooltip={item.title}
-                  >
-                    <Link href={`${basePath}${item.url}`}>
-                      <IconComponent className="size-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
-            })}
-          </SidebarMenu>
-        </SidebarGroup>
+              })}
+            </SidebarMenu>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
       <SidebarRail />
     </Sidebar>

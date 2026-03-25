@@ -46,9 +46,9 @@ export async function GET(request: NextRequest) {
 
     let filteredProducts = products;
     if (category && category !== "all") {
-      filteredProducts = products.filter((product) =>
+      filteredProducts = products.filter((product: any) =>
         product.product_category_trx.some(
-          (trx) => trx.product_category.name === category,
+          (trx: any) => trx.product_category.name === category,
         ),
       );
     }
@@ -223,6 +223,11 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+
+    // Emit socket event for real-time update
+    if ((global as any).io) {
+      (global as any).io.emit("product_updated", { action: "created", product: completeProduct });
+    }
 
     return NextResponse.json({
       success: true,

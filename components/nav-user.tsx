@@ -1,7 +1,9 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { BadgeCheck, Bell, CreditCard, LogOut, Sparkles, User } from "lucide-react";
+import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles, User, Sun, Moon, Monitor } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -22,6 +24,12 @@ import {
 
 export function NavUser() {
   const { isMobile } = useSidebar();
+  const { setTheme, theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const { data: session } = useSession();
 
@@ -46,6 +54,11 @@ export function NavUser() {
                   {nickname?.charAt(0).toUpperCase() ?? "U"}
                 </AvatarFallback>
               </Avatar>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold">{nickname}</span>
+                <span className="truncate text-xs">{email}</span>
+              </div>
+              <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -73,6 +86,29 @@ export function NavUser() {
               <DropdownMenuItem className="cursor-pointer">
                 <User />
                 Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">
+                <BadgeCheck />
+                Account
+              </DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">
+                <CreditCard />
+                Billing
+              </DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">
+                <Bell />
+                Notifications
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              >
+                {mounted ? (
+                  theme === "dark" ? <Sun /> : <Moon />
+                ) : (
+                  <Sparkles />
+                )}
+                <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
