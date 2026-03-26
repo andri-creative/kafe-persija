@@ -143,3 +143,6 @@ _.claude_
 _.gemini_
 _.openai_
 _.anthropic_
+
+# Other files
+build_push.sh
