@@ -1,21 +1,27 @@
 "use client";
 
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-
+import { useState, useEffect } from "react";
 import { useProducts } from "@/hooks/useProducts";
 import { useProductFilter } from "@/hooks/useProductFilter";
 import { ProductHeader } from "./_components/ProductHeader";
 import { ProductFilters } from "./_components/ProductFilters";
 import { ProductTable } from "./_components/ProductTable";
 import { ProductEmptyState } from "./_components/ProductEmptyState";
-import { ProductLoading } from "./_components/ProductLoading"
+import { LogoLoading } from "@/components/logo-loading";
 import { PaginationGlobal } from "@/components/paginate-global";
 import { AccessControl } from "@/components/rbac/AccessControl";
-import { Separator } from "@/components/ui/separator";
 
 export default function ProductPage() {
   const { products, loading, deleteProduct, updateProductStatus, fetchProducts } = useProducts();
+  const [minLoading, setMinLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMinLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
   const {
     search,
     setSearch,
@@ -30,18 +36,17 @@ export default function ProductPage() {
     paginatedProducts,
   } = useProductFilter(products);
 
-  if (loading) return <ProductLoading />;
+  if (loading || minLoading) return (
+    <div className="flex flex-col items-center justify-center min-h-[400px] gap-6">
+      <LogoLoading width={150} height={150} />
+      <div className="space-y-1 text-center">
+        <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Sesaat lagi produk Anda akan muncul</p>
+      </div>
+    </div>
+  );
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar
-        theme="light"
-        className="text-sm"
-      />
-
       <AccessControl permission="product_view">
         <ProductHeader totalProducts={products.length} />
 

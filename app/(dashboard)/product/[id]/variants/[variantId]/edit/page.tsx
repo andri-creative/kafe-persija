@@ -24,8 +24,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 import { getVariantImageUrl } from "@/lib/variant-helper";
 import { getProductSocket as getSocket } from "@/lib/product-socket";
 import { useSession } from "next-auth/react";
@@ -251,18 +250,6 @@ export default function ProductVariantEditPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
 
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

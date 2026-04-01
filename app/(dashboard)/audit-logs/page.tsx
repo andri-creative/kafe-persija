@@ -6,6 +6,9 @@ import { Separator } from "@/components/ui/separator";
 import { History, Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { LogoLoading } from "@/components/logo-loading";
+
 
 export default function AuditLogsPage() {
     const logs = [
@@ -18,10 +21,19 @@ export default function AuditLogsPage() {
     return (
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
-                <h2 className="text-3xl font-bold tracking-tight">Audit Logs</h2>
+                <div className="flex items-center gap-4">
+                    <div className="relative h-12 w-12">
+                        <LogoLoading width={48} height={48} />
+                    </div>
+                    <h2 className="text-3xl font-bold tracking-tight">Audit Logs</h2>
+                </div>
             </div>
             <Separator />
 
+            <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed rounded-lg bg-muted/20">
+                <LogoLoading width={200} height={200} />
+                <p className="mt-4 text-muted-foreground animate-pulse font-medium">Memuat data audit logs...</p>
+            </div>
         </div>
     );
 }

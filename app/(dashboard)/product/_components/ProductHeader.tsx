@@ -3,6 +3,7 @@
 import { usePermissions } from "@/hooks/use-permissions";
 import { SYSTEM_PERMISSIONS } from "@/types/rbac";
 import { ButtonsComponentsAdd } from "@/components/buttons-conponents";
+import { AccessControl } from "@/components/rbac/AccessControl";
 
 interface ProductHeaderProps {
     totalProducts: number;
@@ -19,9 +20,9 @@ export const ProductHeader = ({ totalProducts }: ProductHeaderProps) => {
                     {totalProducts} produk • Kelola produk, kategori, dan varian
                 </p>
             </div>
-            {can(SYSTEM_PERMISSIONS.PRODUCT_CREATE || "product_create") && (
+            <AccessControl permission="product_create">
                 <ButtonsComponentsAdd addUrl="/product/create" title="Produk" showText />
-            )}
+            </AccessControl>
         </div>
     );
 };

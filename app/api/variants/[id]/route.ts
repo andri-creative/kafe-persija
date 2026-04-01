@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { uploadVariantImage, deleteVariantImage } from "@/lib/file-upload";
+import { ImageHelperServer as ImageHelper } from "@/lib/image-helper.server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -107,7 +107,7 @@ export async function PUT(
         });
 
         for (const img of imagesToDelete) {
-          await deleteVariantImage(img.image);
+          await ImageHelper.delete(img.image, "variant");
           await prisma.product_variant_images.delete({
             where: { id: img.id }
           });
@@ -118,7 +118,7 @@ export async function PUT(
     if (newImageFiles && newImageFiles.length > 0) {
       for (const file of newImageFiles) {
         if (file.size > 0) {
-          const imagePath = await uploadVariantImage(file);
+          const imagePath = await ImageHelper.upload(file, "variant");
           if (imagePath) {
             await prisma.product_variant_images.create({
               data: {
@@ -189,7 +189,7 @@ export async function DELETE(
     }
 
     if (variant.product_variant_images.length > 0) {
-      await deleteVariantImage(variant.product_variant_images[0].image);
+      await ImageHelper.delete(variant.product_variant_images[0].image, "variant");
     }
     await prisma.product_variants.delete({
       where: { id: variantId },

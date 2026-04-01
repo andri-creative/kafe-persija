@@ -1,4 +1,4 @@
-import { Product } from "@/types/product";
+import { Product, STATUS_PRIORITY } from "@/app/(dashboard)/product/types";
 import { getVariantImageUrl } from "./variant-helper";
 
 export const formatPrice = (price: number) => {

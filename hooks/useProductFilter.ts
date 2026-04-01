@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Product, STATUS_PRIORITY } from "@/types/product";
+import { Product, STATUS_PRIORITY } from "@/app/(dashboard)/product/types";
 
 export const useProductFilter = (products: Product[]) => {
     const [search, setSearch] = useState("");
