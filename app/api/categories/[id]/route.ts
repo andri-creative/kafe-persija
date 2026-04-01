@@ -4,7 +4,7 @@ import {
   updateCategory,
   deleteCategory,
 } from "@/services/category.service";
-import { uploadFile } from "@/lib/file-upload";
+import { ImageHelperServer as ImageHelper } from "@/lib/image-helper.server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -38,7 +38,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     let imageUrl: string | undefined;
 
     if (imageFile instanceof File) {
-      imageUrl = await uploadFile(imageFile, "category", true); // Save filename only
+      imageUrl = await ImageHelper.upload(imageFile, "category"); // Save filename only
     }
 
     const session = await getServerSession(authOptions);

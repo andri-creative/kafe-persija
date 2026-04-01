@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { ImageHelperServer as ImageHelper } from "@/lib/image-helper.server";
 
 /* =====================
    TYPES
@@ -88,10 +89,8 @@ export async function getCategoryById(id: string) {
 export async function updateCategory(id: string, data: UpdateCategoryInput) {
   const existing = await getCategoryById(id);
 
-  // If updating with new image, delete old one
   if (data.image && existing.image && data.image !== existing.image) {
-    const { deleteFile } = await import('@/lib/file-upload');
-    await deleteFile(existing.image, 'category'); // Pass type for filename-only format
+    await ImageHelper.delete(existing.image, 'category');
   }
 
   return prisma.product_category.update({
@@ -127,10 +126,9 @@ export async function deleteCategory(id: string) {
     throw new Error("CATEGORY_IN_USE");
   }
 
-  // Delete image file if exists
   if (category.image) {
-    const { deleteFile } = await import("@/lib/file-upload");
-    await deleteFile(category.image, "category"); // Pass type for filename-only format
+    const { ImageHelperServer: ImageHelper } = await import("@/lib/image-helper.server");
+    await ImageHelper.delete(category.image, "category"); 
   }
 
   return prisma.product_category.delete({

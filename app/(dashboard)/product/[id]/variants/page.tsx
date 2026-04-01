@@ -28,8 +28,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 import { useRef } from "react";
 import { Switch } from "@/components/ui/switch";
 import { getVariantImageUrl } from "@/lib/variant-helper";
@@ -234,7 +233,6 @@ export default function ProductVariantsPage() {
       });
 
       const result = await response.json();
-      console.log("🚀 ~ handleAddVariant ~ result:", result)
 
       if (!response.ok) {
         throw new Error(result.error || "Gagal menambahkan varian");
@@ -314,7 +312,6 @@ export default function ProductVariantsPage() {
   if (loading) {
     return (
       <div className="p-6">
-        <ToastContainer />
         <div className="flex justify-center items-center h-64">
           <div className="flex flex-col items-center">
             <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
@@ -328,7 +325,6 @@ export default function ProductVariantsPage() {
   if (!product) {
     return (
       <div className="p-6">
-        <ToastContainer />
         <div className="text-center py-12">
           <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -347,18 +343,6 @@ export default function ProductVariantsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
 
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

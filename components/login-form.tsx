@@ -175,7 +175,7 @@ export function LoginForm({
                                     </Button>
                                 </Field>
 
-                                <div className="relative flex items-center justify-center gap-4">
+                                {/* <div className="relative flex items-center justify-center gap-4">
                                     <div className="flex-1 h-px bg-white/30"></div>
                                     <span className="text-white/90 text-sm">Or continue with</span>
                                     <div className="flex-1 h-px bg-white/30"></div>
@@ -212,7 +212,7 @@ export function LoginForm({
                                         </svg>
                                         <span className="sr-only">Login with Google</span>
                                     </Button>
-                                </Field>
+                                </Field> */}
                             </FieldGroup>
                         </div>
                     </form>

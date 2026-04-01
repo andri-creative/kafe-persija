@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { Product } from "@/types/product";
+import { Product } from "@/app/(dashboard)/product/types";
 import { getProductSocket as getSocket } from "@/lib/product-socket";
 import { useSession } from "next-auth/react";
 

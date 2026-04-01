@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "npx tsx prisma/seed.ts",
-    "db:seed": "npx tsx prisma/seed.ts"
+    "db:seed": "npx tsx prisma/seed.ts",
+    "db:seed-permissions": "npx tsx prisma/seed-permissions.ts",
+    "db:seed-all": "npx tsx prisma/seed.ts && npx tsx prisma/seed-permissions.ts"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",

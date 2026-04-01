@@ -12,7 +12,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Product } from "@/types/product";
+import { Product } from "../types";
 import { formatPrice, formatDate, getCategories, getVariantImage, getActiveVariants, getStatusColor } from "@/lib/product-utils";
 import { usePermissions } from "@/hooks/use-permissions";
 import { SYSTEM_PERMISSIONS } from "@/types/rbac";

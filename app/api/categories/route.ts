@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createCategory, getCategories } from "@/services/category.service";
-import { uploadFile } from "@/lib/file-upload";
+import { ImageHelperServer as ImageHelper } from "@/lib/image-helper.server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Upload file and get filename only
-    const filename = await uploadFile(imageFile, "category", true);
+    const filename = await ImageHelper.upload(imageFile, "category");
 
     const categoryData = {
       name: name.trim(),

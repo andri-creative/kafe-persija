@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { deleteVariantImage, uploadVariantImage } from "@/lib/file-upload";
+import { ImageHelperServer as ImageHelper } from "@/lib/image-helper.server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -15,9 +15,7 @@ export async function GET(
 ) {
   try {
     const params = await context.params;
-
-    console.log("🚀 ~ GET ~ params:", params);
-
+    
     const productId = parseInt(params.id);
 
     const product = await prisma.product.findUnique({
@@ -39,7 +37,6 @@ export async function GET(
       },
     });
 
-    console.log("🚀 ~ GET ~ product:", product);
 
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
@@ -214,7 +211,7 @@ export async function PUT(
             });
 
             for (const img of imagesToDelete) {
-              await deleteVariantImage(img.image);
+              await ImageHelper.delete(img.image, "variant");
               await prisma.product_variant_images.delete({
                 where: { id: img.id }
               });
@@ -225,7 +222,7 @@ export async function PUT(
         if (newImageFiles && newImageFiles.length > 0) {
           for (const file of newImageFiles) {
             if (file.size > 0) {
-              const imagePath = await uploadVariantImage(file);
+              const imagePath = await ImageHelper.upload(file, "variant");
               if (imagePath) {
                 await prisma.product_variant_images.create({
                   data: {
@@ -252,7 +249,7 @@ export async function PUT(
         where: { product_variant_id: deleteId }
       });
       for (const img of images) {
-        await deleteVariantImage(img.image);
+        await ImageHelper.delete(img.image, "variant");
       }
 
       await prisma.product_variants.delete({
@@ -308,7 +305,7 @@ export async function DELETE(
 
     for (const variant of product.product_variants) {
       for (const image of variant.product_variant_images) {
-        await deleteVariantImage(image.image);
+        await ImageHelper.delete(image.image, "variant");
       }
     }
 

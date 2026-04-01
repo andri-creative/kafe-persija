@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { uploadVariantImage } from "@/lib/file-upload";
+import { ImageHelperServer as ImageHelper } from "@/lib/image-helper.server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -109,7 +109,7 @@ export async function POST(
     if (imageFiles && imageFiles.length > 0) {
       for (const file of imageFiles) {
         if (file.size > 0) {
-          const imagePath = await uploadVariantImage(file);
+          const imagePath = await ImageHelper.upload(file, "variant");
           if (imagePath) {
             await prisma.product_variant_images.create({
               data: {

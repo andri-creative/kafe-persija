@@ -12,6 +12,8 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
+  output: "standalone",
+  reactStrictMode: true,
   images: {
     remotePatterns: [
       { hostname: "localhost" },

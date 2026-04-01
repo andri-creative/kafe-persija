@@ -5,15 +5,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { getVariantImageUrl } from "@/lib/variant-helper";
 import {
-    ArrowLeft,
     Package,
     Tag,
     Layers,
     Info,
-    Loader2,
     AlertCircle,
     Edit2,
-    Calendar,
     CheckCircle2,
     XCircle,
     ShoppingBag
@@ -29,54 +26,21 @@ import {
     CardTitle
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow
-} from "@/components/ui/table";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-
-type VariantImage = {
-    id: number;
-    image: string;
-};
-
-type ProductVariant = {
-    id: number;
-    desc: string | null;
-    price: number;
-    stok: number | null;
-    size: string | null;
-    status: boolean;
-    product_variant_images: VariantImage[];
-};
-
-type ProductCategoryTrx = {
-    product_category: {
-        name: string;
-    };
-};
-
-type Product = {
-    id: number;
-    name: string;
-    description: string | null;
-    status: string;
-    product_category_trx: ProductCategoryTrx[];
-    product_variants: ProductVariant[];
-};
+import { toast } from "react-toastify";
+import { LogoLoading } from "@/components/logo-loading";
+import { Product, ProductVariant } from "../../types";
+import { BaseDataTable, Column } from "../../_components/BaseDataTable";
 
 export default function ViewProductPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
+    const [minLoading, setMinLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        const timer = setTimeout(() => setMinLoading(false), 1000);
+
         const fetchProduct = async () => {
             try {
                 setLoading(true);
@@ -99,6 +63,7 @@ export default function ViewProductPage({ params }: { params: Promise<{ id: stri
         };
 
         fetchProduct();
+        return () => clearTimeout(timer);
     }, [id]);
 
     const formatPrice = (price: number) => {
@@ -109,11 +74,72 @@ export default function ViewProductPage({ params }: { params: Promise<{ id: stri
         }).format(price);
     };
 
-    if (loading) {
+    const variantColumns: Column<ProductVariant>[] = [
+        {
+            header: "Visual",
+            className: "w-[80px]",
+            render: (variant) => (
+                <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-slate-100 border-2 border-white shadow-md group cursor-zoom-in">
+                    {variant.product_variant_images.length > 0 ? (
+                        <Image
+                            src={getVariantImageUrl(variant.product_variant_images[0].image)}
+                            alt={variant.desc || "Variant"}
+                            fill
+                            className="object-cover transition-transform group-hover:scale-110"
+                        />
+                    ) : (
+                        <div className="h-full w-full flex items-center justify-center">
+                            <ShoppingBag className="h-5 w-5 text-slate-300" />
+                        </div>
+                    )}
+                </div>
+            ),
+        },
+        {
+            header: "Informasi Varian",
+            render: (variant) => (
+                <div className="flex flex-col">
+                    <span className="font-black text-xs text-slate-800 uppercase tracking-tight">{variant.desc || "Standard"}</span>
+                    <span className="text-[9px] font-bold text-slate-400 mt-0.5">VARIANT ID: #{variant.id}</span>
+                </div>
+            ),
+        },
+        {
+            header: "Ukuran",
+            render: (variant) => (
+                <Badge variant="outline" className="text-[9px] font-bold border-slate-200">
+                    {variant.size || "ALL SIZE"}
+                </Badge>
+            ),
+        },
+        {
+            header: "Stok",
+            className: "text-center",
+            render: (variant) => (
+                <div className="flex flex-col items-center">
+                    <span className={`text-xs font-black ${(variant.stok ?? 0) > 0 ? "text-green-600" : "text-rose-500"}`}>
+                        {variant.stok ?? 0}
+                    </span>
+                    <span className="text-[8px] font-bold text-slate-400 uppercase">Unit</span>
+                </div>
+            ),
+        },
+        {
+            header: "Harga",
+            className: "text-right pr-6",
+            render: (variant) => (
+                <span className="text-sm font-black text-indigo-600/90 tracking-tight">
+                    {formatPrice(variant.price)}
+                </span>
+            ),
+        },
+    ];
+
+    if (loading || minLoading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[400px]">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
-                <p className="text-gray-600">Memuat data produk...</p>
+            <div className="flex flex-col items-center justify-center min-h-[400px] gap-6">
+                <LogoLoading width={150} height={150} />
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest animate-pulse">Menghubungkan ke Pusat Data...</p>
             </div>
         );
     }
@@ -137,8 +163,6 @@ export default function ViewProductPage({ params }: { params: Promise<{ id: stri
 
     return (
         <div className="p-6 space-y-6 max-w-7xl mx-auto">
-            <ToastContainer />
-
             {/* Header & Back Button */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
                 <div className="flex items-center gap-2">
@@ -241,76 +265,16 @@ export default function ViewProductPage({ params }: { params: Promise<{ id: stri
                             </div>
                         </CardHeader>
                         <CardContent className="p-0">
-                            <div className="overflow-x-auto">
-                                <Table>
-                                    <TableHeader className="bg-slate-50/50">
-                                        <TableRow className="border-none">
-                                            <TableHead className="w-[80px] text-[10px] font-black uppercase tracking-wider py-4">Visual</TableHead>
-                                            <TableHead className="text-[10px] font-black uppercase tracking-wider">Informasi Varian</TableHead>
-                                            <TableHead className="text-[10px] font-black uppercase tracking-wider">Ukuran</TableHead>
-                                            <TableHead className="text-[10px] font-black uppercase tracking-wider text-center">Stok</TableHead>
-                                            <TableHead className="text-[10px] font-black uppercase tracking-wider text-right px-6">Harga</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {product.product_variants.length > 0 ? (
-                                            product.product_variants.map((variant) => (
-                                                <TableRow key={variant.id} className="hover:bg-slate-50/50 transition-colors border-slate-50">
-                                                    <TableCell className="py-4">
-                                                        <div className="h-12 w-12 rounded-xl overflow-hidden bg-slate-100 border-2 border-white shadow-md relative group cursor-zoom-in">
-                                                            {variant.product_variant_images.length > 0 ? (
-                                                                <Image
-                                                                    src={getVariantImageUrl(variant.product_variant_images[0].image)}
-                                                                    alt={variant.desc || "Variant"}
-                                                                    fill
-                                                                    className="object-cover transition-transform group-hover:scale-110"
-                                                                />
-                                                            ) : (
-                                                                <div className="h-full w-full flex items-center justify-center">
-                                                                    <ShoppingBag className="h-5 w-5 text-slate-300" />
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div className="font-black text-xs text-slate-800 uppercase tracking-tight">{variant.desc || "Standard"}</div>
-                                                        <div className="text-[9px] font-bold text-slate-400 mt-0.5">VARIANT ID: #{variant.id}</div>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Badge variant="outline" className="text-[9px] font-bold border-slate-200">
-                                                            {variant.size || "ALL SIZE"}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        <div className={`text-xs font-black ${variant.stok && variant.stok > 0 ? "text-green-600" : "text-rose-500"}`}>
-                                                            {variant.stok ?? 0}
-                                                        </div>
-                                                        <div className="text-[8px] font-bold text-slate-400 uppercase">Unit</div>
-                                                    </TableCell>
-                                                    <TableCell className="text-right pr-6">
-                                                        <div className="text-sm font-black text-indigo-600/90 tracking-tight">
-                                                            {formatPrice(variant.price)}
-                                                        </div>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))
-                                        ) : (
-                                            <TableRow>
-                                                <TableCell colSpan={5} className="text-center py-12">
-                                                    <div className="flex flex-col items-center gap-2 opacity-30">
-                                                        <Package className="w-10 h-10" />
-                                                        <p className="text-[10px] font-black uppercase tracking-widest">Kosong</p>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </div>
+                            <BaseDataTable
+                                columns={variantColumns}
+                                data={product.product_variants}
+                                emptyMessage="Produk ini belum memiliki varian"
+                                className="border-none rounded-none"
+                            />
                         </CardContent>
                     </Card>
 
-                    {/* Gallery View for Mobile or Visual Reference */}
+                    {/* Gallery View */}
                     <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         {product.product_variants.flatMap(v => v.product_variant_images).map((img, idx) => (
                             <div key={img.id} className="aspect-square relative rounded-lg overflow-hidden border bg-white group shadow-sm hover:shadow-md transition-shadow">
