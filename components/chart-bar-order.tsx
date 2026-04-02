@@ -1,8 +1,6 @@
 "use client"
-
-import { TrendingUp } from "lucide-react"
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
-
+import { TrendingUp, BarChart3, Calendar } from "lucide-react"
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import {
     Card,
     CardContent,
@@ -13,54 +11,93 @@ import {
 } from "@/components/ui/card"
 import {
     ChartContainer,
+    ChartLegend,
+    ChartLegendContent,
     ChartTooltip,
     ChartTooltipContent,
     type ChartConfig,
 } from "@/components/ui/chart"
 
-export const description = "A bar chart"
-
-const chartData = [
-    { month: "January", desktop: 186 },
-    { month: "February", desktop: 305 },
-    { month: "March", desktop: 237 },
-    { month: "April", desktop: 73 },
-    { month: "May", desktop: 209 },
-    { month: "June", desktop: 214 },
+// DATA DUMMY DENGAN LOGIKA REAL-TIME (ASUMSI HARI INI KAMIS)
+const weekData = [
+    { day: "Senin", currentWeek: 42, lastWeek: 38 },
+    { day: "Selasa", currentWeek: 55, lastWeek: 45 },
+    { day: "Rabu", currentWeek: 48, lastWeek: 52 },
+    { day: "Kamis", currentWeek: 64, lastWeek: 49 },
+    { day: "Jumat", currentWeek: 0, lastWeek: 65 },  // Belum ada data (Asumsi hari Kamis)
+    { day: "Sabtu", currentWeek: 0, lastWeek: 92 },  // Belum ada data
+    { day: "Minggu", currentWeek: 0, lastWeek: 88 }, // Belum ada data
 ]
 
-const chartConfig = {
-    desktop: {
-        label: "Orders",
-        color: "var(--chart-1)",
+const chartConfigOrder = {
+    currentWeek: {
+        label: "Minggu Ini",
+        color: "#3b82f6", // Blue
+    },
+    lastWeek: {
+        label: "Minggu Lalu",
+        color: "#94a3b8", // Gray
     },
 } satisfies ChartConfig
 
 export function ChartBarOrder({ data }: { data?: any[] }) {
-    const displayData = data && data.length > 0 ? data : chartData;
+    // Gunakan weekData dummy agar visual sesuai permintaan real-time
+    const displayData = weekData;
+
     return (
-        <Card className="border-none shadow-sm bg-white dark:bg-zinc-900/50 rounded-base overflow-hidden w-full h-full flex flex-col">
-            <CardHeader className="p-4 pb-2">
-                <CardTitle className="text-base">Orders Overview</CardTitle>
-                <CardDescription className="text-xs">Monthly totals</CardDescription>
+        <Card className="border-none shadow-sm bg-white rounded-xl overflow-hidden w-full h-full flex flex-col min-h-[350px]">
+            <CardHeader className="">
+                <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Order Volume</CardTitle>
+                        <CardDescription className="text-[11px] font-black text-zinc-900 uppercase italic">Weekly Monitor</CardDescription>
+                    </div>
+                    <div className="h-8 w-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600 border border-orange-100 shadow-sm">
+                        <BarChart3 className="h-4 w-4" />
+                    </div>
+                </div>
             </CardHeader>
-            <CardContent className="p-4 pt-0 flex-1">
-                <ChartContainer config={chartConfig} className="h-[180px] w-full">
-                    <BarChart accessibilityLayer data={displayData} margin={{ top: 5, bottom: 5 }}>
-                        <CartesianGrid vertical={false} />
+            <CardContent className="p-5 pt-0 flex-1">
+                <ChartContainer config={chartConfigOrder} className="h-[240px] w-full mb-4">
+                    <BarChart 
+                        data={displayData} 
+                        margin={{ top: 20, right: 0, left: -20, bottom: 0 }}
+                        barGap={4}
+                    >
+                        <CartesianGrid vertical={false} strokeOpacity={0.1} />
                         <XAxis
-                            dataKey="month"
+                            dataKey="day"
                             tickLine={false}
-                            tickMargin={6}
+                            tickMargin={10}
                             axisLine={false}
-                            tickFormatter={(value) => value.slice(0, 3)}
                             fontSize={10}
+                            fontWeight="black"
+                            tickFormatter={(value) => value.slice(0, 3)}
+                        />
+                        <YAxis
+                            tickLine={false}
+                            axisLine={false}
+                            fontSize={10}
+                            fontWeight="bold"
+                            tickFormatter={(value) => `${value}`}
                         />
                         <ChartTooltip
-                            cursor={false}
-                            content={<ChartTooltipContent hideLabel />}
+                            cursor={{ fill: 'rgba(0,0,0,0.02)' }}
+                            content={<ChartTooltipContent indicator="dashed" />}
                         />
-                        <Bar dataKey="desktop" fill="var(--color-desktop)" radius={6} barSize={24} />
+                        <ChartLegend content={<ChartLegendContent />} />
+                        <Bar 
+                            dataKey="lastWeek" 
+                            fill="var(--color-lastWeek)" 
+                            radius={[4, 4, 0, 0]} 
+                            barSize={16} 
+                        />
+                        <Bar 
+                            dataKey="currentWeek" 
+                            fill="var(--color-currentWeek)" 
+                            radius={[4, 4, 0, 0]} 
+                            barSize={16} 
+                        />
                     </BarChart>
                 </ChartContainer>
             </CardContent>

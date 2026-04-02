@@ -17,7 +17,8 @@ import {
     ArrowUpRight,
     Utensils,
     Zap,
-    Clock
+    Clock,
+    Tag
 } from "lucide-react";
 import {
     Table,
@@ -77,52 +78,43 @@ export default function DashboardPageV2() {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 animate-in fade-in duration-700">
-                <LogoLoading width={180} height={180} />
-                <div className="flex flex-col items-center gap-2">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 animate-pulse">
-                        Synchronizing real-time data
-                    </p>
-                    <div className="h-1 w-48 bg-zinc-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-indigo-600 animate-progress rounded-full" />
-                    </div>
-                </div>
+            <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+                <LogoLoading width={120} height={120} />
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Loading Summary</p>
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col gap-8 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="flex flex-col gap-4 pb-8 animate-in fade-in duration-700">
             
-            {/* ── MINIMALIST HIGH-FIDELITY HEADER ── */}
-            <div className="relative overflow-hidden rounded-xl bg-indigo-900 px-6 py-8 shadow-lg shadow-indigo-100/50">
-                {/* Subtle Background Decors */}
-                <div className="absolute top-0 right-0 -mr-16 -mt-16 h-48 w-48 bg-white/5 blur-2xl rounded-full" />
-                
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                             <span className="text-xs">{greeting.icon}</span>
-                             <p className="text-[10px] font-black uppercase tracking-widest text-indigo-300/80">Operational Snapshot</p>
+            {/* ── COMPACT HEADER ── */}
+            <div className="relative overflow-hidden rounded-xl bg-indigo-950 px-6 py-6 shadow-xl border border-white/5">
+                <div className="absolute top-0 right-0 -mr-8 -mt-8 h-32 w-32 bg-white/5 blur-2xl rounded-full" />
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-0.5">
+                        <div className="flex items-center gap-1.5">
+                             <span className="text-sm">{greeting.icon}</span>
+                             <p className="text-[9px] font-black uppercase tracking-widest text-indigo-400">Operational Monitor</p>
                         </div>
-                        <h1 className="text-2xl lg:text-3xl font-black tracking-tight text-white">
+                        <h1 className="text-xl lg:text-2xl font-black tracking-tight text-white animate-in slide-in-from-left duration-500">
                             {greeting.text}, <span className="text-indigo-200">Persija Admin</span>
                         </h1>
-                        <p className="text-indigo-200/50 text-[11px] font-medium max-w-sm">
-                            Your stadium operations metrics are calculated for the current weekly cycle.
+                        <p className="text-indigo-200/50 text-[10px] font-medium max-w-sm">
+                            Operations metrics for the current weekly cycle.
                         </p>
                     </div>
                     
-                    <div className="flex items-center gap-2 bg-black/20 backdrop-blur-md p-1.5 rounded-xl border border-white/5">
-                        <div className="px-4 py-1.5 text-center border-r border-white/10">
-                            <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest leading-none mb-1">Weekly Sales</p>
-                            <p className="text-lg font-black text-white leading-none tabular-nums truncate max-w-[120px]">
+                    <div className="flex items-center gap-3 bg-black/30 backdrop-blur-sm p-1 rounded-xl border border-white/10">
+                        <div className="px-4 py-1 text-center border-r border-white/5">
+                            <p className="text-[8px] font-black text-indigo-400/70 uppercase tracking-widest leading-none mb-0.5">Revenue</p>
+                            <p className="text-base font-black text-white tabular-nums leading-none">
                                 {formatCurrency(stats?.orders?.revenue)}
                             </p>
                         </div>
-                        <div className="px-4 py-1.5 text-center">
-                            <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest leading-none mb-1">7Day Orders</p>
-                            <p className="text-lg font-black text-white leading-none tabular-nums">
+                        <div className="px-4 py-1 text-center">
+                            <p className="text-[8px] font-black text-indigo-400/70 uppercase tracking-widest leading-none mb-0.5">Orders</p>
+                            <p className="text-base font-black text-white tabular-nums leading-none">
                                 {formatNumber(stats?.orders?.total)}
                             </p>
                         </div>
@@ -130,106 +122,92 @@ export default function DashboardPageV2() {
                 </div>
             </div>
 
-            {/* ── KEY PERFORMANCE INDICATORS ── */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[
-                    { label: "Total Revenue", val: formatCurrency(stats?.orders?.revenue), icon: DollarSign, trend: stats?.orders?.trending, color: "from-blue-600 to-indigo-600", bg: "bg-blue-50/50" },
-                    { label: "Total Orders", val: formatNumber(stats?.orders?.total), icon: ShoppingCart, trend: stats?.orders?.trending, color: "from-orange-500 to-rose-500", bg: "bg-orange-50/50" },
-                    { label: "Active Users", val: formatNumber(stats?.customers?.active || 482), icon: Users, trend: "+12", color: "from-emerald-500 to-teal-500", bg: "bg-emerald-50/50" },
-                    { label: "Avg Ticket", val: formatCurrency(stats?.orders?.avgValue || 45000), icon: Zap, trend: "+4.2", color: "from-purple-500 to-pink-500", bg: "bg-purple-50/50" },
-                ].map((kpi, idx) => (
-                    <Card key={idx} className="group border-none shadow-sm hover:shadow-xl transition-all duration-500 rounded-[2rem] overflow-hidden">
-                        <CardContent className="p-0">
-                            <div className="flex items-center gap-5 p-6">
-                                <div className={`h-14 w-14 shrink-0 bg-linear-to-br ${kpi.color} rounded-2xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>
-                                    <kpi.icon className="h-6 w-6" />
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">{kpi.label}</p>
-                                    <div className="flex items-baseline gap-2">
-                                        <h3 className="text-xl font-black text-zinc-900 tracking-tight">{kpi.val}</h3>
-                                        <span className="text-[10px] font-black text-emerald-500 flex items-center gap-0.5">
-                                            <ArrowUpRight className="h-3 w-3" /> {kpi.trend}%
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className={`h-1 w-full bg-linear-to-r ${kpi.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
+            {/* ── COMPACT GRID (9+3) ── */}
+            <div className="grid grid-cols-12 gap-5">
 
-            {/* ── MAIN CONTENT GRID ── */}
-            <div className="grid grid-cols-12 gap-8">
-                
-                {/* ── LEFT SECTION: DATA VISUALS ── */}
-                <div className="col-span-12 lg:col-span-8 flex flex-col gap-8">
+                {/* ── LEFT AREA (COL 9) ── */}
+                <div className="col-span-12 lg:col-span-9 flex flex-col gap-5">
                     
-                    {/* Revenue Deep Dive */}
-                    <Card className="border-none shadow-sm rounded-[2.5rem] bg-white overflow-hidden">
-                        <CardHeader className="p-8 pb-0">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <CardTitle className="text-xl font-black tracking-tighter">Revenue Distribution</CardTitle>
-                                    <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mt-1">Earnings across timeline</CardDescription>
-                                </div>
-                                <div className="flex gap-2 bg-zinc-50 p-1 rounded-xl">
-                                    {['7D', '1M', '3M'].map(t => (
-                                        <button key={t} className={`px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${t === '1M' ? 'bg-white shadow-sm text-indigo-600' : 'text-zinc-400 hover:text-zinc-600'}`}>{t}</button>
-                                    ))}
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="p-8">
-                            <ChartAreaTotalRevenue data={stats?.charts?.revenue} />
-                        </CardContent>
-                    </Card>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                         <ChartBarOrder data={stats?.charts?.orders} />
-                         <ChartPieTopVariant data={stats?.charts?.variants} />
+                    {/* KPI Cards (More compact p-4) */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[
+                        { label: "Total Order", val: formatNumber(stats?.orders?.total), icon: ShoppingCart, trend: stats?.orders?.trending || "+12.4", color: "from-orange-500 to-rose-500" },
+                        { label: "Total Revenue", val: formatCurrency(stats?.orders?.revenue), icon: DollarSign, trend: stats?.orders?.trending || "+8.2", color: "from-blue-600 to-indigo-600" },
+                        { label: "Total Promo Dipakai", val: formatNumber(stats?.promos?.totalUsed || 0), icon: Tag, trend: "+4.1", color: "from-emerald-500 to-teal-500" },
+                    ].map((kpi, idx) => (
+                            <Card key={idx} className="group border-none shadow-sm hover:shadow-md transition-all rounded-xl bg-white/70 backdrop-blur-md">
+                                <CardContent className="p-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`h-11 w-11 shrink-0 bg-linear-to-br ${kpi.color} rounded-lg flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform`}>
+                                            <kpi.icon className="h-5 w-5" />
+                                        </div>
+                                        <div className="space-y-0.5">
+                                            <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest leading-none">{kpi.label}</p>
+                                            <div className="flex items-center gap-1.5">
+                                                <h3 className="text-base font-black text-zinc-900 leading-none">{kpi.val}</h3>
+                                                <span className="text-[8px] font-black text-emerald-500 bg-emerald-50 px-1 rounded-sm leading-none py-0.5">
+                                                    {kpi.trend}%
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
                     </div>
 
-                    {/* Transaction History */}
-                    <Card className="border-none shadow-sm rounded-[2.5rem] bg-white overflow-hidden">
-                        <CardHeader className="px-8 pt-8 pb-4 flex flex-row items-center justify-between">
-                            <div>
-                                <CardTitle className="text-xl font-black tracking-tighter">Operational Feed</CardTitle>
-                                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mt-1">Real-time item status</CardDescription>
-                            </div>
-                            <Link href="/product" className="text-[10px] font-black text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-4 py-2 rounded-xl transition-all">
-                                VIEW LOGS
+                    {/* Chart Grid (V1 Style but Compact) */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                        <div className="col-span-12 lg:col-span-8 min-h-[380px] lg:min-h-[420px]">
+                             <ChartAreaTotalRevenue data={stats?.charts?.revenue} />
+                        </div>
+                        <div className="col-span-12 lg:col-span-4 min-h-[380px] lg:min-h-[420px]">
+                            <TopCategoryChart data={stats?.charts?.categories} />
+                        </div>
+                        <div className="col-span-12 lg:col-span-8 min-h-[350px]">
+                            <ChartBarOrder data={stats?.charts?.orders} />
+                        </div>
+                        <div className="col-span-12 lg:col-span-4 min-h-[350px]">
+                            <ChartPieTopVariant data={stats?.charts?.variants} />
+                        </div>
+                    </div>
+
+                    {/* Compact Table */}
+                    <Card className="border-none shadow-sm rounded-xl bg-white overflow-hidden">
+                        <CardHeader className="p-5 pb-2 flex flex-row items-center justify-between">
+                            <CardTitle className="text-sm font-black tracking-tighter uppercase text-zinc-400">Recent Items Today</CardTitle>
+                            <Link href="/product" className="text-[9px] font-black text-indigo-600 hover:opacity-80 transition-opacity">
+                                SEE ALL LOGS
                             </Link>
                         </CardHeader>
-                        <CardContent className="px-8 pb-8 pt-0">
+                        <CardContent className="px-5 pb-4 pt-1">
                             <Table>
                                 <TableHeader>
                                     <TableRow className="border-b border-zinc-50 hover:bg-transparent">
-                                        <TableHead className="text-[9px] font-black uppercase text-zinc-400 tracking-[0.2em] h-14">Order</TableHead>
-                                        <TableHead className="text-[9px] font-black uppercase text-zinc-400 tracking-[0.2em] h-14">Selection</TableHead>
-                                        <TableHead className="text-[9px] font-black uppercase text-zinc-400 tracking-[0.2em] h-14">Amount</TableHead>
-                                        <TableHead className="text-[9px] font-black uppercase text-zinc-400 tracking-[0.2em] h-14 text-right">Status</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase text-zinc-400 tracking-widest h-10 w-16">ID</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase text-zinc-400 tracking-widest h-10">Selection</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase text-zinc-400 tracking-widest h-10">Amount</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase text-zinc-400 tracking-widest h-10 text-right">Status</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {(stats?.recentItems || []).slice(0, 5).map((item: any, i: number) => (
-                                        <TableRow key={i} className="group border-b border-zinc-50/50 hover:bg-zinc-50/80 transition-colors">
-                                            <TableCell className="font-bold text-[11px] text-zinc-500 py-4 tabular-nums">#{item.order_id}</TableCell>
-                                            <TableCell className="py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="h-10 w-10 shrink-0 rounded-xl bg-zinc-50 flex items-center justify-center font-black text-zinc-400 text-[10px] border border-zinc-100 group-hover:border-indigo-200 group-hover:text-indigo-600 transition-all">
+                                    {(stats?.recentItems || []).slice(0, 6).map((item: any, i: number) => (
+                                        <TableRow key={i} className="group border-b border-zinc-50/50 hover:bg-zinc-50 transition-colors">
+                                            <TableCell className="font-bold text-[10px] text-zinc-400 py-3">#{item.order_id}</TableCell>
+                                            <TableCell className="py-3">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="h-8 w-8 shrink-0 rounded-lg bg-zinc-50 flex items-center justify-center font-black text-zinc-300 text-[8px] border border-zinc-100 uppercase">
                                                         {item.initials}
                                                     </div>
                                                     <div className="flex flex-col min-w-0">
-                                                        <span className="font-black text-xs text-zinc-900 truncate">{item.name}</span>
-                                                        <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-tighter truncate">{item.variant || 'Standard'}</span>
+                                                        <span className="font-black text-[11px] text-zinc-900 truncate leading-tight">{item.name}</span>
+                                                        <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-tighter truncate">{item.variant || 'Standard'}</span>
                                                     </div>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="font-black text-xs text-zinc-900 py-4 tabular-nums">{formatCurrency(item.amount)}</TableCell>
-                                            <TableCell className="py-4 text-right">
-                                                <Badge className={`border-none px-3 py-1 rounded-lg font-black text-[9px] uppercase tracking-wider ${item.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600' :
+                                            <TableCell className="font-black text-[11px] text-zinc-900 py-3 tabular-nums">{formatCurrency(item.amount)}</TableCell>
+                                            <TableCell className="py-3 text-right">
+                                                <Badge className={`border-none px-2 py-0.5 rounded-md font-black text-[8px] uppercase tracking-wider ${item.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600' :
                                                     item.status === 'CANCELLED' ? 'bg-rose-50 text-rose-500' : 'bg-amber-50 text-amber-600'
                                                 }`}>
                                                     {item.status}
@@ -243,96 +221,100 @@ export default function DashboardPageV2() {
                     </Card>
                 </div>
 
-                {/* ── RIGHT PART: INSIGHTS & TRENDS ── */}
-                <div className="col-span-12 lg:col-span-4 flex flex-col gap-8">
+                {/* ── RIGHT AREA (COL 3) ── */}
+                <div className="col-span-12 lg:col-span-3 flex flex-col gap-5">
                     
-                    {/* Category Distribution */}
-                    <div className="animate-in fade-in slide-in-from-right-8 duration-1000 delay-500">
-                        <TopCategoryChart data={stats?.charts?.categories} />
-                    </div>
-
-                    {/* Trending Showcase */}
-                    <Card className="border-none shadow-sm rounded-[2.5rem] bg-white overflow-hidden">
-                        <CardHeader className="p-8 pb-3">
-                            <div className="flex items-center gap-2">
-                                <TrendingUp className="h-4 w-4 text-[#ff3535]" />
-                                <CardTitle className="text-lg font-black tracking-tighter">Hot Pick Today</CardTitle>
-                            </div>
-                            <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Most engagement items</CardDescription>
+                    {/* Trending (Simplified V1 Style) */}
+                    <Card className="border-none shadow-sm rounded-xl bg-white overflow-hidden">
+                        <CardHeader>
+                            <CardTitle className="text-xs font-black uppercase text-zinc-400 flex items-center gap-1.5">
+                                <TrendingUp className="h-3 w-3 text-[#ff3535]" /> Trending Menu Today
+                            </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-6 pt-0 space-y-6">
-                            {(stats?.trendingMenus || []).slice(0, 2).map((item: any, i: number) => (
-                                <div key={i} className="group relative rounded-[2rem] overflow-hidden border border-zinc-50 shadow-inner bg-zinc-50/30 p-2 hover:bg-white transition-all duration-500">
-                                    <div className="relative h-44 w-full rounded-[1.5rem] overflow-hidden bg-zinc-200">
-                                        <div className="absolute top-3 left-3 z-20">
-                                            <Badge className="bg-white/90 backdrop-blur-md text-zinc-900 border-none font-black text-[9px] px-2 shadow-sm italic">BEST SELLER</Badge>
+                        <CardContent className="p-5 pt-0 space-y-6">
+                            {(() => {
+                                const dummyMenus = [
+                                    { name: "Persija Signature Latte", orders: 124, price: 35000, type: "Signature Drink" },
+                                    { name: "Champion Beef Burger", orders: 98, price: 48000, type: "Heavy Meal" },
+                                    { name: "Tiger Crispy Snack", orders: 86, price: 25000, type: "Best Snack" },
+                                ];
+                                const displayMenus = (stats?.trendingMenus && stats.trendingMenus.length > 0) 
+                                    ? stats.trendingMenus 
+                                    : dummyMenus;
+
+                                return displayMenus.slice(0, 3).map((item: any, i: number) => (
+                                    <div key={i} className="group cursor-pointer">
+                                        <div className="relative h-40 w-full rounded-[1.5rem] overflow-hidden bg-zinc-100 shadow-md mb-3 border border-zinc-50">
+                                            {item.image ? (
+                                                <img
+                                                    src={ImageHelper.getUrl(item.image, "variant")}
+                                                    alt={item.name}
+                                                    className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
+                                                />
+                                            ) : (
+                                                <div className="h-full w-full flex items-center justify-center text-orange-200 bg-orange-50">
+                                                    <ShoppingCart className="h-10 w-10" />
+                                                </div>
+                                            )}
+                                            <div className="absolute top-3 left-3">
+                                                <span className="bg-white/95 backdrop-blur-md px-3 py-1 rounded-lg text-[9px] font-black text-zinc-900 shadow-sm uppercase tracking-widest flex items-center gap-1.5 border border-zinc-100/50">
+                                                    <div className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
+                                                    Trend
+                                                </span>
+                                            </div>
                                         </div>
-                                        {item.image && (
-                                            <img
-                                                src={ImageHelper.getUrl(item.image, "variant")}
-                                                alt={item.name}
-                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                                onError={(e: any) => e.target.style.display = 'none'}
-                                            />
-                                        )}
-                                        <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent flex flex-col justify-end p-5">
-                                            <p className="text-white font-black text-lg line-clamp-1">{item.name}</p>
-                                            <p className="text-white/70 text-[10px] font-black uppercase tracking-widest">{item.type}</p>
+                                        <div className="flex justify-between items-start px-1">
+                                            <div className="flex flex-col min-w-0 flex-1 pr-2">
+                                                <span className="font-black text-[13px] text-zinc-900 group-hover:text-[#ff3535] transition-colors truncate leading-tight">{item.name}</span>
+                                                <div className="flex items-center gap-1.5 mt-1 text-zinc-400">
+                                                    <Users className="h-2.5 w-2.5" />
+                                                    <span className="text-[9px] font-black uppercase tracking-tight">{item.orders} Orders</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col items-end">
+                                                <span className="font-black text-[#ff3535] text-[13px] whitespace-nowrap bg-rose-50 px-2 py-1 rounded-lg">
+                                                    {item.price > 0 ? (item.price/1000).toFixed(0) + 'k' : formatCurrency(item.price)}
+                                                </span>
+                                                <span className="text-[7px] font-black uppercase text-zinc-300 mt-1">{item.type}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-between p-3">
-                                        <div className="flex items-center gap-2">
-                                             <div className="flex -space-x-2">
-                                                 {[1,2,3].map(a => <div key={a} className="h-6 w-6 rounded-full border-2 border-white bg-zinc-200" />)}
-                                             </div>
-                                             <span className="text-[10px] font-black text-zinc-500">+{item.orders} Sold</span>
-                                        </div>
-                                        <p className="font-black text-indigo-600">{item.price}</p>
-                                    </div>
-                                </div>
-                            ))}
+                                ));
+                            })()}
                         </CardContent>
                     </Card>
 
-                    {/* Operational Status */}
-                    <Card className="border-none shadow-sm rounded-[2.5rem] bg-indigo-600 overflow-hidden text-white">
-                        <CardHeader className="p-8 pb-4">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="text-lg font-black tracking-tighter italic">Live Feed</CardTitle>
-                                <Activity className="h-4 w-4 animate-pulse" />
-                            </div>
+                    {/* Activity (Compact Sidebar) */}
+                    {/* <Card className="border-none shadow-sm rounded-xl bg-zinc-900 overflow-hidden text-white">
+                        <CardHeader className="p-5 pb-3">
+                            <CardTitle className="text-xs font-black uppercase text-zinc-500 tracking-widest">Feed</CardTitle>
                         </CardHeader>
-                        <CardContent className="p-8 pt-0 space-y-6">
+                        <CardContent className="p-5 pt-0 space-y-5">
                             {[
-                                { user: "Sylvester", action: "updated items", target: "Inventory", initial: "SY", icon: Clock },
-                                { user: "Maria", action: "ready to serve", target: "Table 04", initial: "MK", icon: Utensils }
+                                { user: "Sylvester", action: "restock", target: "Meat", initial: "SY", color: "bg-indigo-500" },
+                                { user: "Maria", action: "order", target: "Table 04", initial: "MK", color: "bg-rose-500" }
                             ].map((act, i) => (
-                                <div key={i} className="flex gap-4 group">
-                                    <div className="h-10 w-10 shrink-0 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center font-black text-xs shadow-lg group-hover:scale-110 transition-transform">
+                                <div key={i} className="flex gap-3">
+                                    <div className={`h-8 w-8 shrink-0 rounded-lg ${act.color} flex items-center justify-center font-black text-[10px] shadow-lg`}>
                                         {act.initial}
                                     </div>
-                                    <div className="space-y-0.5">
-                                        <p className="text-[11px] leading-relaxed text-indigo-100">
-                                            <span className="font-black text-white">{act.user}</span> {act.action}
+                                    <div className="space-y-0.5 min-w-0">
+                                        <p className="text-[10px] leading-tight text-zinc-400 truncate">
+                                            <span className="font-black text-white">{act.user}</span> {act.action} <span className="font-bold text-white">"{act.target}"</span>
                                         </p>
-                                        <div className="flex items-center gap-2">
-                                            <act.icon className="h-3 w-3 text-indigo-300" />
-                                            <span className="text-[9px] font-black uppercase tracking-widest text-indigo-200">{act.target}</span>
-                                        </div>
+                                        <p className="text-[8px] text-zinc-600 font-black uppercase tracking-widest">Just Now</p>
                                     </div>
                                 </div>
                             ))}
                         </CardContent>
-                        <div className="px-8 py-4 bg-indigo-700/50 backdrop-blur-md flex items-center justify-center">
-                             <button className="text-[10px] font-black uppercase tracking-[0.2em] hover:tracking-[0.3em] transition-all">View All Activity</button>
-                        </div>
-                    </Card>
+                    </Card> */}
+
                 </div>
             </div>
             
-            {/* ── FOOTER DECOR ── */}
+            {/* ── FOOTER ── */}
             <div className="mt-8 flex items-center justify-center">
-                 <div className="h-1 w-24 bg-zinc-100 rounded-full" />
+                 <div className="h-0.5 w-12 bg-zinc-100 rounded-full" />
             </div>
         </div>
     );

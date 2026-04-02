@@ -2,14 +2,19 @@
  * IMAGE_CONFIG - Configuration for image storage and serving
  * Using environment variables where possible for flexibility
  */
+let SERVER_URL = "/api/images";
+if (typeof process !== "undefined" && process.env.IMAGE_CDN_URL) {
+    SERVER_URL = process.env.IMAGE_CDN_URL;
+}
+
 export const IMAGE_CONFIG = {
   variant: {
     externalPath: `${process.env.IMAGE_STORAGE_PATH}/variant`,
-    publicBaseUrl: `${process.env.NEXT_PUBLIC_IMAGE_SERVER_URL}/variant`,
+    publicBaseUrl: SERVER_URL.endsWith("/variant") ? SERVER_URL : `${SERVER_URL}/variant`,
   },
   category: {
     externalPath: `${process.env.IMAGE_STORAGE_PATH}/category`,
-    publicBaseUrl: `${process.env.NEXT_PUBLIC_IMAGE_SERVER_URL}/category`,
+    publicBaseUrl: SERVER_URL.endsWith("/category") ? SERVER_URL : `${SERVER_URL}/category`,
   },
 } as const;
 
@@ -29,30 +34,44 @@ export const ImageHelper = {
   getUrl(filename: string | null | undefined, type: ImageType): string {
     if (!filename) return "/images/placeholder.png";
 
+    // DEBUG: Uncomment to see image resolution in browser console
+    // console.log(`[ImageHelper] Input: ${filename}, Type: ${type}`);
+
     // 1. If absolute URL, return as-is
     if (filename.startsWith("http://") || filename.startsWith("https://")) {
         return filename;
     }
 
     // 2. Handle legacy paths from database (e.g., /images/categories/xxx.webp)
-    // We clean them up to use the new API/CDN based on config.
     let cleanFilename = filename;
-    if (filename.startsWith("/images/categories/")) {
-        cleanFilename = filename.replace("/images/categories/", "");
-    } else if (filename.startsWith("/images/variant/")) {
-        cleanFilename = filename.replace("/images/variant/", "");
-    } else if (filename.startsWith("/images/variants/")) {
-        cleanFilename = filename.replace("/images/variants/", "");
-    } else if (filename.startsWith("/")) {
-        // Generic leading slash removal to avoid double slashes with base URL
-        cleanFilename = filename.substring(1);
+    
+    // Exact match and case-insensitive check
+    const legacyPatterns = [
+        "/images/categories/",
+        "/images/variant/",
+        "/images/variants/",
+        "images/categories/",
+        "images/variant/",
+        "images/variants/"
+    ];
+
+    for (const pattern of legacyPatterns) {
+        if (cleanFilename.includes(pattern)) {
+            cleanFilename = cleanFilename.split(pattern).pop() || cleanFilename;
+            break;
+        }
+    }
+
+    // Remove leading slash if any remains
+    if (cleanFilename.startsWith("/")) {
+        cleanFilename = cleanFilename.substring(1);
     }
 
     const config = IMAGE_CONFIG[type];
-    
-    // 3. Build URL: BaseServerURL + /type/ + filename
-    // Ensure we don't return malformed URLs if config is missing
     const baseUrl = config.publicBaseUrl || "/api/images/" + type;
-    return `${baseUrl}/${cleanFilename}`;
+    const finalUrl = `${baseUrl}/${cleanFilename}`;
+    
+    // console.log(`[ImageHelper] Final: ${finalUrl}`);
+    return finalUrl;
   },
 };
