@@ -122,6 +122,7 @@ export async function PUT(
           data: {
             name: categoryName,
             created_by: updated_by,
+            updated_by: updated_by,
           },
         });
       }
@@ -303,12 +304,27 @@ export async function DELETE(
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
+    // 1. Delete all images from storage and DB
     for (const variant of product.product_variants) {
       for (const image of variant.product_variant_images) {
         await ImageHelper.delete(image.image, "variant");
       }
+      await prisma.product_variant_images.deleteMany({
+        where: { product_variant_id: variant.id }
+      });
     }
 
+    // 2. Delete related category transactions
+    await prisma.product_category_trx.deleteMany({
+      where: { product_id: productId }
+    });
+
+    // 3. Delete related variants
+    await prisma.product_variants.deleteMany({
+      where: { product_id: productId }
+    });
+
+    // 4. Finally delete the product
     await prisma.product.delete({
       where: { id: productId },
     });

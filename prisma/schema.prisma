@@ -27,16 +27,15 @@ model user {
 }
 
 model role {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  description String?
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-
-  user_role_trx       user_role_trx[]
+  id                  Int                   @id @default(autoincrement())
+  name                String                @unique
+  description         String?
+  created_at          DateTime              @default(now())
+  updated_at          DateTime              @updatedAt
   role_permission_trx role_permission_trx[]
-  child_roles         role_role_trx[]       @relation("ParentRole")
   parent_roles        role_role_trx[]       @relation("ChildRole")
+  child_roles         role_role_trx[]       @relation("ParentRole")
+  user_role_trx       user_role_trx[]
 }
 
 model user_role_trx {
@@ -52,23 +51,21 @@ model user_role_trx {
 }
 
 model permission {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  description String?
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-
+  id                  Int                   @id @default(autoincrement())
+  name                String                @unique
+  description         String?
+  created_at          DateTime              @default(now())
+  updated_at          DateTime              @updatedAt
   role_permission_trx role_permission_trx[]
 }
 
 model role_permission_trx {
-  id            Int      @id @default(autoincrement())
+  id            Int        @id @default(autoincrement())
   role_id       Int
   permission_id Int
-  created_at    DateTime @default(now())
-
-  role       role       @relation(fields: [role_id], references: [id])
-  permission permission @relation(fields: [permission_id], references: [id])
+  created_at    DateTime   @default(now())
+  permission    permission @relation(fields: [permission_id], references: [id])
+  role          role       @relation(fields: [role_id], references: [id])
 
   @@index([role_id])
   @@index([permission_id])
@@ -79,9 +76,8 @@ model role_role_trx {
   parent_role_id Int
   child_role_id  Int
   created_at     DateTime @default(now())
-
-  parent_role role @relation("ParentRole", fields: [parent_role_id], references: [id])
-  child_role  role @relation("ChildRole", fields: [child_role_id], references: [id])
+  child_role     role     @relation("ChildRole", fields: [child_role_id], references: [id])
+  parent_role    role     @relation("ParentRole", fields: [parent_role_id], references: [id])
 
   @@index([parent_role_id])
   @@index([child_role_id])

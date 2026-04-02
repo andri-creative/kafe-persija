@@ -134,7 +134,6 @@ export async function POST(request: NextRequest) {
           product_id: product.id,
           category_id: category.id,
           created_by,
-          updated_by: created_by,
         },
       });
     }
@@ -197,7 +196,6 @@ export async function POST(request: NextRequest) {
           stok: variant.stok,
           size: variant.size,
           created_by,
-          updated_by: created_by,
         },
       });
 
@@ -210,8 +208,7 @@ export async function POST(request: NextRequest) {
               product_variant_id: createdVariant.id,
               image: imagePath,
               created_by,
-              updated_by: created_by,
-            },
+              },
           });
         }
       }

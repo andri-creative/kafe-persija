@@ -76,7 +76,8 @@ export async function POST(request: NextRequest) {
                 end_date: new Date(body.end_date || new Date()),
                 status: body.status || 'active',
                 all_product: body.all_product || false,
-                created_by: Number(body.created_by || 1)
+                created_by: Number(body.created_by || 1),
+                updated_by: Number(body.created_by || 1)
             }
         });
 
