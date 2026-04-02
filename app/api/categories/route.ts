@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
       name: name.trim(),
       image: filename, // Save only filename
       created_by: created_by,
+      updated_by: created_by,
     };
 
     const category = await createCategory(categoryData);
