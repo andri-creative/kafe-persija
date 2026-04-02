@@ -1,13 +1,14 @@
 "use client"
 
-import { Pie, PieChart, Cell } from "recharts"
-import { ChevronDown } from "lucide-react"
+import { Pie, PieChart, Cell, ResponsiveContainer } from "recharts"
+import { Utensils, ChevronDown } from "lucide-react"
 
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
+    CardDescription
 } from "@/components/ui/card"
 import {
     ChartContainer,
@@ -17,45 +18,47 @@ import {
 } from "@/components/ui/chart"
 
 const defaultChartData = [
-    { label: "Seafood", visitors: 300, fill: "#f97316", browser: "seafood" },
-    { label: "Beverages", visitors: 250, fill: "#ffedd5", browser: "beverages" },
-    { label: "Dessert", visitors: 250, fill: "#27272a", browser: "dessert" },
-    { label: "Pasta", visitors: 200, fill: "#e4e4e7", browser: "pasta" },
+    { label: "Coffee", sold: 450, fill: "#f97316" }, // Orange (Persija Style)
+    { label: "Food", sold: 300, fill: "#10b981" },
+    { label: "Snacks", sold: 250, fill: "#f59e0b" },
+    { label: "Dessert", sold: 150, fill: "#0e7490" },
 ]
 
 const chartConfig = {
-    visitors: {
-        label: "Visitors",
+    sold: {
+        label: "Terjual",
     },
 } satisfies ChartConfig
 
 export function TopCategoryChart({ data }: { data?: any[] }) {
     const displayData = data && data.length > 0 ? data : defaultChartData;
 
-    // Standardize data from API if needed
     const processedData = displayData.map((item, index) => ({
-        ...item,
+        label: item.label || item.category || "Unknown",
+        sold: item.sold || item.visitors || 0,
         fill: item.fill || [
-            "#f97316",
-            "#27272a", // Dark
-            "#ffedd5", // Peach
-            "#e4e4e7", // Grey
-            "#fdba74", // Light Orange
+            "#f97316", // Main Orange
+            "#10b981", // Emerald
+            "#f59e0b", // Amber
+            "#0e7490", // Cyan/Dark
+            "#8b5cf6", // Violet
         ][index % 5]
     }));
 
-    const totalVisitors = processedData.reduce((acc, curr) => acc + (curr.visitors || 0), 0);
+    const totalSold = processedData.reduce((acc, curr) => acc + (curr.sold || 0), 0);
 
     return (
-        <Card className="border-none shadow-sm bg-white dark:bg-zinc-900/50 rounded-base overflow-hidden w-full h-full flex flex-col">
-            <CardHeader className="flex flex-row items-center justify-between p-4 pb-2">
-                <CardTitle className="text-base font-black tracking-tight">Top Categories</CardTitle>
-                <div className="flex items-center gap-1 text-[9px] font-black text-zinc-400 cursor-pointer">
-                    This Month <ChevronDown className="h-2.5 w-2.5" />
+        <Card className="border-none shadow-sm bg-white rounded-xl overflow-hidden w-full h-full flex flex-col min-h-[380px]">
+            <CardHeader className="">
+                <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                        <CardTitle className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Popular Categories</CardTitle>
+                        <CardDescription className="text-[11px] font-black text-zinc-900 uppercase">Last 7 Days Sales</CardDescription>
+                    </div>
                 </div>
             </CardHeader>
-            <CardContent className="flex-1 p-4 pt-0">
-                <div className="relative h-[140px] w-full">
+            <CardContent className="flex-1 p-5 pt-0 flex flex-col justify-center">
+                <div className="relative h-[180px] w-full flex items-center justify-center">
                     <ChartContainer
                         config={chartConfig}
                         className="mx-auto aspect-square h-full"
@@ -67,12 +70,13 @@ export function TopCategoryChart({ data }: { data?: any[] }) {
                             />
                             <Pie
                                 data={processedData}
-                                dataKey="visitors"
+                                dataKey="sold"
                                 nameKey="label"
-                                innerRadius={40}
-                                outerRadius={60}
-                                paddingAngle={4}
-                                stroke="none"
+                                innerRadius={45}
+                                outerRadius={75}
+                                paddingAngle={5}
+                                strokeWidth={2}
+                                stroke="white"
                             >
                                 {processedData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -80,23 +84,29 @@ export function TopCategoryChart({ data }: { data?: any[] }) {
                             </Pie>
                         </PieChart>
                     </ChartContainer>
+                    
+                    {/* Inner Label */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span className="text-[10px] font-black text-zinc-400 uppercase leading-none mb-1">Total</span>
+                        <span className="text-xl font-black text-zinc-900 leading-none">{totalSold}</span>
+                    </div>
                 </div>
 
-                {/* Custom Legend */}
-                <div className="grid grid-cols-2 gap-x-4 gap-y-2 px-2 mt-2">
-                    {processedData.map((item) => (
+                {/* Compact Legend */}
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mt-4 border-t border-zinc-50 pt-4">
+                    {processedData.slice(0, 4).map((item) => (
                         <div key={item.label} className="flex items-center justify-between min-w-0">
                             <div className="flex items-center gap-1.5 min-w-0">
                                 <div
-                                    className="h-1.5 w-1.5 rounded-[1px] shrink-0"
+                                    className="h-2 w-2 rounded-full shrink-0"
                                     style={{ backgroundColor: item.fill }}
                                 />
-                                <span className="text-[9px] font-black text-zinc-800 dark:text-zinc-200 truncate">
+                                <span className="text-[10px] font-bold text-zinc-600 truncate">
                                     {item.label}
                                 </span>
                             </div>
-                            <span className="text-[9px] font-bold text-zinc-400 shrink-0 ml-1">
-                                {totalVisitors > 0 ? Math.round((item.visitors / totalVisitors) * 100) : 0}%
+                            <span className="text-[9px] font-black text-zinc-950 shrink-0 ml-1">
+                                {totalSold > 0 ? Math.round((item.sold / totalSold) * 100) : 0}%
                             </span>
                         </div>
                     ))}
