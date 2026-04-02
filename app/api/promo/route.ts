@@ -1,145 +1,91 @@
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
-        const search = searchParams.get("search") || "";
+        const status = searchParams.get('status');
         
-        const where: any = {};
-        if (search) {
-            where.OR = [
-                { title: { contains: search } },
-                { code_promo: { contains: search } },
-            ];
-        }
-
         const promos = await prisma.promo.findMany({
-            where,
-            orderBy: { created_at: "desc" },
+            where: {
+                OR: [
+                    { status: { contains: status || 'active' } },
+                    { status: 'Active' },
+                    { status: 'ACTIVE' }
+                ]
+            },
+            include: {
+                promo_products_trx: {
+                    include: {
+                        product: true
+                    }
+                }
+            },
+            orderBy: {
+                created_at: 'desc'
+            }
         });
 
+        console.log(`Found ${promos.length} promos in database.`);
         return NextResponse.json(promos);
     } catch (error) {
-        console.error("Error fetching promos:", error);
+        console.error("Fetch Promo Error:", error);
         return NextResponse.json({ error: "Failed to fetch promos" }, { status: 500 });
     }
 }
 
 export async function POST(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions);
-        if (!session?.user?.email) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        const creator = await prisma.user.findUnique({ where: { email: session.user.email } });
-        if (!creator) return NextResponse.json({ error: "User not found" }, { status: 404 });
-
         const body = await request.json();
         
-        // Map from Frontend Payload to Prisma 'promo' table fields
-        const { 
-            name, code_promo, type, value, description, 
-            min_order, max_usage, start_date, end_date, 
-            is_active, all_product, image 
-        } = body;
+        // Anti-Error: Tangkap data dengan fleksibel (name/title, code/code_promo)
+        const title = body.title || body.name;
+        const code_promo = body.code_promo || body.code || body.code_promo_code;
+        const type = body.type || 'fixed';
+        const value = Number(body.value || 0);
 
-        if (!name || !code_promo || !type || value === undefined) {
-            return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+        // Validasi: Pastikan data wajib ada
+        if (!title || !code_promo) {
+            return NextResponse.json({ 
+                error: "Title dan Code Promo wajib diisi!" 
+            }, { status: 400 });
+        }
+
+        // Cek Duplikat: Pastikan Kode Promo belum pernah dipakai
+        const existing = await prisma.promo.findUnique({
+            where: { code_promo }
+        });
+
+        if (existing) {
+            return NextResponse.json({ 
+                error: `Kode promo '${code_promo}' sudah terdaftar! Gunakan kode lain.` 
+            }, { status: 400 });
         }
 
         const newPromo = await prisma.promo.create({
             data: {
-                title: name,
                 code_promo,
                 type,
-                value: Number(value),
-                desc: description || null,
-                min_order: Number(min_order) || 0,
-                max_usage: Number(max_usage) || 1000,
-                start_date: new Date(start_date),
-                end_date: new Date(end_date),
-                status: is_active ? "active" : "inactive",
-                all_product: all_product ?? true,
-                image: image || null,
-                created_by: creator.id,
-                updated_by: creator.id
+                value: value,
+                title: title,
+                desc: body.desc || body.description || "",
+                min_order: body.min_order ? Number(body.min_order) : 0,
+                max_usage: body.max_usage ? Number(body.max_usage) : 9999,
+                usage_per_user: body.usage_per_user ? Number(body.usage_per_user) : 1,
+                start_date: new Date(body.start_date || new Date()),
+                end_date: new Date(body.end_date || new Date()),
+                status: body.status || 'active',
+                all_product: body.all_product || false,
+                created_by: Number(body.created_by || 1)
             }
         });
 
-        return NextResponse.json(newPromo, { status: 201 });
+        return NextResponse.json(newPromo);
     } catch (error: any) {
-        console.error("Error creating promo:", error);
+        console.error("Create Promo Error Detail:", error);
         return NextResponse.json({ 
-            error: "Failed to create promo", 
-            details: error.message 
+            error: "Gagal menyimpan promo ke database.",
+            message: error.message 
         }, { status: 500 });
-    }
-}
-
-export async function PUT(request: NextRequest) {
-    try {
-        const session = await getServerSession(authOptions);
-        if (!session?.user?.email) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        const body = await request.json();
-        const { 
-            id, name, code_promo, type, value, description, 
-            min_order, max_usage, start_date, end_date, 
-            is_active, all_product, image 
-        } = body;
-
-        if (!id) return NextResponse.json({ error: "ID is required" }, { status: 400 });
-
-        const updatedPromo = await prisma.promo.update({
-            where: { id: Number(id) },
-            data: {
-                title: name,
-                code_promo,
-                type,
-                value: Number(value),
-                desc: description || null,
-                min_order: Number(min_order) || 0,
-                max_usage: Number(max_usage) || 1000,
-                start_date: new Date(start_date),
-                end_date: new Date(end_date),
-                status: is_active ? "active" : "inactive",
-                all_product: all_product ?? true,
-                image: image || null
-            }
-        });
-
-        return NextResponse.json(updatedPromo);
-    } catch (error: any) {
-        console.error("Error updating promo:", error);
-        return NextResponse.json({ error: "Failed to update promo" }, { status: 500 });
-    }
-}
-
-export async function DELETE(request: NextRequest) {
-    try {
-        const session = await getServerSession(authOptions);
-        if (!session?.user?.email) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        const { searchParams } = new URL(request.url);
-        const id = searchParams.get("id");
-
-        if (!id) return NextResponse.json({ error: "ID is required" }, { status: 400 });
-
-        await prisma.promo.delete({
-            where: { id: Number(id) }
-        });
-
-        return NextResponse.json({ success: true });
-    } catch (error: any) {
-        console.error("Error deleting promo:", error);
-        return NextResponse.json({ error: "Failed to delete promo" }, { status: 500 });
     }
 }
