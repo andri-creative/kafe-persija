@@ -43,13 +43,13 @@ export default function DashboardPageV2() {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const response = await fetch("/api/dashboard");
+                const response = await fetch("/api/dashboard/v2/stats");
                 const data = await response.json();
                 setStats(data);
             } catch (error) {
                 console.error("Failed to fetch dashboard stats:", error);
             } finally {
-                setTimeout(() => setLoading(false), 800);
+                setTimeout(() => setLoading(false), 500);
             }
         };
         fetchStats();
@@ -94,14 +94,14 @@ export default function DashboardPageV2() {
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="space-y-0.5">
                         <div className="flex items-center gap-1.5">
-                             <span className="text-sm">{greeting.icon}</span>
-                             <p className="text-[9px] font-black uppercase tracking-widest text-indigo-400">Operational Monitor</p>
+                             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                             <p className="text-[9px] font-black uppercase tracking-widest text-indigo-400">Weekly Performance (Sen - Min)</p>
                         </div>
                         <h1 className="text-xl lg:text-2xl font-black tracking-tight text-white animate-in slide-in-from-left duration-500">
                             {greeting.text}, <span className="text-indigo-200">Persija Admin</span>
                         </h1>
-                        <p className="text-indigo-200/50 text-[10px] font-medium max-w-sm">
-                            Operations metrics for the current weekly cycle.
+                        <p className="text-indigo-200/50 text-[10px] font-medium max-w-sm italic">
+                            Live operational metrics for the current 7-day cycle.
                         </p>
                     </div>
                     
@@ -109,13 +109,13 @@ export default function DashboardPageV2() {
                         <div className="px-4 py-1 text-center border-r border-white/5">
                             <p className="text-[8px] font-black text-indigo-400/70 uppercase tracking-widest leading-none mb-0.5">Revenue</p>
                             <p className="text-base font-black text-white tabular-nums leading-none">
-                                {formatCurrency(stats?.orders?.revenue)}
+                                {formatCurrency(stats?.revenue)}
                             </p>
                         </div>
                         <div className="px-4 py-1 text-center">
                             <p className="text-[8px] font-black text-indigo-400/70 uppercase tracking-widest leading-none mb-0.5">Orders</p>
                             <p className="text-base font-black text-white tabular-nums leading-none">
-                                {formatNumber(stats?.orders?.total)}
+                                {formatNumber(stats?.orders)}
                             </p>
                         </div>
                     </div>
@@ -131,44 +131,44 @@ export default function DashboardPageV2() {
                     {/* KPI Cards (More compact p-4) */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {[
-                        { label: "Total Order", val: formatNumber(stats?.orders?.total), icon: ShoppingCart, trend: stats?.orders?.trending || "+12.4", color: "from-orange-500 to-rose-500" },
-                        { label: "Total Revenue", val: formatCurrency(stats?.orders?.revenue), icon: DollarSign, trend: stats?.orders?.trending || "+8.2", color: "from-blue-600 to-indigo-600" },
-                        { label: "Total Promo Dipakai", val: formatNumber(stats?.promos?.totalUsed || 0), icon: Tag, trend: "+4.1", color: "from-emerald-500 to-teal-500" },
+                        { label: "Total Order", val: formatNumber(stats?.orders), icon: ShoppingCart, trend: stats?.orderTrend || "0", color: "from-orange-500 to-rose-500" },
+                        { label: "Total Revenue", val: formatCurrency(stats?.revenue), icon: DollarSign, trend: stats?.revenueTrend || "0", color: "from-blue-600 to-indigo-600" },
+                        { label: "Active Promo", val: formatNumber(stats?.activePromos || 0), icon: Tag, trend: "0", color: "from-emerald-500 to-teal-500" },
                     ].map((kpi, idx) => (
-                            <Card key={idx} className="group border-none shadow-sm hover:shadow-md transition-all rounded-xl bg-white/70 backdrop-blur-md">
-                                <CardContent className="p-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`h-11 w-11 shrink-0 bg-linear-to-br ${kpi.color} rounded-lg flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform`}>
-                                            <kpi.icon className="h-5 w-5" />
-                                        </div>
-                                        <div className="space-y-0.5">
-                                            <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest leading-none">{kpi.label}</p>
-                                            <div className="flex items-center gap-1.5">
-                                                <h3 className="text-base font-black text-zinc-900 leading-none">{kpi.val}</h3>
-                                                <span className="text-[8px] font-black text-emerald-500 bg-emerald-50 px-1 rounded-sm leading-none py-0.5">
-                                                    {kpi.trend}%
-                                                </span>
-                                            </div>
+                        <Card key={idx} className="group border-none shadow-sm hover:shadow-md transition-all rounded-xl bg-white/70 backdrop-blur-md">
+                            <CardContent className="p-4">
+                                <div className="flex items-center gap-3">
+                                    <div className={`h-11 w-11 shrink-0 bg-linear-to-br ${kpi.color} rounded-lg flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform`}>
+                                        <kpi.icon className="h-5 w-5" />
+                                    </div>
+                                    <div className="space-y-0.5">
+                                        <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest leading-none">{kpi.label}</p>
+                                        <div className="flex items-center gap-1.5">
+                                            <h3 className="text-base font-black text-zinc-900 leading-none">{kpi.val}</h3>
+                                            <span className={`text-[8px] font-black px-1 rounded-sm leading-none py-0.5 ${Number(kpi.trend) >= 0 ? 'text-emerald-500 bg-emerald-50' : 'text-rose-500 bg-rose-50'}`}>
+                                                {Number(kpi.trend) >= 0 ? '+' : ''}{kpi.trend}%
+                                            </span>
                                         </div>
                                     </div>
-                                </CardContent>
-                            </Card>
-                        ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
                     </div>
 
                     {/* Chart Grid (V1 Style but Compact) */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
                         <div className="col-span-12 lg:col-span-8 min-h-[380px] lg:min-h-[420px]">
-                             <ChartAreaTotalRevenue data={stats?.charts?.revenue} />
+                             <ChartAreaTotalRevenue data={stats?.charts?.revenue || []} />
                         </div>
                         <div className="col-span-12 lg:col-span-4 min-h-[380px] lg:min-h-[420px]">
-                            <TopCategoryChart data={stats?.charts?.categories} />
+                            <TopCategoryChart data={stats?.charts?.categories || []} />
                         </div>
                         <div className="col-span-12 lg:col-span-8 min-h-[350px]">
-                            <ChartBarOrder data={stats?.charts?.orders} />
+                            <ChartBarOrder data={stats?.charts?.orders || []} />
                         </div>
                         <div className="col-span-12 lg:col-span-4 min-h-[350px]">
-                            <ChartPieTopVariant data={stats?.charts?.variants} />
+                            <ChartPieTopVariant data={stats?.charts?.variants || []} />
                         </div>
                     </div>
 
@@ -233,14 +233,18 @@ export default function DashboardPageV2() {
                         </CardHeader>
                         <CardContent className="p-5 pt-0 space-y-6">
                             {(() => {
-                                const dummyMenus = [
-                                    { name: "Persija Signature Latte", orders: 124, price: 35000, type: "Signature Drink" },
-                                    { name: "Champion Beef Burger", orders: 98, price: 48000, type: "Heavy Meal" },
-                                    { name: "Tiger Crispy Snack", orders: 86, price: 25000, type: "Best Snack" },
-                                ];
-                                const displayMenus = (stats?.trendingMenus && stats.trendingMenus.length > 0) 
-                                    ? stats.trendingMenus 
-                                    : dummyMenus;
+                                const displayMenus = (stats?.trending && stats.trending.length > 0) 
+                                    ? stats.trending 
+                                    : [];
+
+                                if (displayMenus.length === 0) {
+                                    return (
+                                        <div className="flex flex-col items-center justify-center py-10 opacity-30">
+                                            <Utensils className="h-10 w-10 mb-2" />
+                                            <p className="text-[10px] font-black uppercase">No Sales This Week</p>
+                                        </div>
+                                    );
+                                }
 
                                 return displayMenus.slice(0, 3).map((item: any, i: number) => (
                                     <div key={i} className="group cursor-pointer">
@@ -253,7 +257,7 @@ export default function DashboardPageV2() {
                                                 />
                                             ) : (
                                                 <div className="h-full w-full flex items-center justify-center text-orange-200 bg-orange-50">
-                                                    <ShoppingCart className="h-10 w-10" />
+                                                    <ShoppingCart className="h-10 w-10 text-orange-200" />
                                                 </div>
                                             )}
                                             <div className="absolute top-3 left-3">
@@ -268,14 +272,14 @@ export default function DashboardPageV2() {
                                                 <span className="font-black text-[13px] text-zinc-900 group-hover:text-[#ff3535] transition-colors truncate leading-tight">{item.name}</span>
                                                 <div className="flex items-center gap-1.5 mt-1 text-zinc-400">
                                                     <Users className="h-2.5 w-2.5" />
-                                                    <span className="text-[9px] font-black uppercase tracking-tight">{item.orders} Orders</span>
+                                                    <span className="text-[9px] font-black uppercase tracking-tight">{item.sales} Sales</span>
                                                 </div>
                                             </div>
                                             <div className="flex flex-col items-end">
                                                 <span className="font-black text-[#ff3535] text-[13px] whitespace-nowrap bg-rose-50 px-2 py-1 rounded-lg">
-                                                    {item.price > 0 ? (item.price/1000).toFixed(0) + 'k' : formatCurrency(item.price)}
+                                                    {item.price ? (item.price > 0 ? (item.price/1000).toFixed(0) + 'k' : formatCurrency(item.price)) : '🔥'}
                                                 </span>
-                                                <span className="text-[7px] font-black uppercase text-zinc-300 mt-1">{item.type}</span>
+                                                <span className="text-[7px] font-black uppercase text-zinc-300 mt-1">{item.type || 'Trending'}</span>
                                             </div>
                                         </div>
                                     </div>

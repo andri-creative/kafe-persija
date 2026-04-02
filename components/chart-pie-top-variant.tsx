@@ -16,13 +16,7 @@ import {
     type ChartConfig,
 } from "@/components/ui/chart"
 
-const defaultData = [
-    { name: "Coffee", q: 340, fill: "#f97316" }, 
-    { name: "Latte", q: 280, fill: "#10b981" },
-    { name: "Mocha", q: 190, fill: "#3b82f6" },
-    { name: "Snack", q: 150, fill: "#6366f1" },
-    { name: "Others", q: 120, fill: "#f59e0b" },
-]
+const defaultData: any[] = [];
 
 const chartConfig = {
     q: {

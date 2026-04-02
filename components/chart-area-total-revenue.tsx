@@ -18,16 +18,8 @@ import {
     type ChartConfig,
 } from "@/components/ui/chart"
 
-// DATA DUMMY (DATA JUTAAN)
-const dummyData = [
-    { day: "Senin", currentWeek: 1200000, lastWeek: 900000 },
-    { day: "Selasa", currentWeek: 1500000, lastWeek: 1100000 },
-    { day: "Rabu", currentWeek: 1400000, lastWeek: 1650000 },
-    { day: "Kamis", currentWeek: 1850000, lastWeek: 1300000 },
-    { day: "Jumat", currentWeek: 2100000, lastWeek: 1800000 },
-    { day: "Sabtu", currentWeek: 3200000, lastWeek: 2400000 },
-    { day: "Minggu", currentWeek: 2800000, lastWeek: 2900000 },
-]
+// DATA DUMMY DIHAPUS - Murni menggunakan data props
+const dummyData: any[] = [];
 
 const chartConfig = {
     currentWeek: {
@@ -41,8 +33,8 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export default function ChartAreaTotalRevenue({ data }: { data?: any[] }) {
-    // Dipaksa menggunakan dummyData jutaan
-    const displayData = dummyData;
+    // Gunakan data asli dari API, jika kosong tampilkan []
+    const displayData = data || [];
 
     // Helper untuk format mata uang ringkas (jt / rb)
     const formatYAxis = (value: number) => {
@@ -95,7 +87,6 @@ export default function ChartAreaTotalRevenue({ data }: { data?: any[] }) {
                             tickMargin={15}
                             fontSize={10}
                             fontWeight="bold"
-                            tickFormatter={(value) => value.slice(0, 3)}
                         />
                         <YAxis
                             tickLine={false}
