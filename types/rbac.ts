@@ -9,6 +9,12 @@ export const SYSTEM_PERMISSIONS = {
     USER_EDIT: "user_edit",
     USER_DELETE: "user_delete",
 
+    // DISCOUNT MANAGEMENT
+    DISCOUNT_VIEW: "discount_view",
+    DISCOUNT_CREATE: "discount_create",
+    DISCOUNT_EDIT: "discount_edit",
+    DISCOUNT_DELETE: "discount_delete",
+
     // ROLE & PERMISSION MANAGEMENT (SUPER ADMIN)
     RBAC_VIEW: "rbac_view",
     RBAC_MANAGE: "rbac_manage",
@@ -27,7 +33,9 @@ export const SYSTEM_PERMISSIONS = {
 
     // CATEGORY MANAGEMENT
     CATEGORY_VIEW: "category_view",
-    CATEGORY_MANAGE: "category_manage",
+    CATEGORY_CREATE: "category_create",
+    CATEGORY_EDIT: "category_edit",
+    CATEGORY_DELETE: "category_delete",
 
     // TRANSACTION & ORDER
     ORDER_VIEW: "order_view",

@@ -42,9 +42,9 @@ export function VariantSection({
       <CardHeader className="bg-slate-50/50 border-b border-slate-100 flex flex-row items-center justify-between py-4">
         <div>
           <CardTitle className="text-sm font-black text-slate-800 uppercase tracking-widest">
-            Varian Harga
+            Price Variants
           </CardTitle>
-          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Minimal 1 varian</p>
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Minimum 1 variant</p>
         </div>
         <Button
           type="button"
@@ -54,7 +54,7 @@ export function VariantSection({
           className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg h-7 text-[10px] px-3 font-bold rounded-lg transition-all"
         >
           <Plus className="h-3 w-3 mr-1" />
-          TAMBAH
+          ADD
         </Button>
       </CardHeader>
       <CardContent className="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
@@ -66,7 +66,7 @@ export function VariantSection({
                   <Package className="h-3.5 w-3.5 text-indigo-600" />
                 </div>
                 <Label className="text-xs font-black text-slate-800 uppercase tracking-tight">
-                  Varian #{index + 1} {variant.id && <span className="text-indigo-400 font-bold ml-1">[{variant.id}]</span>}
+                  Variant #{index + 1} {variant.id && <span className="text-indigo-400 font-bold ml-1">[{variant.id}]</span>}
                 </Label>
               </div>
               {variants.length > 1 && (
@@ -85,8 +85,8 @@ export function VariantSection({
 
             <div className="space-y-4">
               <ProductInputField
-                label="Deskripsi Varian"
-                placeholder="Cth: Ukuran Large / Ekstra Panas"
+                label="Variant Description"
+                placeholder="e.g., Large Size / Extra Hot"
                 value={variant.desc}
                 onChange={(e) => handleVariantChange(index, "desc", e.target.value)}
                 required
@@ -95,7 +95,7 @@ export function VariantSection({
 
               <div className="grid grid-cols-2 gap-4">
                 <ProductInputField
-                  label="Harga (Rp)"
+                  label="Price (Rp)"
                   type="number"
                   placeholder="0"
                   value={variant.price}
@@ -105,7 +105,7 @@ export function VariantSection({
                   disabled={isSaving}
                 />
                 <ProductInputField
-                  label="Stok"
+                  label="Stock"
                   type="number"
                   placeholder="0"
                   value={variant.stok}
@@ -117,15 +117,15 @@ export function VariantSection({
               </div>
 
               <ProductInputField
-                label="Ukuran (Size)"
-                placeholder="Cth: 500ml / L"
+                label="Size"
+                placeholder="e.g., 500ml / L"
                 value={variant.size}
                 onChange={(e) => handleVariantChange(index, "size", e.target.value)}
                 disabled={isSaving}
               />
 
               <div className="space-y-2">
-                <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Foto Varian</Label>
+                <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Variant Image</Label>
                 <div className="grid grid-cols-3 gap-2">
                   {variant.existingImages.map((img, imgIndex) => (
                     <div key={`existing-${imgIndex}`} className="relative aspect-square rounded-xl overflow-hidden border-2 border-white shadow-md group">
@@ -178,7 +178,7 @@ export function VariantSection({
                       disabled={isSaving}
                     />
                     <Upload className="h-5 w-5 text-slate-300 group-hover:text-indigo-500 transition-colors" />
-                    <span className="text-[8px] font-black text-slate-400 mt-1 uppercase tracking-tighter">Tambah Foto</span>
+                    <span className="text-[8px] font-black text-slate-400 mt-1 uppercase tracking-tighter">Add Image</span>
                   </div>
                 </div>
               </div>
@@ -189,7 +189,7 @@ export function VariantSection({
         {variants.length === 0 && (
           <div className="text-center py-10 border-2 border-dashed rounded-3xl bg-slate-50 border-slate-200/50">
             <ShoppingBag className="h-10 w-10 text-slate-200 mx-auto mb-3" />
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-4">Belum Ada Varian</p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-4">No Variants</p>
             <Button
               type="button"
               variant="outline"
@@ -197,7 +197,7 @@ export function VariantSection({
               className="text-[10px] font-black tracking-widest px-6 rounded-full"
               disabled={isSaving}
             >
-              + TAMBAH VARIAN
+              + ADD VARIANT
             </Button>
           </div>
         )}
@@ -205,11 +205,11 @@ export function VariantSection({
         {variants.length > 0 && (
           <div className="bg-indigo-50/50 rounded-2xl p-4 border border-indigo-100/50 space-y-2 mt-4 shadow-inner">
             <div className="flex justify-between items-center">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Varian:</span>
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Variants:</span>
               <span className="text-xs font-black text-indigo-700">{variants.length} SKU</span>
             </div>
             <div className="flex justify-between items-center border-t border-indigo-100/30 pt-2">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Estimasi Harga:</span>
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Estimated Price:</span>
               <span className="text-xs font-black text-slate-900">
                 Rp {Math.min(...variants.map((v) => Number(v.price) || 0)).toLocaleString("id-ID")} - 
                 Rp {Math.max(...variants.map((v) => Number(v.price) || 0)).toLocaleString("id-ID")}

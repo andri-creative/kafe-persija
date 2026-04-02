@@ -11,15 +11,15 @@ export const ProductEmptyState = () => {
                 <Package className="h-10 w-10 text-gray-400" />
             </div>
             <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
-                Belum ada produk
+                No products yet
             </h3>
             <p className="text-sm text-gray-500 mb-6">
-                Mulai dengan menambahkan produk pertama Anda
+                Start by adding your first product
             </p>
             <Link href="/product/create">
                 <Button className="gap-2">
                     <Plus className="h-4 w-4" />
-                    Tambah Produk Pertama
+                    Add First Product
                 </Button>
             </Link>
         </div>

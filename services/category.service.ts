@@ -73,13 +73,27 @@ export async function getCategories() {
 export async function getCategoryById(id: string) {
   const category = await prisma.product_category.findUnique({
     where: { id: Number(id) },
+    include: {
+      _count: {
+        select: { product_category_trx: true },
+      },
+    }
   });
 
   if (!category) {
     throw new Error("CATEGORY_NOT_FOUND");
   }
 
-  return category;
+  const user = await prisma.user.findUnique({
+    where: { id: category.created_by },
+    select: { nickname: true },
+  });
+
+  return {
+    ...category,
+    creator_name: user?.nickname || "System",
+    product_count: category._count.product_category_trx,
+  };
 }
 
 /* =====================

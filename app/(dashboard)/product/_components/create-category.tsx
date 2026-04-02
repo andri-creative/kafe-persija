@@ -93,18 +93,18 @@ export default function CreateCategory({
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="space-y-4">
           <ProductInputField
-            label="Nama Kategori"
+            label="Name Category"
             placeholder="Cth: Makanan Berat"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
             disabled={uploading}
-            description="Nama kategori produk/menu yang akan dibuat"
+            description="Name category product/menu will be created"
           />
 
           <div className="space-y-1.5">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">
-              Gambar Kategori <span className="text-red-500">*</span>
+              Image Category <span className="text-red-500">*</span>
             </label>
 
             <div
@@ -139,7 +139,7 @@ export default function CreateCategory({
                     onClick={(e) => { e.stopPropagation(); setImagePreview(null); setImageFile(null); }}
                     className="text-[10px] font-black text-rose-500 hover:text-rose-700 uppercase tracking-widest"
                   >
-                    HAPUS GAMBAR
+                    DELETE IMAGE
                   </button>
                 </div>
               ) : (
@@ -148,8 +148,8 @@ export default function CreateCategory({
                     <Upload className="h-6 w-6 text-indigo-500" />
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs font-bold text-slate-700">Tarik / Lepas Gambar</p>
-                    <p className="text-[10px] text-slate-400 font-medium">atau klik untuk menelusuri</p>
+                    <p className="text-xs font-bold text-slate-700">Drag / Drop Image</p>
+                    <p className="text-[10px] text-slate-400 font-medium">or click to browse</p>
                     <p className="text-[9px] text-slate-300 uppercase tracking-tight">JPG, PNG, WebP • Maks 5MB</p>
                   </div>
                 </div>
@@ -168,9 +168,9 @@ export default function CreateCategory({
         >
           {uploading ? (
             <span className="flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" /> PROSES...
+              <Loader2 className="h-4 w-4 animate-spin" /> PROCESSING...
             </span>
-          ) : "BUAT KATEGORI"}
+          ) : "CREATE CATEGORY"}
         </Button>
       </form>
     </div>

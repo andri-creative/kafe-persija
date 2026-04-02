@@ -2,35 +2,23 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import {
-  ArrowLeft,
-  Save,
-  Loader2,
-  Upload,
-  X,
-  Image as ImageIcon,
-  ChevronLeft
-} from "lucide-react";
+import { Package, ShieldAlert, ArrowLeft } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
 import { ButtonsComponentsBack, ButtonsComponentsSave } from "@/components/buttons-conponents";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "react-toastify";
-import { getVariantImageUrl } from "@/lib/variant-helper";
 import { getProductSocket as getSocket } from "@/lib/product-socket";
 import { useSession } from "next-auth/react";
+import { LogoLoading } from "@/components/logo-loading";
+import { usePermissions } from "@/hooks/use-permissions";
+import Link from "next/link";
 
-// Type untuk variant
-type Variant = {
+// Sub-components
+import { VariantEditForm } from "../../../../_components/variants/VariantEditForm";
+import { VariantImageGallery } from "../../../../_components/variants/VariantImageGallery";
+
+// Type definition for variant
+type Variant = {  
   id: number;
   desc: string | null;
   price: number;
@@ -49,10 +37,10 @@ type Variant = {
 
 export default function ProductVariantEditPage() {
   const { data: session } = useSession();
+  const { can, loading: permissionsLoading } = usePermissions();
   const params = useParams();
   const router = useRouter();
 
-  // Safely access params
   const variantId = params?.variantId as string;
   const productId = params?.id as string;
 
@@ -75,24 +63,18 @@ export default function ProductVariantEditPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (variantId) {
-      fetchVariant();
-    }
+    if (variantId) fetchVariant();
   }, [variantId]);
 
   const fetchVariant = async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/variants/${variantId}`);
-
-      if (!response.ok) {
-        throw new Error("Gagal mengambil data varian");
-      }
-
+      if (!response.ok) throw new Error("Failed to fetch variant data");
+      
       const data = await response.json();
       setVariant(data);
 
-      // Initialize form data
       setFormData({
         desc: data.desc || "",
         price: data.price.toString(),
@@ -105,9 +87,9 @@ export default function ProductVariantEditPage() {
       });
     } catch (error) {
       console.error("Error fetching variant:", error);
-      toast.error("Gagal memuat data varian");
+      toast.error("Failed to load variant data");
     } finally {
-      setLoading(false);
+      setTimeout(() => setLoading(false), 500);
     }
   };
 
@@ -120,11 +102,11 @@ export default function ProductVariantEditPage() {
 
     fileArray.forEach(file => {
       if (!file.type.startsWith("image/")) {
-        toast.error(`File ${file.name} bukan gambar`);
+        toast.error(`File ${file.name} is not an image`);
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        toast.error(`File ${file.name} terlalu besar (max 5MB)`);
+        toast.error(`File ${file.name} is too large (max 5MB)`);
         return;
       }
       validFiles.push(file);
@@ -138,10 +120,7 @@ export default function ProductVariantEditPage() {
       imagePreviews: [...prev.imagePreviews, ...validFiles.map(file => URL.createObjectURL(file))]
     }));
 
-    // Reset input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleRemoveImage = (type: "new" | "existing", index: number) => {
@@ -166,12 +145,12 @@ export default function ProductVariantEditPage() {
     if (e) e.preventDefault();
 
     if (!formData.desc.trim() || !formData.price) {
-      toast.error("Deskripsi dan harga harus diisi");
+      toast.error("Description and price are required");
       return;
     }
 
     if (Number(formData.price) <= 0) {
-      toast.error("Harga harus lebih dari 0");
+      toast.error("Price must be greater than 0");
       return;
     }
 
@@ -184,12 +163,10 @@ export default function ProductVariantEditPage() {
       submitData.append("stok", formData.stok);
       submitData.append("size", formData.size);
 
-      // New images
       formData.imageFiles.forEach((file) => {
         submitData.append("images", file);
       });
 
-      // Removed images
       if (formData.removedImageIds.length > 0) {
         submitData.append("removedImageIds", formData.removedImageIds.join(","));
       }
@@ -200,224 +177,124 @@ export default function ProductVariantEditPage() {
       });
 
       const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Failed to save changes");
 
-      if (!response.ok) {
-        throw new Error(result.error || "Gagal menyimpan perubahan");
-      }
+      toast.success("Variant updated successfully");
 
-      toast.success("Varian berhasil diperbarui");
-
-      // Notify other clients
       const socket = getSocket(session?.user?.auth_token, session?.user?.id);
       socket.emit('product_updated', { action: 'variant_updated', productId, variantId, data: result.data });
 
       setTimeout(() => {
-        router.push(`/admin/product/${productId}/variants`);
-      }, 1000);
+        router.push(`/product/${productId}/variants`);
+      }, 500);
     } catch (error) {
       console.error("Error saving variant:", error);
-      toast.error(error instanceof Error ? error.message : "Gagal menyimpan perubahan");
+      toast.error(error instanceof Error ? error.message : "Failed to save changes");
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) {
+  if (loading || permissionsLoading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-6">
+        <LogoLoading width={150} height={150} />
+        <p className="text-[10px] text-muted-foreground uppercase tracking-widest animate-pulse">
+          Validating sessions and permissions...
+        </p>
       </div>
     );
   }
 
+  // RBAC Restricted
+  if (!can("product_edit")) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 text-center animate-in fade-in zoom-in duration-500">
+        <div className="w-24 h-24 bg-rose-50 rounded-full flex items-center justify-center mb-6 shadow-inner ring-1 ring-rose-200">
+          <ShieldAlert className="h-12 w-12 text-rose-500 animate-pulse" />
+        </div>
+        <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tighter mb-2">Access Restricted</h2>
+        <p className="text-slate-500 max-w-sm mb-8 font-medium">
+          You don't have enough permission to edit product variants. 
+          Please contact your administrator if you believe this is an error.
+        </p>
+        <Link 
+          href={`/product/${productId}/variants`} 
+          className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Variants
+        </Link>
+      </div>
+    );
+  }
+
+  // Not Found
   if (!variant) {
     return (
-      <div className="p-6">
-        <div className="text-center py-12">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            Varian tidak ditemukan
-          </h3>
-          <Link
-            href={`/admin/product/${productId}/variants`}
-            className="text-blue-600 hover:text-blue-800"
-          >
-            Kembali ke daftar varian
-          </Link>
-        </div>
+      <div className="p-6 max-w-5xl mx-auto">
+        <Card className="border-rose-200 bg-rose-50/50 shadow-none">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <Package className="h-14 w-14 text-rose-400 mb-4 opacity-50" />
+            <h3 className="text-xl font-black text-rose-900 uppercase tracking-widest mb-2">Variant Not Found</h3>
+            <p className="text-xs font-bold text-rose-800/60 uppercase mb-6 tracking-widest text-center">
+              The requested variant ID [{variantId}] does not exist.
+            </p>
+            <Link href={`/product/${productId}/variants`} className="bg-rose-600 hover:bg-rose-700 text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+              Back to Variant List
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
+    <div className="p-6 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
 
-      {/* HEADER */}
+      {/* HEADER SECTION */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex items-center gap-2">
-          <ButtonsComponentsBack backUrl={`/admin/product/${productId}/variants`} title="Varian" showText />
+          <ButtonsComponentsBack backUrl={`/product/${productId}/variants`} title="Variants" showText />
           <Separator orientation="vertical" className="mx-2 h-4" />
           <div>
             <h1 className="text-xl font-bold text-gray-900">
-              Edit Varian: {variant.product.name}
+              Edit Variant: {variant.product.name}
             </h1>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
+              Updating unique ID: <span className="text-indigo-600">[{variant.id}]</span>
+            </p>
           </div>
         </div>
 
         <ButtonsComponentsSave
-          title="Perubahan"
+          title="Save Changes"
           isLoading={saving}
           onClick={() => handleSubmit()}
-          className="h-8 text-xs"
+          className="h-9 px-6 text-xs shadow-lg shadow-indigo-100 ring-1 ring-indigo-500/10"
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* FORM */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Informasi Varian</CardTitle>
-              <CardDescription className="text-xs">
-                Ubah detail varian produk ini
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="desc" className="text-[10px]">Deskripsi Varian</Label>
-                <Input
-                  id="desc"
-                  placeholder="Contoh: Kopi Hitam Es, Large Size"
-                  value={formData.desc}
-                  onChange={(e) => setFormData({ ...formData, desc: e.target.value })}
-                  disabled={saving}
-                  className="h-8 text-xs"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="price" className="text-[10px]">Harga (Rp)</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  placeholder="15000"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  disabled={saving}
-                  min="0"
-                  className="h-8 text-xs"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="stok" className="text-[10px]">Stok</Label>
-                <Input
-                  id="stok"
-                  type="number"
-                  placeholder="0"
-                  value={formData.stok}
-                  onChange={(e) => setFormData({ ...formData, stok: e.target.value })}
-                  disabled={saving}
-                  min="0"
-                  className="h-8 text-xs"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="size" className="text-[10px]">Size (Opsional)</Label>
-                <Input
-                  id="size"
-                  placeholder="Contoh: Large, 350ml"
-                  value={formData.size}
-                  onChange={(e) => setFormData({ ...formData, size: e.target.value })}
-                  disabled={saving}
-                  className="h-8 text-xs"
-                />
-              </div>
-            </CardContent>
-          </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* COMPONENTIZED FORM */}
+        <div className="lg:col-span-2">
+          <VariantEditForm 
+            formData={formData} 
+            setFormData={setFormData} 
+            saving={saving} 
+          />
         </div>
 
-        {/* IMAGE UPLOAD */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Gambar Varian</CardTitle>
-              <CardDescription className="text-xs">
-                Upload gambar untuk varian ini
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col gap-4">
-                {/* Existing Images */}
-                {(formData.existingImages.length > 0 || formData.imagePreviews.length > 0) && (
-                  <div className="grid grid-cols-3 gap-2">
-                    {formData.existingImages.map((img, index) => (
-                      <div key={`existing-${index}`} className="relative aspect-square border rounded-lg overflow-hidden bg-gray-50 group">
-                        <img
-                          src={getVariantImageUrl(img.image)}
-                          alt="Existing"
-                          className="w-full h-full object-cover"
-                        />
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleRemoveImage("existing", index)}
-                          disabled={saving}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))}
-                    {formData.imagePreviews.map((preview, index) => (
-                      <div key={`new-${index}`} className="relative aspect-square border rounded-lg overflow-hidden bg-gray-50 group">
-                        <img
-                          src={preview}
-                          alt="New Preview"
-                          className="w-full h-full object-cover"
-                        />
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleRemoveImage("new", index)}
-                          disabled={saving}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div
-                  className="w-full border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    ref={fileInputRef}
-                    onChange={handleImageUpload}
-                    disabled={saving}
-                  />
-                  <div className="p-3 bg-gray-100 rounded-full mb-2">
-                    <Upload className="h-6 w-6 text-gray-500" />
-                  </div>
-                  <p className="text-xs font-medium text-gray-700">
-                    {(formData.existingImages.length > 0 || formData.imagePreviews.length > 0) ? "Tambah Gambar" : "Upload Gambar"}
-                  </p>
-                  <p className="text-[10px] text-gray-500 mt-1">
-                    Maks. 5MB
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* COMPONENTIZED GALLERY */}
+        <div className="lg:col-span-1">
+          <VariantImageGallery 
+            existingImages={formData.existingImages}
+            imagePreviews={formData.imagePreviews}
+            onRemoveImage={handleRemoveImage}
+            onImageUpload={handleImageUpload}
+            saving={saving}
+            fileInputRef={fileInputRef}
+          />
         </div>
       </div>
     </div>

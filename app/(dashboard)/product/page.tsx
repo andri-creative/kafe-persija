@@ -40,7 +40,7 @@ export default function ProductPage() {
     <div className="flex flex-col items-center justify-center min-h-[400px] gap-6">
       <LogoLoading width={150} height={150} />
       <div className="space-y-1 text-center">
-        <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Sesaat lagi produk Anda akan muncul</p>
+        <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Your products will appear in a moment</p>
       </div>
     </div>
   );
@@ -76,14 +76,14 @@ export default function ProductPage() {
                 total={filteredProducts.length}
                 pageSize={pageSize}
                 onPageChange={setCurrentPage}
-                label="produk"
+                label="product"
               />
             )}
           </>
         )}
       </AccessControl>
 
-      <AccessControl permission="product_create" fallback={<p className="text-xs text-muted-foreground italic px-6">Anda tidak memiliki izin untuk menambah produk.</p>}>
+      <AccessControl permission="product_create" fallback={<p className="text-xs text-muted-foreground italic px-6">You don't have permission to add products.</p>}>
         <div className="hidden" />
       </AccessControl>
     </div>
