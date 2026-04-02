@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
                 value: Number(value),
                 is_active: is_active ?? true,
                 created_by: creator.id,
+                updated_by: creator.id,
             },
         });
 
