@@ -120,10 +120,10 @@ export default function EditCategory({ category }: { category: Category }) {
         <div className="container max-w-2xl mx-auto px-3 py-4">
             {/* Header */}
             <div className="flex items-center gap-2 mb-4">
-                <ButtonsComponentsBack backUrl="/product/category" title="Kategori" showText />
+                <ButtonsComponentsBack backUrl="/product/category" title="Category" showText />
                 <Separator orientation="vertical" className="mx-2 h-4" />
                 <div>
-                    <h1 className="text-sm font-bold">Ubah Kategori</h1>
+                    <h1 className="text-sm font-bold">Edit Category</h1>
                     <p className="text-[10px] text-muted-foreground">{category.name}</p>
                 </div>
             </div>
@@ -135,7 +135,7 @@ export default function EditCategory({ category }: { category: Category }) {
                         {/* Name Field */}
                         <div className="space-y-1.5">
                             <Label htmlFor="name" className="text-[10px] font-medium">
-                                Nama Kategori <span className="text-destructive">*</span>
+                                Nama Category <span className="text-destructive">*</span>
                             </Label>
                             <Input
                                 id="name"
@@ -151,7 +151,7 @@ export default function EditCategory({ category }: { category: Category }) {
                         {/* Image Upload */}
                         <div className="space-y-1.5">
                             <Label htmlFor="image" className="text-[10px] font-medium">
-                                Gambar
+                                Gambar Category <span className="text-destructive">*</span>
                             </Label>
                             <div
                                 className={`relative border border-dashed rounded-md transition-all ${isDragging
@@ -217,7 +217,7 @@ export default function EditCategory({ category }: { category: Category }) {
                         {/* Actions */}
                         <div className="flex items-center gap-2 pt-2">
                             <ButtonsComponentsSave
-                                title="Perubahan"
+                                title="Category"
                                 isLoading={uploading}
                                 disabled={uploading || !formData.name}
                                 className="h-8 text-xs min-w-[100px]"

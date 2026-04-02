@@ -30,6 +30,7 @@ import { toast } from "react-toastify";
 import { LogoLoading } from "@/components/logo-loading";
 import { Product, ProductVariant } from "../../types";
 import { BaseDataTable, Column } from "../../_components/BaseDataTable";
+import { AccessControl } from "@/components/rbac/AccessControl";
 
 export default function ViewProductPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
@@ -139,7 +140,7 @@ export default function ViewProductPage({ params }: { params: Promise<{ id: stri
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-6">
                 <LogoLoading width={150} height={150} />
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest animate-pulse">Menghubungkan ke Pusat Data...</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest animate-pulse">Connecting to Data Center...</p>
             </div>
         );
     }
@@ -153,7 +154,7 @@ export default function ViewProductPage({ params }: { params: Promise<{ id: stri
                         <h3 className="text-lg font-semibold text-red-900 mb-2">Error</h3>
                         <p className="text-red-700 mb-6">{error || "Produk tidak ditemukan"}</p>
                         <Button asChild>
-                            <Link href="/product">Kembali ke Daftar Produk</Link>
+                            <Link href="/product">Back to Product List</Link>
                         </Button>
                     </CardContent>
                 </Card>
@@ -171,7 +172,7 @@ export default function ViewProductPage({ params }: { params: Promise<{ id: stri
                     <div>
                         <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">{product.name}</h1>
                         <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-widest font-bold">
-                            Informasi Detail Produk
+                            Product Detail Information
                         </p>
                     </div>
                 </div>
@@ -181,17 +182,19 @@ export default function ViewProductPage({ params }: { params: Promise<{ id: stri
                         : "bg-rose-100 text-rose-700"
                         }`}>
                         {product.status === "active" ? (
-                            <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> AKTIF</span>
+                            <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> ACTIVE</span>
                         ) : (
                             <span className="flex items-center gap-1"><XCircle className="w-3 h-3" /> NONAKTIF</span>
                         )}
                     </Badge>
-                    <Link href={`/product/${product.id}/edit`}>
-                        <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg transition-all hover:scale-105 active:scale-95 h-8 text-xs gap-2 cursor-pointer font-bold px-4">
-                            <Edit2 className="h-3 w-3" />
-                            Ubah Produk
-                        </Button>
-                    </Link>
+                    <AccessControl permission="product_edit">
+                        <Link href={`/product/${product.id}/edit`}>
+                            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg transition-all hover:scale-105 active:scale-95 h-8 text-xs gap-2 cursor-pointer font-bold px-4">
+                                <Edit2 className="h-3 w-3" />
+                                Edit Product
+                            </Button>
+                        </Link>
+                    </AccessControl>
                 </div>
             </div>
 
@@ -207,17 +210,17 @@ export default function ViewProductPage({ params }: { params: Promise<{ id: stri
                         </CardHeader>
                         <CardContent className="p-6 space-y-6">
                             <div className="space-y-1.5 px-4 py-3 bg-slate-50 rounded-xl border border-slate-100/50">
-                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">ID Produk</span>
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Product ID</span>
                                 <p className="text-xs font-black text-slate-700">#{product.id}</p>
                             </div>
 
                             <div className="space-y-1.5 px-4 py-3 bg-slate-50 rounded-xl border border-slate-100/50">
-                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Nama Produk</span>
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Product Name</span>
                                 <p className="text-sm font-black text-slate-900">{product.name}</p>
                             </div>
 
                             <div className="space-y-1.5 px-4 py-3 bg-slate-50 rounded-xl border border-slate-100/50">
-                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Deskripsi Detail</span>
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Product Description</span>
                                 <p className="text-xs text-slate-600 leading-relaxed italic">
                                     {product.description || "Tidak ada deskripsi yang tersedia untuk produk ini."}
                                 </p>
@@ -229,7 +232,7 @@ export default function ViewProductPage({ params }: { params: Promise<{ id: stri
                         <CardHeader className="bg-slate-50/50 border-b border-slate-50">
                             <CardTitle className="flex items-center gap-2 text-sm font-black text-slate-800">
                                 <Tag className="h-4 w-4 text-indigo-500" />
-                                Penempatan Kategori
+                                Product Category Placement
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-6">
@@ -242,7 +245,7 @@ export default function ViewProductPage({ params }: { params: Promise<{ id: stri
                                     ))
                                 ) : (
                                     <div className="text-center w-full py-4 border-2 border-dashed rounded-xl">
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase italic">Tanpa Kategori</p>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase italic">No Category</p>
                                     </div>
                                 )}
                             </div>
@@ -257,10 +260,10 @@ export default function ViewProductPage({ params }: { params: Promise<{ id: stri
                             <div>
                                 <CardTitle className="flex items-center gap-2 text-sm font-black text-slate-800">
                                     <Layers className="h-4 w-4 text-indigo-500" />
-                                    Varian Produk
+                                    Product Variants
                                 </CardTitle>
                                 <CardDescription className="text-[10px] font-medium uppercase tracking-wider">
-                                    Total: {product.product_variants.length} Varian Terdaftar
+                                    Total: {product.product_variants.length} Variants Listed
                                 </CardDescription>
                             </div>
                         </CardHeader>
@@ -268,7 +271,7 @@ export default function ViewProductPage({ params }: { params: Promise<{ id: stri
                             <BaseDataTable
                                 columns={variantColumns}
                                 data={product.product_variants}
-                                emptyMessage="Produk ini belum memiliki varian"
+                                emptyMessage="This product does not have any variants yet"
                                 className="border-none rounded-none"
                             />
                         </CardContent>

@@ -4,12 +4,12 @@
  */
 export const IMAGE_CONFIG = {
   variant: {
-    externalPath: `${process.env.IMAGE_STORAGE_PATH || "c:/projest/img/img-cafe"}/variant`,
-    publicBaseUrl: `${process.env.NEXT_PUBLIC_IMAGE_SERVER_URL || "/api/images"}/variant`,
+    externalPath: `${process.env.IMAGE_STORAGE_PATH}/variant`,
+    publicBaseUrl: `${process.env.NEXT_PUBLIC_IMAGE_SERVER_URL}/variant`,
   },
   category: {
-    externalPath: `${process.env.IMAGE_STORAGE_PATH || "c:/projest/img/img-cafe"}/category`,
-    publicBaseUrl: `${process.env.NEXT_PUBLIC_IMAGE_SERVER_URL || "/api/images"}/category`,
+    externalPath: `${process.env.IMAGE_STORAGE_PATH}/category`,
+    publicBaseUrl: `${process.env.NEXT_PUBLIC_IMAGE_SERVER_URL}/category`,
   },
 } as const;
 

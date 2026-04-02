@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
 
 export interface Column<T> {
@@ -35,14 +36,14 @@ export function BaseDataTable<T extends { id: number | string }>({
 }: BaseDataTableProps<T>) {
   if (data.length === 0) {
     return (
-      <div className="bg-white rounded-lg border p-8 text-center">
+      <div className={cn("bg-white rounded-lg border p-8 text-center", className)}>
         <p className="text-xs text-gray-500">{emptyMessage}</p>
       </div>
     );
   }
 
   return (
-    <div className={`bg-white rounded-lg border overflow-hidden ${className}`}>
+    <div className={cn("bg-white rounded-lg border overflow-hidden", className)}>
       <div className="overflow-x-auto">
         <Table>
           <TableHeader className="bg-gray-50">

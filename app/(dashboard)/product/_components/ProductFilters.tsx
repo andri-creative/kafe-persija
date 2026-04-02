@@ -29,7 +29,7 @@ export const ProductFilters = ({
                 {/* Search */}
                 <div className="md:col-span-5">
                     <ProductInputField
-                        placeholder="Cari menu favorit..."
+                        placeholder="Search product..."
                         value={search}
                         onChange={(e) => onSearchChange(e.target.value)}
                         leftIcon={<Search className="h-3.5 w-3.5" />}
@@ -42,9 +42,9 @@ export const ProductFilters = ({
                     <ProductSelectField
                         value={selectedStatus}
                         onValueChange={onStatusChange}
-                        placeholder="Semua Status"
+                        placeholder="All Status"
                         options={[
-                            { value: "all", label: "Semua Status" },
+                            { value: "all", label: "All Status" },
                             ...uniqueStatuses.map(status => ({
                                 value: status,
                                 label: status === "active" ? "🟢 Active" :
@@ -60,7 +60,7 @@ export const ProductFilters = ({
                     <Link href="/product/category" className="flex-1">
                         <Button variant="outline" className="w-full h-9 text-xs font-bold border-slate-200 hover:bg-slate-50 hover:text-indigo-600 rounded-xl gap-2 transition-all active:scale-95 shadow-sm">
                             <LayoutGrid className="w-3.5 h-3.5" />
-                            Kategori
+                            Category
                         </Button>
                     </Link>
                     <Button 

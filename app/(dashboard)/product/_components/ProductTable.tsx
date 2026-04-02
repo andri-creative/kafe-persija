@@ -31,7 +31,7 @@ export const ProductTable = ({ products, onStatusChange, onDelete }: ProductTabl
 
   const columns: Column<Product>[] = [
     {
-      header: "Produk",
+      header: "Product",
       render: (product) => {
         const variantImage = getVariantImage(product.product_variants);
         return (
@@ -56,7 +56,7 @@ export const ProductTable = ({ products, onStatusChange, onDelete }: ProductTabl
       },
     },
     {
-      header: "Kategori",
+      header: "Category",
       render: (product) => {
         const categories = getCategories(product);
         return (
@@ -72,7 +72,7 @@ export const ProductTable = ({ products, onStatusChange, onDelete }: ProductTabl
       },
     },
     {
-      header: "Varian & Harga",
+      header: "Variant & Price",
       render: (product) => {
         const activeVariants = getActiveVariants(product.product_variants);
         return (
@@ -83,7 +83,7 @@ export const ProductTable = ({ products, onStatusChange, onDelete }: ProductTabl
                 <span className="font-semibold text-gray-800">{formatPrice(v.price)}</span>
               </div>
             ))}
-            {activeVariants.length > 2 && <div className="text-[10px] text-gray-400">+{activeVariants.length - 2} varian</div>}
+            {activeVariants.length > 2 && <div className="text-[10px] text-gray-400">+{activeVariants.length - 2} variants</div>}
             {activeVariants.length === 0 && <div className="text-[10px] text-gray-300 italic">No variant</div>}
           </div>
         );
@@ -106,7 +106,7 @@ export const ProductTable = ({ products, onStatusChange, onDelete }: ProductTabl
       ),
     },
     {
-      header: "Tanggal",
+      header: "Date",
       render: (product) => (
         <div className="text-[10px]">
           <div className="text-gray-600">{formatDate(product.created_at)}</div>
@@ -117,7 +117,7 @@ export const ProductTable = ({ products, onStatusChange, onDelete }: ProductTabl
       ),
     },
     {
-      header: "Aksi",
+      header: "Action",
       className: "w-[80px] text-right",
       render: (product) => (
         <DropdownMenu>
@@ -163,7 +163,7 @@ export const ProductTable = ({ products, onStatusChange, onDelete }: ProductTabl
     <BaseDataTable
       columns={columns}
       data={products}
-      emptyMessage="Produk tidak ditemukan"
+      emptyMessage="No products found"
     />
   );
 };

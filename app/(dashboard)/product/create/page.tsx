@@ -54,7 +54,7 @@ export default function CreateProductPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-6">
         <LogoLoading width={150} height={150} />
-        <p className="text-[10px] text-muted-foreground uppercase tracking-widest animate-pulse">Menyiapkan Form Produk...</p>
+        <p className="text-[10px] text-muted-foreground uppercase tracking-widest animate-pulse">Loading Product Form...</p>
       </div>
     );
   }
@@ -64,19 +64,19 @@ export default function CreateProductPage() {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div className="flex items-center gap-2">
-          <ButtonsComponentsBack backUrl="/product" title="Produk" showText />
+          <ButtonsComponentsBack backUrl="/product" title="Product" showText />
           <Separator orientation="vertical" className="mx-2 h-4" />
           <div>
-            <h1 className="text-xl font-bold">Tambah Produk Baru</h1>
-            <p className="text-gray-500 text-xs">Isi informasi produk dan variannya</p>
+            <h1 className="text-xl font-bold">Add New Product</h1>
+            <p className="text-gray-500 text-xs">Fill in product and variant information</p>
           </div>
         </div>
         <div className="flex gap-2">
           <Link href="/product">
-            <Button variant="outline" className="h-8 text-xs">Batal</Button>
+            <Button variant="outline" className="h-8 text-xs">Cancel</Button>
           </Link>
           <ButtonsComponentsSave
-            title="Produk"
+            title="Product"
             isLoading={saving}
             className="h-8 text-xs"
             onClick={saveProduct}

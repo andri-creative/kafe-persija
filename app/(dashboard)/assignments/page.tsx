@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, Loader2, ShieldCheck } from "lucide-react";
+import { Search, Loader2, ShieldCheck, ShieldAlert } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import {
@@ -26,6 +27,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 export default function AssignmentsPage() {
+    const { data: session } = useSession();
+    const currentUserId = session?.user?.id ? parseInt(session.user.id) : null;
+    
     const [searchTerm, setSearchTerm] = useState("");
     const [users, setUsers] = useState<any[]>([]);
     const [roles, setRoles] = useState<any[]>([]);
@@ -35,7 +39,7 @@ export default function AssignmentsPage() {
     const [total, setTotal] = useState(0);
     const [updatingId, setUpdatingId] = useState<number | null>(null);
 
-    const { can } = usePermissions();
+    const { can, roles: myRoles } = usePermissions();
 
     const fetchData = useCallback(async (page: number, search: string) => {
         setLoading(true);
@@ -50,7 +54,13 @@ export default function AssignmentsPage() {
             const rolesData = await rolesRes.json();
 
             if (usersData.users) {
-                setUsers(usersData.users);
+                // Pin current logged-in user at the top if they exist in this page's results
+                const sortedUsers = [...usersData.users].sort((a: any, b: any) => {
+                    if (a.id === currentUserId) return -1;
+                    if (b.id === currentUserId) return 1;
+                    return 0;
+                });
+                setUsers(sortedUsers);
                 setTotalPages(Math.ceil(usersData.total / usersData.limit));
                 setTotal(usersData.total);
             }
@@ -158,6 +168,7 @@ export default function AssignmentsPage() {
                             users.map((user, index) => {
                                 const currentRoleId = user.user_role_trx?.[0]?.role_id?.toString() || "";
                                 const currentRoleName = user.user_role_trx?.[0]?.role?.name || "Unassigned";
+                                const isSuperAdmin = currentRoleName === "Super Admin";
 
                                 return (
                                     <TableRow key={user.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors">
@@ -170,8 +181,18 @@ export default function AssignmentsPage() {
                                         </TableCell>
                                         <TableCell className="text-center">
                                             {currentRoleId ? (
-                                                <Badge variant="outline" className="border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30">
-                                                    <ShieldCheck className="h-3 w-3 mr-1" />
+                                                <Badge 
+                                                    variant="outline" 
+                                                    className={isSuperAdmin 
+                                                        ? "border-rose-200 text-rose-700 dark:border-rose-800 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 font-bold" 
+                                                        : "border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30"
+                                                    }
+                                                >
+                                                    {isSuperAdmin ? (
+                                                        <ShieldAlert className="h-3 w-3 mr-1" />
+                                                    ) : (
+                                                        <ShieldCheck className="h-3 w-3 mr-1" />
+                                                    )}
                                                     {currentRoleName}
                                                 </Badge>
                                             ) : (
@@ -188,18 +209,27 @@ export default function AssignmentsPage() {
                                                 <Select
                                                     value={currentRoleId}
                                                     onValueChange={(val) => handleRoleChange(user.id, val)}
-                                                // Jika butuh dikunci berdasarkan permission, bisa tambah disabled={!can(SYSTEM_PERMISSIONS.ROLES_EDIT)}
+                                                    disabled={user.id === currentUserId || myRoles.includes(currentRoleName)}
                                                 >
-                                                    <SelectTrigger className="w-[180px] ml-auto h-8 text-xs bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
-                                                        <SelectValue placeholder="Select a role" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {roles.map((r) => (
-                                                            <SelectItem key={r.id} value={r.id.toString()} className="text-xs">
-                                                                {r.name}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
+                                                    {(() => {
+                                                        const isProtected = user.id === currentUserId || myRoles.includes(currentRoleName);
+                                                        return (
+                                                            <>
+                                                                <SelectTrigger 
+                                                                    className={`w-[180px] ml-auto h-8 text-xs bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 ${isProtected ? "opacity-50 cursor-not-allowed bg-zinc-50" : ""}`}
+                                                                >
+                                                                    <SelectValue placeholder="Select a role" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    {roles.map((r) => (
+                                                                        <SelectItem key={r.id} value={r.id.toString()} className="text-xs">
+                                                                            {r.name}
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </>
+                                                        );
+                                                    })()}
                                                 </Select>
                                             )}
                                         </TableCell>
