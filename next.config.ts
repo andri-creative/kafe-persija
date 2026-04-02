@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
   images: {
+    unoptimized: true,
     remotePatterns: [
       { hostname: "persijakafe.dev.accolaplay.id" },
       { hostname: "cdn.dev.accolaplay.id" },
