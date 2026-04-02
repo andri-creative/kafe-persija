@@ -16,6 +16,28 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
     remotePatterns: [
+      { hostname: "persijakafe.dev.accolaplay.id" },
+      { hostname: "cdn.dev.accolaplay.id" },
+      {
+        protocol: "https",
+        hostname: "cdn.dev.accolaplay.id",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "persijakafe.dev.accolaplay.id",
+        pathname: "/**",
+      },
+      {
+        protocol: "http",
+        hostname: "cdn.dev.accolaplay.id",
+        pathname: "/**",
+      },
+      {
+        protocol: "http",
+        hostname: "persijakafe.dev.accolaplay.id",
+        pathname: "/**",
+      },
       { hostname: "localhost" },
       { hostname: "127.0.0.1" },
       { hostname: "192.168.1.10" },

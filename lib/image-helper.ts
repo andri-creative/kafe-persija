@@ -29,13 +29,30 @@ export const ImageHelper = {
   getUrl(filename: string | null | undefined, type: ImageType): string {
     if (!filename) return "/images/placeholder.png";
 
-    // Backward compatibility for full relative paths
-    if (filename.startsWith("/images/")) return filename;
-    if (filename.startsWith("/")) return filename;
+    // 1. If absolute URL, return as-is
+    if (filename.startsWith("http://") || filename.startsWith("https://")) {
+        return filename;
+    }
+
+    // 2. Handle legacy paths from database (e.g., /images/categories/xxx.webp)
+    // We clean them up to use the new API/CDN based on config.
+    let cleanFilename = filename;
+    if (filename.startsWith("/images/categories/")) {
+        cleanFilename = filename.replace("/images/categories/", "");
+    } else if (filename.startsWith("/images/variant/")) {
+        cleanFilename = filename.replace("/images/variant/", "");
+    } else if (filename.startsWith("/images/variants/")) {
+        cleanFilename = filename.replace("/images/variants/", "");
+    } else if (filename.startsWith("/")) {
+        // Generic leading slash removal to avoid double slashes with base URL
+        cleanFilename = filename.substring(1);
+    }
 
     const config = IMAGE_CONFIG[type];
     
-    // Build URL: BaseServerURL + /type/ + filename
-    return `${config.publicBaseUrl}/${filename}`;
+    // 3. Build URL: BaseServerURL + /type/ + filename
+    // Ensure we don't return malformed URLs if config is missing
+    const baseUrl = config.publicBaseUrl || "/api/images/" + type;
+    return `${baseUrl}/${cleanFilename}`;
   },
 };

@@ -25,6 +25,7 @@ import ChartAreaTotalRevenue from "@/components/chart-area-total-revenue";
 import { TopCategoryChart } from "@/components/Ppe-chart-donut-topCategory";
 import { ChartBarOrder } from "@/components/chart-bar-order";
 import { ChartPieTopVariant } from "@/components/chart-pie-top-variant";
+import { ImageHelper } from "@/lib/image-helper";
 
 export default function DashboardPage() {
     const [stats, setStats] = useState<any>(null);
@@ -147,67 +148,24 @@ export default function DashboardPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8">
 
                         {/* 1. Total Revenue Chart */}
-                        {/* TABLET: 100% width (ord: 1) | DESKTOP: 8/12 width (ord: 1) */}
                         <div className="col-span-1 md:col-span-2 lg:col-span-8 order-1">
                             <ChartAreaTotalRevenue data={stats?.charts?.revenue} />
                         </div>
 
                         {/* 2. Top Categories Chart */}
-                        {/* TABLET: 50% width (ord: 4) | DESKTOP: 4/12 width (ord: 2 - beside revenue) */}
                         <div className="col-span-1 md:col-span-1 lg:col-span-4 order-4 lg:order-2">
                             <TopCategoryChart data={stats?.charts?.categories} />
                         </div>
 
                         {/* 3. Orders Overview Chart */}
-                        {/* TABLET: 100% width (ord: 2) | DESKTOP: 8/12 width (ord: 3) */}
                         <div className="col-span-1 md:col-span-2 lg:col-span-8 order-2 lg:order-3">
                             <ChartBarOrder data={stats?.charts?.orders} />
                         </div>
 
-                        {/* 4. Order Types Summary */}
-                        {/* TABLET: 50% width (ord: 3) | DESKTOP: 4/12 width (ord: 4 - beside orders) */}
                         {/* 4. Recent Orders Today */}
                         <div className="col-span-1 md:col-span-1 lg:col-span-4 order-3 lg:order-4">
                             <ChartPieTopVariant data={stats?.charts?.variants} />
                         </div>
-                        {/* <Card className="col-span-1 md:col-span-1 lg:col-span-4 order-3 lg:order-4 border-none shadow-sm bg-white dark:bg-zinc-900/50 rounded-base overflow-hidden h-full flex flex-col">
-                            <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between">
-                                <CardTitle className="text-base font-black tracking-tight">Recent Orders Today</CardTitle>
-                                <span className="text-[9px] font-black text-[#ff3535] bg-[#ff3535]/10 px-2 py-0.5 rounded-full">LIVE</span>
-                            </CardHeader>
-                            <CardContent className="p-4 pt-0 flex-1 flex flex-col gap-3 overflow-y-auto max-h-[250px] custom-scrollbar">
-                                {stats?.recentOrdersToday && stats.recentOrdersToday.length > 0 ? (
-                                    stats.recentOrdersToday.map((order: any, i: number) => (
-                                        <div key={order.id || i} className="flex flex-col gap-1.5 p-2 rounded-xl border border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
-                                            <div className="flex justify-between items-start">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[10px] font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-tight">
-                                                        {order.order_number}
-                                                    </span>
-                                                    <span className="text-[8px] font-bold text-zinc-400 capitalize">
-                                                        {order.table !== "General" ? `Meja ${order.table}` : "Takeaway"} • {new Date(order.time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                                                    </span>
-                                                </div>
-                                                <div className={`text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase ${order.status === 'COMPLETED' ? 'bg-green-100 text-green-600' :
-                                                    order.status === 'CANCELLED' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'
-                                                    }`}>
-                                                    {order.status}
-                                                </div>
-                                            </div>
-                                            <div className="flex justify-between items-center mt-1">
-                                                <span className="text-[10px] font-black text-zinc-900 dark:text-zinc-100">
-                                                    {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(order.amount)}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="flex-1 flex flex-col items-center justify-center opacity-40 py-8">
-                                        <div className="text-[10px] font-black uppercase tracking-widest">No Orders Today</div>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card> */}
                     </div>
                     {/* Recent Orders Table */}
                     <Card className="border-none shadow-sm bg-white dark:bg-zinc-900/50 rounded-base overflow-hidden">
@@ -294,7 +252,7 @@ export default function DashboardPage() {
                                         <div className={`h-40 w-full rounded-[1.5rem] bg-gradient-to-br ${item.color} flex items-center justify-center mb-4 transition-transform group-hover:scale-105 duration-500 shadow-md relative overflow-hidden`}>
                                             {item.image ? (
                                                 <img
-                                                    src={item.image.startsWith('http') ? item.image : `/images/variant/${item.image}`}
+                                                    src={ImageHelper.getUrl(item.image, "variant")}
                                                     alt={item.name}
                                                     className="w-full h-full object-cover"
                                                     onError={(e: any) => {

@@ -26,8 +26,10 @@ import { ShoppingBag } from "lucide-react";
 import { OrderSidebar, Discount } from "../../_components/OrderSidebar";
 import { VariantSelector } from "../../_components/VariantSelector";
 import { getVariantImageUrl } from "@/lib/variant-helper";
+import { getCategoryImageUrl } from "@/lib/category-helper";
 import { useSession } from "next-auth/react";
 import { getSocket } from "@/lib/socket";
+import { ImageHelper } from "@/lib/image-helper";
 
 
 
@@ -413,7 +415,7 @@ export default function MenuPage() {
                                                         : "w-7 h-7 sm:w-8 sm:h-8 opacity-40 grayscale group-hover:grayscale-0 group-hover:opacity-60"
                                                 )}>
                                                     <Image
-                                                        src={cat.image.startsWith('/') ? cat.image : `/images/categories/${cat.image}`}
+                                                        src={getCategoryImageUrl(cat.image)}
                                                         alt={cat.name}
                                                         fill
                                                         className="object-contain"
