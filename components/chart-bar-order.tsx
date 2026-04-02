@@ -18,16 +18,8 @@ import {
     type ChartConfig,
 } from "@/components/ui/chart"
 
-// DATA DUMMY DENGAN LOGIKA REAL-TIME (ASUMSI HARI INI KAMIS)
-const weekData = [
-    { day: "Senin", currentWeek: 42, lastWeek: 38 },
-    { day: "Selasa", currentWeek: 55, lastWeek: 45 },
-    { day: "Rabu", currentWeek: 48, lastWeek: 52 },
-    { day: "Kamis", currentWeek: 64, lastWeek: 49 },
-    { day: "Jumat", currentWeek: 0, lastWeek: 65 },  // Belum ada data (Asumsi hari Kamis)
-    { day: "Sabtu", currentWeek: 0, lastWeek: 92 },  // Belum ada data
-    { day: "Minggu", currentWeek: 0, lastWeek: 88 }, // Belum ada data
-]
+// DATA DUMMY DIHAPUS - Murni menggunakan data props
+const weekData: any[] = [];
 
 const chartConfigOrder = {
     currentWeek: {
@@ -41,8 +33,8 @@ const chartConfigOrder = {
 } satisfies ChartConfig
 
 export function ChartBarOrder({ data }: { data?: any[] }) {
-    // Gunakan weekData dummy agar visual sesuai permintaan real-time
-    const displayData = weekData;
+    // Gunakan data asli dari API
+    const displayData = data || [];
 
     return (
         <Card className="border-none shadow-sm bg-white rounded-xl overflow-hidden w-full h-full flex flex-col min-h-[350px]">
@@ -72,7 +64,6 @@ export function ChartBarOrder({ data }: { data?: any[] }) {
                             axisLine={false}
                             fontSize={10}
                             fontWeight="black"
-                            tickFormatter={(value) => value.slice(0, 3)}
                         />
                         <YAxis
                             tickLine={false}

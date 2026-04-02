@@ -17,12 +17,7 @@ import {
     type ChartConfig,
 } from "@/components/ui/chart"
 
-const defaultChartData = [
-    { label: "Coffee", sold: 450, fill: "#f97316" }, // Orange (Persija Style)
-    { label: "Food", sold: 300, fill: "#10b981" },
-    { label: "Snacks", sold: 250, fill: "#f59e0b" },
-    { label: "Dessert", sold: 150, fill: "#0e7490" },
-]
+const defaultChartData: any[] = [];
 
 const chartConfig = {
     sold: {

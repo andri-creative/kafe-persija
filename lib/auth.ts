@@ -170,7 +170,7 @@ export const authOptions: NextAuthOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60,
+    maxAge: 1 * 24 * 60 * 60, // 24 Hours Security Cycle
   },
 
   secret: process.env.NEXTAUTH_SECRET,
