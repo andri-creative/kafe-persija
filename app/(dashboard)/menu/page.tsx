@@ -27,6 +27,8 @@ export default function MenuPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [customerName, setCustomerName] = useState("");
     const [selectedDiscountId, setSelectedDiscountId] = useState('none');
+    const [promos, setPromos] = useState<any[]>([]);
+    const [selectedPromoId, setSelectedPromoId] = useState("");
     const [paymentMethod, setPaymentMethod] = useState('cash'); // netzme | cash
     const [cashReceived, setCashReceived] = useState<number | "">("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,13 +40,26 @@ export default function MenuPage() {
         setTransactionId(generateTransactionId());
         fetchCategories();
         fetchDiscounts();
+        fetchPromos();
     }, []);
 
     const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const currentDiscount = discounts.find(d => d.id === selectedDiscountId);
+    
+    // Calculate Discount/Promo Amount
     let discountAmount = 0;
-    if (currentDiscount?.type === 'fixed') discountAmount = currentDiscount.value;
-    else if (currentDiscount?.type === 'percent') discountAmount = (cartTotal * currentDiscount.value) / 100;
+    const currentDiscount = discounts.find(d => d.id === selectedDiscountId && d.id !== 'none');
+    const currentPromo = promos.find(p => p.id === selectedPromoId);
+    
+    // Prioritize Promo over Discount if both exist (though UI makes them exclusive)
+    const activeBenefit = currentPromo || currentDiscount;
+    
+    if (activeBenefit) {
+        if (activeBenefit.type === 'percent') {
+            discountAmount = (cartTotal * activeBenefit.value) / 100;
+        } else {
+            discountAmount = activeBenefit.value;
+        }
+    }
 
     const finalTotal = Math.max(0, cartTotal - discountAmount);
 
@@ -77,6 +92,26 @@ export default function MenuPage() {
             }
         } catch (error) {
             console.error('Error fetching discounts:', error);
+        }
+    };
+
+    const fetchPromos = async () => {
+        try {
+            const response = await fetch('/api/promo?status=active');
+            if (response.ok) {
+                const data = await response.json();
+                const mappedData = data.map((p: any) => ({
+                    id: p.id.toString(),
+                    label: (p.title || "PROMO").toUpperCase(),
+                    description: p.desc,
+                    code: p.code_promo,
+                    value: p.value || 0,
+                    type: p.type?.toLowerCase() === 'percentage' ? 'percent' : 'fixed'
+                }));
+                setPromos(mappedData);
+            }
+        } catch (error) {
+            console.error('Error fetching promos:', error);
         }
     };
 
@@ -183,6 +218,8 @@ export default function MenuPage() {
                 payment_method: paymentMethod.toUpperCase(),
                 total_amount: Number(finalTotal),
                 amount: Number(finalTotal),
+                promo_code: promos.find(p => p.id === selectedPromoId)?.code || null,
+                discount_id: selectedDiscountId !== "none" ? Number(selectedDiscountId) : null,
                 status: "PAID",
                 products: productsInOrder,
                 payment: {
@@ -259,7 +296,16 @@ export default function MenuPage() {
                     finalTotal={finalTotal}
                     discounts={discounts}
                     selectedDiscountId={selectedDiscountId}
-                    onDiscountChange={setSelectedDiscountId}
+                    onDiscountChange={(id) => {
+                        setSelectedDiscountId(id);
+                        if (id !== "none") setSelectedPromoId("");
+                    }}
+                    promos={promos}
+                    selectedPromoId={selectedPromoId}
+                    onPromoChange={(id) => {
+                        setSelectedPromoId(id);
+                        if (id !== "") setSelectedDiscountId("none");
+                    }}
                     paymentMethod={paymentMethod}
                     onPaymentMethodChange={setPaymentMethod}
                     cashReceived={cashReceived}
