@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "react-toastify";
 import { getProductSocket as getSocket } from "@/lib/product-socket";
 import { useSession } from "next-auth/react";
-import { LogoLoading } from "@/components/logo-loading";
+import LoadingScreen from "@/components/LoadingScrean";
 import { usePermissions } from "@/hooks/use-permissions";
 import Link from "next/link";
 
@@ -198,7 +198,7 @@ export default function ProductVariantEditPage() {
   if (loading || permissionsLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-6">
-        <LogoLoading width={150} height={150} />
+        <LoadingScreen width={150} height={150} />
         <p className="text-[10px] text-muted-foreground uppercase tracking-widest animate-pulse">
           Validating sessions and permissions...
         </p>

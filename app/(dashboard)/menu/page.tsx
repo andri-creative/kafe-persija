@@ -9,6 +9,7 @@ import { CategoryList } from "./components/CategoryList";
 import { ProductGrid } from "./components/ProductGrid";
 import { OrderSummary } from "./components/OrderSummary";
 import { ProductVariantDialog } from "./components/ProductVariantDialog";
+import LoadingScreen from "@/components/LoadingScrean";
 
 // Types
 import { Category, Product, ProductVariant, CartItem } from "./types";

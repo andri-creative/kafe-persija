@@ -32,7 +32,6 @@ import ChartAreaTotalRevenue from "@/components/chart-area-total-revenue";
 import { TopCategoryChart } from "@/components/Ppe-chart-donut-topCategory";
 import { ChartBarOrder } from "@/components/chart-bar-order";
 import { ChartPieTopVariant } from "@/components/chart-pie-top-variant";
-import { LogoLoading } from "@/components/logo-loading";
 import { ImageHelper } from "@/lib/image-helper";
 import Link from "next/link";
 
@@ -76,26 +75,17 @@ export default function DashboardPageV2() {
     };
     const greeting = getGreeting();
 
-    if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-                <LogoLoading width={120} height={120} />
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Loading Summary</p>
-            </div>
-        );
-    }
-
     return (
         <div className="flex flex-col gap-4 pb-8 animate-in fade-in duration-700">
-            
+
             {/* ── COMPACT HEADER ── */}
             <div className="relative overflow-hidden rounded-xl bg-indigo-950 px-6 py-6 shadow-xl border border-white/5">
                 <div className="absolute top-0 right-0 -mr-8 -mt-8 h-32 w-32 bg-white/5 blur-2xl rounded-full" />
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="space-y-0.5">
                         <div className="flex items-center gap-1.5">
-                             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                             <p className="text-[9px] font-black uppercase tracking-widest text-indigo-400">Weekly Performance (Sen - Min)</p>
+                            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                            <p className="text-[9px] font-black uppercase tracking-widest text-indigo-400">Weekly Performance (Sen - Min)</p>
                         </div>
                         <h1 className="text-xl lg:text-2xl font-black tracking-tight text-white animate-in slide-in-from-left duration-500">
                             {greeting.text}, <span className="text-indigo-200">Persija Admin</span>
@@ -104,7 +94,7 @@ export default function DashboardPageV2() {
                             Live operational metrics for the current 7-day cycle.
                         </p>
                     </div>
-                    
+
                     <div className="flex items-center gap-3 bg-black/30 backdrop-blur-sm p-1 rounded-xl border border-white/10">
                         <div className="px-4 py-1 text-center border-r border-white/5">
                             <p className="text-[8px] font-black text-indigo-400/70 uppercase tracking-widest leading-none mb-0.5">Revenue</p>
@@ -127,39 +117,39 @@ export default function DashboardPageV2() {
 
                 {/* ── LEFT AREA (COL 9) ── */}
                 <div className="col-span-12 lg:col-span-9 flex flex-col gap-5">
-                    
+
                     {/* KPI Cards (More compact p-4) */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {[
-                        { label: "Total Order", val: formatNumber(stats?.orders), icon: ShoppingCart, trend: stats?.orderTrend || "0", color: "from-orange-500 to-rose-500" },
-                        { label: "Total Revenue", val: formatCurrency(stats?.revenue), icon: DollarSign, trend: stats?.revenueTrend || "0", color: "from-blue-600 to-indigo-600" },
-                        { label: "Active Promo", val: formatNumber(stats?.activePromos || 0), icon: Tag, trend: "0", color: "from-emerald-500 to-teal-500" },
-                    ].map((kpi, idx) => (
-                        <Card key={idx} className="group border-none shadow-sm hover:shadow-md transition-all rounded-xl bg-white/70 backdrop-blur-md">
-                            <CardContent className="p-4">
-                                <div className="flex items-center gap-3">
-                                    <div className={`h-11 w-11 shrink-0 bg-linear-to-br ${kpi.color} rounded-lg flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform`}>
-                                        <kpi.icon className="h-5 w-5" />
-                                    </div>
-                                    <div className="space-y-0.5">
-                                        <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest leading-none">{kpi.label}</p>
-                                        <div className="flex items-center gap-1.5">
-                                            <h3 className="text-base font-black text-zinc-900 leading-none">{kpi.val}</h3>
-                                            <span className={`text-[8px] font-black px-1 rounded-sm leading-none py-0.5 ${Number(kpi.trend) >= 0 ? 'text-emerald-500 bg-emerald-50' : 'text-rose-500 bg-rose-50'}`}>
-                                                {Number(kpi.trend) >= 0 ? '+' : ''}{kpi.trend}%
-                                            </span>
+                        {[
+                            { label: "Total Order", val: formatNumber(stats?.orders), icon: ShoppingCart, trend: stats?.orderTrend || "0", color: "from-orange-500 to-rose-500" },
+                            { label: "Total Revenue", val: formatCurrency(stats?.revenue), icon: DollarSign, trend: stats?.revenueTrend || "0", color: "from-blue-600 to-indigo-600" },
+                            { label: "Active Promo", val: formatNumber(stats?.activePromos || 0), icon: Tag, trend: "0", color: "from-emerald-500 to-teal-500" },
+                        ].map((kpi, idx) => (
+                            <Card key={idx} className="group border-none shadow-sm hover:shadow-md transition-all rounded-xl bg-white/70 backdrop-blur-md">
+                                <CardContent className="p-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`h-11 w-11 shrink-0 bg-linear-to-br ${kpi.color} rounded-lg flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform`}>
+                                            <kpi.icon className="h-5 w-5" />
+                                        </div>
+                                        <div className="space-y-0.5">
+                                            <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest leading-none">{kpi.label}</p>
+                                            <div className="flex items-center gap-1.5">
+                                                <h3 className="text-base font-black text-zinc-900 leading-none">{kpi.val}</h3>
+                                                <span className={`text-[8px] font-black px-1 rounded-sm leading-none py-0.5 ${Number(kpi.trend) >= 0 ? 'text-emerald-500 bg-emerald-50' : 'text-rose-500 bg-rose-50'}`}>
+                                                    {Number(kpi.trend) >= 0 ? '+' : ''}{kpi.trend}%
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
+                                </CardContent>
+                            </Card>
+                        ))}
                     </div>
 
                     {/* Chart Grid (V1 Style but Compact) */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
                         <div className="col-span-12 lg:col-span-8 min-h-[380px] lg:min-h-[420px]">
-                             <ChartAreaTotalRevenue data={stats?.charts?.revenue || []} />
+                            <ChartAreaTotalRevenue data={stats?.charts?.revenue || []} />
                         </div>
                         <div className="col-span-12 lg:col-span-4 min-h-[380px] lg:min-h-[420px]">
                             <TopCategoryChart data={stats?.charts?.categories || []} />
@@ -209,7 +199,7 @@ export default function DashboardPageV2() {
                                             <TableCell className="py-3 text-right">
                                                 <Badge className={`border-none px-2 py-0.5 rounded-md font-black text-[8px] uppercase tracking-wider ${item.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600' :
                                                     item.status === 'CANCELLED' ? 'bg-rose-50 text-rose-500' : 'bg-amber-50 text-amber-600'
-                                                }`}>
+                                                    }`}>
                                                     {item.status}
                                                 </Badge>
                                             </TableCell>
@@ -223,7 +213,7 @@ export default function DashboardPageV2() {
 
                 {/* ── RIGHT AREA (COL 3) ── */}
                 <div className="col-span-12 lg:col-span-3 flex flex-col gap-5">
-                    
+
                     {/* Trending (Simplified V1 Style) */}
                     <Card className="border-none shadow-sm rounded-xl bg-white overflow-hidden">
                         <CardHeader>
@@ -233,8 +223,8 @@ export default function DashboardPageV2() {
                         </CardHeader>
                         <CardContent className="p-5 pt-0 space-y-6">
                             {(() => {
-                                const displayMenus = (stats?.trending && stats.trending.length > 0) 
-                                    ? stats.trending 
+                                const displayMenus = (stats?.trending && stats.trending.length > 0)
+                                    ? stats.trending
                                     : [];
 
                                 if (displayMenus.length === 0) {
@@ -277,7 +267,7 @@ export default function DashboardPageV2() {
                                             </div>
                                             <div className="flex flex-col items-end">
                                                 <span className="font-black text-[#ff3535] text-[13px] whitespace-nowrap bg-rose-50 px-2 py-1 rounded-lg">
-                                                    {item.price ? (item.price > 0 ? (item.price/1000).toFixed(0) + 'k' : formatCurrency(item.price)) : '🔥'}
+                                                    {item.price ? (item.price > 0 ? (item.price / 1000).toFixed(0) + 'k' : formatCurrency(item.price)) : '🔥'}
                                                 </span>
                                                 <span className="text-[7px] font-black uppercase text-zinc-300 mt-1">{item.type || 'Trending'}</span>
                                             </div>
@@ -315,10 +305,10 @@ export default function DashboardPageV2() {
 
                 </div>
             </div>
-            
+
             {/* ── FOOTER ── */}
             <div className="mt-8 flex items-center justify-center">
-                 <div className="h-0.5 w-12 bg-zinc-100 rounded-full" />
+                <div className="h-0.5 w-12 bg-zinc-100 rounded-full" />
             </div>
         </div>
     );

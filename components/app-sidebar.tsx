@@ -16,14 +16,16 @@ import {
   ShieldAlert,
   ShieldCheck,
   Settings,
-  History,
+  History as LucideHistory,
   UserCog,
   Percent,
   Ticket,
   Archive,
   ClipboardList,
   Tv,
+  Key,
 } from "lucide-react";
+import { usePermissions } from "@/hooks/use-permissions";
 
 import {
   Sidebar,
@@ -75,13 +77,14 @@ const getIcon = (iconName: string | React.ComponentType<any>) => {
       ShieldAlert,
       ShieldCheck,
       Settings,
-      History,
+      History: LucideHistory,
       UserCog,
       Percent,
       Ticket,
       Archive,
       ClipboardList,
       Tv,
+      Key,
     };
     return iconMap[iconName] || LayoutDashboard;
   }
@@ -102,7 +105,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
-  if (!session?.user) return null;
+  const { can, loading: permissionsLoading } = usePermissions();
+
+  const getFilteredNavItems = React.useMemo(() => {
+    return navCafe.map(group => ({
+      ...group,
+      items: group.items.filter((item: any) => {
+        if (!item.permission) return true;
+        return can(item.permission);
+      })
+    })).filter(group => group.items.length > 0);
+  }, [can]);
+
+  const navGroups = getFilteredNavItems;
+
+  if (!session?.user || permissionsLoading) return null;
 
   const role = Array.isArray(session.user.roles)
     ? session.user.roles[0]
@@ -132,11 +149,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return pathname === fullUrl;
   };
 
-  const getNavItems = (): any[] => {
-    return navCafe;
-  };
-
-  const navGroups = getNavItems();
 
   return (
     <Sidebar {...props}>

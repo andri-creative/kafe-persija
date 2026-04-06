@@ -146,7 +146,7 @@ export function ProductVariantDialog({
                             <Button
                                 variant="outline"
                                 onClick={() => onOpenChange(false)}
-                                className="flex-1 h-12 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900"
+                                className="flex-1 h-12 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
                             >
                                 Batal
                             </Button>

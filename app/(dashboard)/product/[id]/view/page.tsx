@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "react-toastify";
-import { LogoLoading } from "@/components/logo-loading";
+import LoadingScreen from "@/components/LoadingScrean";
 import { Product, ProductVariant } from "../../types";
 import { BaseDataTable, Column } from "../../_components/BaseDataTable";
 import { AccessControl } from "@/components/rbac/AccessControl";
@@ -139,7 +139,7 @@ export default function ViewProductPage({ params }: { params: Promise<{ id: stri
     if (loading || minLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-6">
-                <LogoLoading width={150} height={150} />
+                <LoadingScreen width={150} height={150} />
                 <p className="text-[10px] text-muted-foreground uppercase tracking-widest animate-pulse">Connecting to Data Center...</p>
             </div>
         );

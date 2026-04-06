@@ -15,8 +15,8 @@ export const ProductHeader = ({ totalProducts }: ProductHeaderProps) => {
     return (
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
-                <h1 className="text-xl font-bold text-gray-900">Product</h1>
-                <p className="text-xs text-gray-500">
+                <h1 className="text-xl font-bold text-gray-900 dark:text-zinc-100">Product</h1>
+                <p className="text-xs text-gray-500 dark:text-zinc-500">
                     {totalProducts} products • Manage products, categories, and variants
                 </p>
             </div>

@@ -6,7 +6,6 @@ import { CategoryTable } from "../_components/CategoryTable";
 import CreateCategory from "../_components/create-category";
 import { useEffect, useState } from "react";
 import { PaginationGlobal } from "@/components/paginate-global";
-import { LogoLoading } from "@/components/logo-loading";
 
 import { AccessControl } from "@/components/rbac/AccessControl";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -16,35 +15,21 @@ import { Category } from "../types";
 export default function ProductCategoryPage() {
   const { can } = usePermissions();
   const canCreate = can("category_create");
-  
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [minLoading, setMinLoading] = useState(true);
   const pageSize = 5;
 
   useEffect(() => {
-    const timer = setTimeout(() => setMinLoading(false), 1500);
-
     fetch("/api/categories")
       .then((res) => res.json())
       .then((data) => {
         setCategories(data);
-        setIsLoading(false);
       })
-      .catch(() => setIsLoading(false));
-
-    return () => clearTimeout(timer);
+      .catch((err) => console.error("Error fetching categories:", err));
   }, []);
 
-  if (isLoading || minLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-6">
-        <LogoLoading width={150} height={150} />
-        <p className="text-[10px] text-muted-foreground uppercase tracking-widest animate-pulse">Menyiapkan daftar kategori...</p>
-      </div>
-    );
-  }
+
 
   const totalPages = Math.ceil(categories.length / pageSize);
   const paginatedCategories = categories.slice(

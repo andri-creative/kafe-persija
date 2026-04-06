@@ -71,7 +71,8 @@ export const createPromo = async (payload: PromoPayload) => {
  */
 export const updatePromo = async (payload: PromoPayload) => {
     try {
-        const response = await promoApi.put("", payload);
+        const { id, ...data } = payload;
+        const response = await promoApi.put(`/${id}`, data);
         return response.data;
     } catch (error) {
         console.error("Error updating promo:", error);
@@ -84,7 +85,7 @@ export const updatePromo = async (payload: PromoPayload) => {
  */
 export const deletePromo = async (id: number) => {
     try {
-        const response = await promoApi.delete("", { params: { id } });
+        const response = await promoApi.delete(`/${id}`);
         return response.data;
     } catch (error) {
         console.error("Error deleting promo:", error);

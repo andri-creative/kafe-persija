@@ -21,8 +21,8 @@ export function ProductGrid({ products, onProductClick }: ProductGridProps) {
     return (
         <div className="flex-1 flex flex-col gap-1.5 overflow-hidden pt-1">
             <div className="flex items-center gap-2 px-1 shrink-0">
-                <span className="text-[9px] font-black text-slate-800 uppercase tracking-[0.2em]">Menu Items</span>
-                <div className="h-px flex-1 bg-slate-200/60"></div>
+                <span className="text-[9px] font-black text-slate-800 dark:text-zinc-100 uppercase tracking-[0.2em]">Menu Items</span>
+                <div className="h-px flex-1 bg-slate-200/60 dark:bg-zinc-800"></div>
             </div>
             <div className="flex-1 overflow-y-auto no-scrollbar pb-4 pr-0.5">
                 {products.length === 0 ? (
@@ -49,7 +49,7 @@ export function ProductGrid({ products, onProductClick }: ProductGridProps) {
                                     <Card
                                         key={product.id}
                                         onClick={() => !isOutOfStock && onProductClick(product)}
-                                        className={`group p-2 border border-slate-100 shadow-sm transition-all duration-300 rounded-2xl bg-white overflow-hidden ${isOutOfStock ? 'opacity-60 grayscale-[0.5] cursor-not-allowed' : 'hover:shadow-xl hover:border-slate-200 cursor-pointer active:scale-95'}`}
+                                        className={`group p-2 border border-slate-100 dark:border-zinc-800 shadow-sm transition-all duration-300 rounded-2xl bg-white dark:bg-zinc-900/70 overflow-hidden ${isOutOfStock ? 'opacity-60 grayscale-[0.5] cursor-not-allowed' : 'hover:shadow-xl hover:border-slate-200 dark:hover:border-zinc-700 cursor-pointer active:scale-95'}`}
                                     >
                                         <div className="space-y-2.5 relative">
                                             {/* Sold Out Overlay */}
@@ -62,7 +62,7 @@ export function ProductGrid({ products, onProductClick }: ProductGridProps) {
                                             )}
 
                                             {/* Image Container - Square & Clean */}
-                                            <div className="relative aspect-square w-full rounded-xl bg-slate-50 overflow-hidden flex items-center justify-center group-hover:bg-red-50/30 transition-colors">
+                                            <div className="relative aspect-square w-full rounded-xl bg-slate-50 dark:bg-zinc-800/50 overflow-hidden flex items-center justify-center group-hover:bg-red-50/30 dark:group-hover:bg-red-900/10 transition-colors">
                                                 {images.length > 1 ? (
                                                     <Carousel
                                                         className="w-full h-full"
@@ -98,14 +98,14 @@ export function ProductGrid({ products, onProductClick }: ProductGridProps) {
 
                                             {/* Content - Compact & High Contrast */}
                                             <div className="px-1 space-y-1 pb-1">
-                                                <h5 className="text-[11px] font-black text-slate-900 truncate leading-tight uppercase tracking-tight group-hover:text-[#ff3535] transition-colors">{product.name}</h5>
+                                                <h5 className="text-[11px] font-black text-slate-900 dark:text-zinc-100 truncate leading-tight uppercase tracking-tight group-hover:text-[#ff3535] transition-colors">{product.name}</h5>
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-xs font-black text-[#ff3535] tracking-tighter">
                                                         Rp {variant?.price?.toLocaleString() || 0}
                                                     </span>
                                                     {!isOutOfStock && (
-                                                        <div className="w-5 h-5 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-[#ff3535] group-hover:border-[#ff3535] group-hover:rotate-90 transition-all duration-300">
-                                                            <LayoutGrid className="w-2.5 h-2.5 text-slate-300 group-hover:text-white" />
+                                                        <div className="w-5 h-5 rounded-full bg-slate-50 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-700 flex items-center justify-center group-hover:bg-[#ff3535] group-hover:border-[#ff3535] group-hover:rotate-90 transition-all duration-300">
+                                                            <LayoutGrid className="w-2.5 h-2.5 text-slate-300 dark:text-zinc-600 group-hover:text-white" />
                                                         </div>
                                                     )}
                                                 </div>

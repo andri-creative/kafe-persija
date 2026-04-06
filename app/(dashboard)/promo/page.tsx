@@ -11,6 +11,7 @@ import {
     Zap, Sparkles, Filter, 
     ArrowRight
 } from "lucide-react";
+import LoadingScreen from "@/components/LoadingScrean";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -23,8 +24,12 @@ import {
 import Link from "next/link";
 import { getPromos, deletePromo, PromoPayload } from "@/lib/promo-api";
 import { toast } from "react-hot-toast";
+import { usePermissions } from "@/hooks/use-permissions";
+import { SYSTEM_PERMISSIONS } from "@/types/rbac";
+import AccessDenied from "@/components/AccessDenied";
 
 export default function PromoPage() {
+    const { can, loading: permissionsLoading } = usePermissions();
     const [promos, setPromos] = React.useState<PromoPayload[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
 
@@ -61,8 +66,18 @@ export default function PromoPage() {
     };
 
     React.useEffect(() => {
-        fetchPromos();
-    }, []);
+        if (!permissionsLoading && can(SYSTEM_PERMISSIONS.PROMO_VIEW)) {
+            fetchPromos();
+        }
+    }, [permissionsLoading, can]);
+
+    if (permissionsLoading) {
+        return <LoadingScreen />;
+    }
+
+    if (!can(SYSTEM_PERMISSIONS.PROMO_VIEW)) {
+        return <AccessDenied />;
+    }
 
     const formatValue = (p: any) => {
         if (p.type === "percentage") return `${p.value}%`;
@@ -140,11 +155,13 @@ export default function PromoPage() {
                          <Button variant="outline" size="icon" className="h-12 w-12 rounded-2xl bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white backdrop-blur-md transition-all active:scale-95">
                              <Filter className="h-5 w-5" />
                          </Button>
-                         <Link href="/promo/create">
-                            <Button className="bg-orange-500 hover:bg-orange-600 text-white font-black uppercase text-[10px] tracking-widest px-8 h-12 rounded-2xl shadow-xl shadow-orange-500/30 transition-all active:scale-95 border-b-4 border-orange-700">
-                                <Plus className="mr-2 h-4 w-4" /> Create New Promo
-                            </Button>
-                         </Link>
+                         {can(SYSTEM_PERMISSIONS.PROMO_CREATE) && (
+                            <Link href="/promo/create">
+                                <Button className="bg-orange-500 hover:bg-orange-600 text-white font-black uppercase text-[10px] tracking-widest px-8 h-12 rounded-2xl shadow-xl shadow-orange-500/30 transition-all active:scale-95 border-b-4 border-orange-700">
+                                    <Plus className="mr-2 h-4 w-4" /> Create New Promo
+                                </Button>
+                            </Link>
+                         )}
                     </div>
                 </div>
             </div>
@@ -221,12 +238,14 @@ export default function PromoPage() {
                                                 <span className="text-base font-black text-indigo-600 tracking-tighter">{formatValue(promo)}</span>
                                             </div>
                                             
-                                            <div className="flex items-center gap-2">
-                                                <Link href={`/promo/edit/${promo.id}`}>
-                                                    <Button variant="outline" size="icon" className="h-8 w-8 rounded-xl border-zinc-100 bg-white hover:bg-orange-50 hover:text-orange-600 text-zinc-400 shadow-sm transition-all active:scale-90" title="Edit">
-                                                        <Edit3 className="h-3.5 w-3.5" />
-                                                    </Button>
-                                                </Link>
+                                             <div className="flex items-center gap-2">
+                                                {can(SYSTEM_PERMISSIONS.PROMO_EDIT) && (
+                                                    <Link href={`/promo/edit/${promo.id}`}>
+                                                        <Button variant="outline" size="icon" className="h-8 w-8 rounded-xl border-zinc-100 bg-white hover:bg-orange-50 hover:text-orange-600 text-zinc-400 shadow-sm transition-all active:scale-90" title="Edit">
+                                                            <Edit3 className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                    </Link>
+                                                )}
                                                 
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
@@ -238,12 +257,14 @@ export default function PromoPage() {
                                                         <DropdownMenuItem className="flex justify-between py-2 text-zinc-600 cursor-pointer rounded-xl">
                                                             View Details <Eye className="h-3.5 w-3.5" />
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem 
-                                                            onClick={() => handleDelete(promo.id)}
-                                                            className="py-2 text-red-600 focus:bg-red-50 focus:text-red-600 flex justify-between cursor-pointer rounded-xl"
-                                                        >
-                                                            Remove <Trash2 className="h-3.5 w-3.5" />
-                                                        </DropdownMenuItem>
+                                                        {can(SYSTEM_PERMISSIONS.PROMO_DELETE) && (
+                                                            <DropdownMenuItem 
+                                                                onClick={() => handleDelete(promo.id)}
+                                                                className="py-2 text-red-600 focus:bg-red-50 focus:text-red-600 flex justify-between cursor-pointer rounded-xl"
+                                                            >
+                                                                Remove <Trash2 className="h-3.5 w-3.5" />
+                                                            </DropdownMenuItem>
+                                                        )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </div>
@@ -254,14 +275,16 @@ export default function PromoPage() {
                         ))}
 
                         {/* Add New Placeholder Card - Navigates to Create Page */}
-                        <Link href="/promo/create" className="h-full">
-                            <div className="h-full min-h-[380px] border-2 border-dashed border-zinc-100 rounded-[1.5rem] flex flex-col items-center justify-center p-6 text-center group cursor-pointer hover:border-orange-200 transition-all active:scale-[0.98] bg-zinc-50/20">
-                                <div className="h-12 w-12 rounded-2xl bg-zinc-100 flex items-center justify-center text-zinc-300 mb-3 group-hover:bg-orange-50 group-hover:text-orange-400 transition-all duration-300 transform group-hover:rotate-90">
-                                    <Plus className="h-6 w-6" />
+                        {can(SYSTEM_PERMISSIONS.PROMO_CREATE) && (
+                            <Link href="/promo/create" className="h-full">
+                                <div className="h-full min-h-[380px] border-2 border-dashed border-zinc-100 rounded-[1.5rem] flex flex-col items-center justify-center p-6 text-center group cursor-pointer hover:border-orange-200 transition-all active:scale-[0.98] bg-zinc-50/20">
+                                    <div className="h-12 w-12 rounded-2xl bg-zinc-100 flex items-center justify-center text-zinc-300 mb-3 group-hover:bg-orange-50 group-hover:text-orange-400 transition-all duration-300 transform group-hover:rotate-90">
+                                        <Plus className="h-6 w-6" />
+                                    </div>
+                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest group-hover:text-zinc-700 transition-colors">Tambah Promo Baru</span>
                                 </div>
-                                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest group-hover:text-zinc-700 transition-colors">Tambah Promo Baru</span>
-                            </div>
-                        </Link>
+                            </Link>
+                        )}
                     </>
                 )}
             </div>

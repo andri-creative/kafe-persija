@@ -118,7 +118,7 @@ export default function AssignmentsPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1">
-                    <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-400 to-indigo-600 bg-clip-text text-transparent">
+                    <h2 className="text-3xl font-bold tracking-tight bg-linear-to-r from-blue-400 to-indigo-600 bg-clip-text text-transparent">
                         Role Assignments
                     </h2>
                     <p className="text-muted-foreground">

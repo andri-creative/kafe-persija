@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { NavUser } from "@/components/nav-user";
 import { FullScreen } from "@/components/full-screen";
 import { cookies } from "next/headers";
+import PageTransitionProvider from "@/components/PageTransitionProvider";
 
 export default async function DashboardLayout({
   children,
@@ -35,7 +36,9 @@ export default async function DashboardLayout({
             </div>
           </header>
           <main className="flex flex-1 flex-col gap-4 px-6 py-4">
-            <div className="flex-1">{children}</div>
+            <PageTransitionProvider>
+                <div className="flex-1">{children}</div>
+            </PageTransitionProvider>
           </main>
         </SidebarInset>
       </SidebarProvider>

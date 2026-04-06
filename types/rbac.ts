@@ -15,6 +15,18 @@ export const SYSTEM_PERMISSIONS = {
     DISCOUNT_EDIT: "discount_edit",
     DISCOUNT_DELETE: "discount_delete",
 
+    // PROMO MANAGEMENT
+    PROMO_VIEW: "promo_view",
+    PROMO_CREATE: "promo_create",
+    PROMO_EDIT: "promo_edit",
+    PROMO_DELETE: "promo_delete",
+
+    // SETTING MANAGEMENT
+    SETTING_VIEW: "setting_view",
+    SETTING_CREATE: "setting_create",
+    SETTING_EDIT: "setting_edit",
+    SETTING_DELETE: "setting_delete",
+
     // ROLE & PERMISSION MANAGEMENT (SUPER ADMIN)
     RBAC_VIEW: "rbac_view",
     RBAC_MANAGE: "rbac_manage",

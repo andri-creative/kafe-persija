@@ -23,7 +23,7 @@ export const ProductFilters = ({
     onRefresh,
 }: ProductFiltersProps) => {
     return (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-3 mb-6 animate-in fade-in slide-in-from-top-2 duration-500">
+        <div className="bg-white dark:bg-zinc-900/70 rounded-2xl border border-slate-100 dark:border-zinc-800 shadow-sm p-3 mb-6 animate-in fade-in slide-in-from-top-2 duration-500">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
                 
                 {/* Search */}
@@ -33,7 +33,7 @@ export const ProductFilters = ({
                         value={search}
                         onChange={(e) => onSearchChange(e.target.value)}
                         leftIcon={<Search className="h-3.5 w-3.5" />}
-                        className="bg-slate-50/50 border-none"
+                        className="bg-slate-50/50 dark:bg-zinc-800/50 border-none"
                     />
                 </div>
 
@@ -58,7 +58,7 @@ export const ProductFilters = ({
                 {/* Actions */}
                 <div className="md:col-span-4 flex gap-2">
                     <Link href="/product/category" className="flex-1">
-                        <Button variant="outline" className="w-full h-9 text-xs font-bold border-slate-200 hover:bg-slate-50 hover:text-indigo-600 rounded-xl gap-2 transition-all active:scale-95 shadow-sm">
+                        <Button variant="outline" className="w-full h-9 text-xs font-bold border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl gap-2 transition-all active:scale-95 shadow-sm bg-white dark:bg-zinc-900">
                             <LayoutGrid className="w-3.5 h-3.5" />
                             Category
                         </Button>
@@ -66,7 +66,7 @@ export const ProductFilters = ({
                     <Button 
                         variant="secondary" 
                         onClick={onRefresh} 
-                        className="flex-1 h-9 text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl gap-2 transition-all active:scale-95 shadow-sm"
+                        className="flex-1 h-9 text-xs font-bold bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-400 rounded-xl gap-2 transition-all active:scale-95 shadow-sm"
                     >
                         <RotateCcw className="w-3.5 h-3.5" />
                         Refresh

@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from "react";
 import EditCategory from "../../../_components/edit-category";
 import { AlertCircle } from "lucide-react";
-import { LogoLoading } from "@/components/logo-loading";
+import LoadingScreen from "@/components/LoadingScrean";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -40,7 +40,7 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
     if (loading || minLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[500px] gap-6 animate-in fade-in duration-500">
-                <LogoLoading width={160} height={160} />
+                <LoadingScreen width={160} height={160} />
                 <div className="space-y-1 text-center font-black">
                     <p className="text-[10px] uppercase tracking-[0.3em] font-black animate-pulse bg-linear-to-r from-indigo-400 via-blue-600 to-indigo-400 bg-clip-text text-transparent italic">
                         Menyiapkan data Kategori...

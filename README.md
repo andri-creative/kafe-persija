@@ -74,3 +74,7 @@ npm run seed
 ```
 
 Proses ini akan menjalankan script yang ada di `prisma/seed.ts`.
+
+
+npx prisma generate
+npx prisma db push
