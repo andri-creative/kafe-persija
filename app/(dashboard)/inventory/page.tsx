@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Archive, ArrowUpRight, ArrowDownLeft, AlertCircle } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export default function InventoryPage() {
     const stocks = [

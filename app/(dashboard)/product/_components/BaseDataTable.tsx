@@ -36,39 +36,39 @@ export function BaseDataTable<T extends { id: number | string }>({
 }: BaseDataTableProps<T>) {
   if (data.length === 0) {
     return (
-      <div className={cn("bg-white rounded-lg border p-8 text-center", className)}>
-        <p className="text-xs text-gray-500">{emptyMessage}</p>
+      <div className={cn("bg-white dark:bg-zinc-900/70 rounded-lg border dark:border-zinc-800 p-8 text-center", className)}>
+        <p className="text-xs text-gray-500 dark:text-zinc-500">{emptyMessage}</p>
       </div>
     );
   }
 
   return (
-    <div className={cn("bg-white rounded-lg border overflow-hidden", className)}>
+    <div className={cn("bg-white dark:bg-zinc-900/70 rounded-lg border dark:border-zinc-800 overflow-hidden", className)}>
       <div className="overflow-x-auto">
         <Table>
-          <TableHeader className="bg-gray-50">
+          <TableHeader className="bg-gray-50 dark:bg-zinc-800/50">
             <TableRow>
               {columns.map((column, idx) => (
                 <TableHead
                   key={idx}
-                  className={`text-[10px] font-bold text-gray-500 uppercase tracking-wider py-2 ${column.headerClassName || ""} ${column.className || ""}`}
+                  className={`text-[10px] font-bold text-gray-500 dark:text-zinc-500 uppercase tracking-wider py-2 ${column.headerClassName || ""} ${column.className || ""}`}
                 >
                   {column.header}
                 </TableHead>
               ))}
             </TableRow>
           </TableHeader>
-          <TableBody className="bg-white divide-y divide-gray-200">
+          <TableBody className="bg-white dark:bg-zinc-900/30 divide-y divide-gray-200 dark:divide-zinc-800">
             {data.map((item, rowIdx) => (
               <TableRow
                 key={item.id}
                 onClick={() => onRowClick?.(item)}
-                className={`hover:bg-gray-50 transition-colors ${onRowClick ? "cursor-pointer" : ""}`}
+                className={`hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors ${onRowClick ? "cursor-pointer" : ""}`}
               >
                 {columns.map((column, colIdx) => (
                   <TableCell
                     key={colIdx}
-                    className={`px-3 py-2 text-xs text-gray-600 ${column.className || ""}`}
+                    className={`px-3 py-2 text-xs text-gray-600 dark:text-zinc-400 ${column.className || ""}`}
                   >
                     {column.render
                       ? column.render(item, rowIdx)

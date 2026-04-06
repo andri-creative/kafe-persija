@@ -85,21 +85,21 @@ export function OrderSummary({
     };
 
     return (
-        <div className="bg-white/90 backdrop-blur-xl rounded-2xl border border-slate-100 shadow-xl p-4 flex flex-col h-full overflow-hidden">
+        <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-2xl border border-slate-100 dark:border-zinc-800 shadow-xl p-4 flex flex-col h-full overflow-hidden">
             <div className="flex flex-col h-full">
                 {/* Header */}
                 <div className="space-y-1 mb-4">
-                    <h3 className="text-sm font-bold text-slate-900">Order Summary</h3>
-                    <div className="flex justify-between items-center text-[9px] font-medium text-slate-400 uppercase tracking-tighter">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Order Summary</h3>
+                    <div className="flex justify-between items-center text-[9px] font-medium text-slate-400 dark:text-zinc-500 uppercase tracking-tighter">
                         <span>Transaction ID</span>
-                        <span className="text-slate-900 font-bold">#{transactionId}</span>
+                        <span className="text-slate-900 dark:text-zinc-100 font-bold">#{transactionId}</span>
                     </div>
                 </div>
 
                 {/* Customer Name Input */}
                 <div className="mb-4">
                     <div className="relative group">
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#ff3535] transition-colors">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-600 group-focus-within:text-[#ff3535] transition-colors">
                             <User className="w-3.5 h-3.5" />
                         </div>
                         <input
@@ -107,20 +107,20 @@ export function OrderSummary({
                             placeholder="NAMA PESANAN..."
                             value={customerName}
                             onChange={(e) => onCustomerNameChange(e.target.value.toUpperCase())}
-                            className="w-full bg-slate-50 border border-slate-100 rounded-md py-2 pl-8 pr-4 text-[9px] font-bold uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-[#ff3535] transition-all"
+                            className="w-full bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800 rounded-md py-2 pl-8 pr-4 text-[9px] font-bold uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-[#ff3535] dark:text-zinc-100 transition-all"
                             required
                         />
                     </div>
                 </div>
 
-                <div className="border-t border-dashed border-slate-200 mb-4" />
+                <div className="border-t border-dashed border-slate-200 dark:border-zinc-700/50 mb-4" />
 
                 {/* Cart Items List */}
                 <div className="flex-1 overflow-y-auto no-scrollbar space-y-3 pr-0.5">
                     {cart.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full py-10 opacity-20 italic">
-                            <ShoppingCart className="w-8 h-8 text-slate-400 mb-2" />
-                            <p className="text-[10px] font-black uppercase tracking-widest">Cart is empty</p>
+                            <ShoppingCart className="w-8 h-8 text-slate-400 dark:text-zinc-600 mb-2" />
+                            <p className="text-[10px] font-black uppercase tracking-widest dark:text-zinc-100">Cart is empty</p>
                         </div>
                     ) : (
                         cart.map((item) => (
@@ -140,10 +140,10 @@ export function OrderSummary({
 
                                 <div className="flex-1 min-w-0 flex flex-col justify-between">
                                     <div className="flex items-center gap-1.5 justify-between">
-                                        <h5 className="text-[10px] font-bold text-slate-900 truncate uppercase leading-none">
+                                        <h5 className="text-[10px] font-bold text-slate-900 dark:text-zinc-100 truncate uppercase leading-none">
                                             {item.productName}
                                         </h5>
-                                        <span className="text-[9px] font-bold text-slate-400 shrink-0">x{item.quantity}</span>
+                                        <span className="text-[9px] font-bold text-slate-400 dark:text-zinc-500 shrink-0">x{item.quantity}</span>
                                     </div>
                                     <div className="flex items-center justify-between mt-1">
                                         <div className="flex items-center gap-2">
@@ -152,9 +152,9 @@ export function OrderSummary({
                                             </button>
                                             <span className="text-[10px] font-black text-[#ff3535]">Rp {item.price.toLocaleString()}</span>
                                         </div>
-                                        <div className="flex items-center gap-1.5 bg-slate-100 p-0.5 rounded-lg">
-                                            <button onClick={() => onUpdateQuantity(item.id, -1)} className="w-4 h-4 rounded-md bg-white border border-slate-100 flex items-center justify-center text-slate-600"><Minus className="w-2 h-2" /></button>
-                                            <span className="text-[9px] font-bold w-3 text-center">{item.quantity}</span>
+                                        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-zinc-800 p-0.5 rounded-lg">
+                                            <button onClick={() => onUpdateQuantity(item.id, -1)} className="w-4 h-4 rounded-md bg-white dark:bg-zinc-700 border border-slate-100 dark:border-zinc-600 flex items-center justify-center text-slate-600 dark:text-zinc-300"><Minus className="w-2 h-2" /></button>
+                                            <span className="text-[9px] font-bold w-3 text-center dark:text-zinc-100">{item.quantity}</span>
                                             <button onClick={() => onUpdateQuantity(item.id, 1)} className="w-4 h-4 rounded-md bg-[#ff3535] flex items-center justify-center text-white"><Plus className="w-2 h-2" /></button>
                                         </div>
                                     </div>
@@ -165,14 +165,14 @@ export function OrderSummary({
                 </div>
 
                 {/* Footer Section - Compact Benefit UI */}
-                <div className="flex-none space-y-3 mt-4 pt-4 border-t border-slate-100">
+                <div className="flex-none space-y-3 mt-4 pt-4 border-t border-slate-100 dark:border-zinc-800">
                     {/* Benefit Tab Selector */}
-                    <div className="bg-slate-100/50 p-1 rounded-xl flex gap-1">
+                    <div className="bg-slate-100/50 dark:bg-zinc-800/80 p-1 rounded-xl flex gap-1">
                         <button
                             onClick={() => handleTabChange('discount')}
                             className={cn(
                                 "flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all",
-                                activeTab === 'discount' ? "bg-white text-amber-600 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                                activeTab === 'discount' ? "bg-white dark:bg-zinc-900 text-amber-600 shadow-sm" : "text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300"
                             )}
                         >
                             <Zap className={cn("w-3 h-3", activeTab === 'discount' ? "fill-amber-500 text-amber-500" : "")} />
@@ -182,7 +182,7 @@ export function OrderSummary({
                             onClick={() => handleTabChange('promo')}
                             className={cn(
                                 "flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all",
-                                activeTab === 'promo' ? "bg-white text-blue-600 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                                activeTab === 'promo' ? "bg-white dark:bg-zinc-900 text-blue-600 shadow-sm" : "text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300"
                             )}
                         >
                             <Ticket className={cn("w-3 h-3", activeTab === 'promo' ? "fill-blue-500 text-blue-500" : "")} />
@@ -196,10 +196,10 @@ export function OrderSummary({
                             <select
                                 value={selectedDiscountId}
                                 onChange={(e) => onDiscountChange(e.target.value)}
-                                className="w-full bg-amber-50 border border-amber-100 rounded-lg py-2 px-3 text-[10px] font-bold text-amber-700 outline-none uppercase tracking-tight"
+                                className="w-full bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-lg py-2 px-3 text-[10px] font-bold text-amber-700 dark:text-amber-500 outline-none uppercase tracking-tight"
                             >
                                 {discounts.map((d) => (
-                                    <option key={d.id} value={d.id}>
+                                    <option key={d.id} value={d.id} className="dark:bg-zinc-900">
                                         {d.label} {d.value > 0 ? `(${d.type === 'percent' ? `${d.value}%` : `Rp ${d.value.toLocaleString()}`})` : ''}
                                     </option>
                                 ))}
@@ -207,13 +207,13 @@ export function OrderSummary({
                         ) : (
                             <div className="flex gap-1.5 px-0.5">
                                 <div className="relative flex-1">
-                                    <Ticket className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-blue-400" />
+                                    <Ticket className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-blue-400 dark:text-blue-600" />
                                     <input
                                         type="text"
                                         placeholder="KODE PROMO..."
                                         value={promoInput}
                                         onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
-                                        className="w-full bg-blue-50 border border-blue-100 rounded-lg py-2 pl-8 pr-3 text-[10px] font-bold text-blue-700 outline-none focus:ring-2 focus:ring-blue-500/20 placeholder:text-blue-300 uppercase tracking-widest"
+                                        className="w-full bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-lg py-2 pl-8 pr-3 text-[10px] font-bold text-blue-700 dark:text-blue-500 outline-none focus:ring-2 focus:ring-blue-500/20 placeholder:text-blue-300 dark:placeholder:text-blue-900/50 uppercase tracking-widest"
                                     />
                                 </div>
                                 <button
@@ -253,19 +253,19 @@ export function OrderSummary({
                     </div>
 
                     {/* Compact Summary */}
-                    <div className="space-y-1.5 px-1 py-2 bg-slate-50/50 rounded-xl">
-                        <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 uppercase">
+                    <div className="space-y-1.5 px-1 py-2 bg-slate-50/50 dark:bg-zinc-800/30 rounded-xl">
+                        <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 dark:text-zinc-500 uppercase">
                             <span>Sub Total</span>
-                            <span className="text-slate-700">Rp {cartTotal.toLocaleString()}</span>
+                            <span className="text-slate-700 dark:text-zinc-300">Rp {cartTotal.toLocaleString()}</span>
                         </div>
                         {(currentDiscount || currentPromo) && (
-                            <div className="flex justify-between items-center text-[9px] font-bold text-emerald-600 uppercase">
+                            <div className="flex justify-between items-center text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">
                                 <span>Benefit ({currentDiscount?.label || currentPromo?.label})</span>
                                 <span>- Rp {discountAmount.toLocaleString()}</span>
                             </div>
                         )}
-                        <div className="flex items-center justify-between pt-1 border-t border-slate-100">
-                            <span className="text-[10px] font-black text-slate-900 uppercase">Total Bill</span>
+                        <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-zinc-700">
+                            <span className="text-[10px] font-black text-slate-900 dark:text-zinc-100 uppercase">Total Bill</span>
                             <span className="text-sm font-black text-[#ff3535]">Rp {finalTotal.toLocaleString()}</span>
                         </div>
                     </div>
@@ -280,7 +280,7 @@ export function OrderSummary({
                             return (
                                 <button
                                     key={m.id} onClick={() => onPaymentMethodChange(m.id)}
-                                    className={cn("flex flex-col items-center py-2 rounded-xl border-2 transition-all", isSelected ? "bg-red-50 border-[#ff3535] text-[#ff3535]" : "bg-white border-slate-100 text-slate-400 hover:border-slate-200")}
+                                    className={cn("flex flex-col items-center py-2 rounded-xl border-2 transition-all", isSelected ? "bg-red-50 dark:bg-red-950/20 border-[#ff3535] text-[#ff3535]" : "bg-white dark:bg-zinc-900 border-slate-100 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 hover:border-slate-200 dark:hover:border-zinc-700")}
                                 >
                                     <m.icon className="w-4 h-4 mb-1" />
                                     <span className="text-[7px] font-bold uppercase tracking-widest">{m.label}</span>
@@ -290,22 +290,22 @@ export function OrderSummary({
                     </div>
 
                     {paymentMethod === 'cash' && (
-                        <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                        <div className="bg-slate-50 dark:bg-zinc-800/50 p-2 rounded-xl border border-slate-100 dark:border-zinc-800">
                             <div className="flex justify-between items-center mb-1">
-                                <span className="text-[8px] font-bold text-slate-400 uppercase">Cash Amount</span>
+                                <span className="text-[8px] font-bold text-slate-400 dark:text-zinc-500 uppercase">Cash Amount</span>
                                 {typeof cashReceived === 'number' && cashReceived >= finalTotal && (
-                                    <span className="text-[8px] font-bold text-emerald-600">Change: Rp {(cashReceived - finalTotal).toLocaleString()}</span>
+                                    <span className="text-[8px] font-bold text-emerald-600 dark:text-emerald-400">Change: Rp {(Number(cashReceived) - finalTotal).toLocaleString()}</span>
                                 )}
                             </div>
                             <input
                                 type="number" value={cashReceived} onChange={(e) => onCashReceivedChange(e.target.value === '' ? '' : Number(e.target.value))}
-                                placeholder="NOMINAL..." className="w-full bg-white border border-slate-200 rounded-lg py-1.5 px-3 text-[10px] font-bold text-slate-900 outline-none focus:border-[#ff3535]"
+                                placeholder="NOMINAL..." className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-lg py-1.5 px-3 text-[10px] font-bold text-slate-900 dark:text-zinc-100 outline-none focus:border-[#ff3535]"
                             />
                         </div>
                     )}
 
                     <div className="flex gap-2">
-                        <button className="flex-1 py-3 bg-slate-100 text-slate-900 rounded-xl font-bold text-[9px] uppercase tracking-widest border border-slate-200">Print</button>
+                        <button className="flex-1 py-3 bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 rounded-xl font-bold text-[9px] uppercase tracking-widest border border-slate-200 dark:border-zinc-700">Print</button>
                         <button
                             onClick={onPayment} disabled={cart.length === 0 || !customerName || isSubmitting}
                             className="flex-2 py-3 bg-[#ff3535] text-white rounded-xl font-bold text-[9px] uppercase tracking-widest shadow-lg shadow-red-500/20 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"

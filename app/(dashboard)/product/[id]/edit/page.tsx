@@ -6,7 +6,6 @@ import Link from "next/link";
 import { toast } from "react-toastify";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { LogoLoading } from "@/components/logo-loading";
 import { ButtonsComponentsBack, ButtonsComponentsSave } from "@/components/buttons-conponents";
 
 import { ProductInfoSection } from "../../_components/ProductInfoSection";
@@ -19,7 +18,6 @@ export default function EditProductPage() {
   
   const {
     loading, setLoading,
-    minLoading, setMinLoading,
     saving,
     formData, setFormData,
     variants, setVariants,
@@ -33,11 +31,6 @@ export default function EditProductPage() {
     removeVariant,
     saveProduct
   } = useProductForm(productId);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setMinLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, [setMinLoading]);
 
   useEffect(() => {
     if (productId) {
@@ -87,11 +80,14 @@ export default function EditProductPage() {
     }
   }, [productId, setLoading, setCategoriesList, setFormData, setVariants]);
 
-  if (loading || minLoading) {
+  if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-6">
-        <LogoLoading width={150} height={150} />
-        <p className="text-[10px] text-muted-foreground uppercase tracking-widest animate-pulse">Menghubungkan ke Pusat Data...</p>
+      <div className="p-6 space-y-6">
+        <div className="h-10 w-full bg-zinc-100 animate-pulse rounded-xl" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="h-[400px] bg-zinc-50 animate-pulse rounded-2xl" />
+          <div className="h-[400px] bg-zinc-50 animate-pulse rounded-2xl" />
+        </div>
       </div>
     );
   }

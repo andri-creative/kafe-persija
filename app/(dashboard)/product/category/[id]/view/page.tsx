@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from "react";
 import ViewCategory from "../../../_components/view-category";
 import { AlertCircle } from "lucide-react";
-import { LogoLoading } from "@/components/logo-loading";
+import LoadingScreen from "@/components/LoadingScrean";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -40,7 +40,7 @@ export default function ViewCategoryPage({ params }: { params: Promise<{ id: str
     if (loading || minLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[500px] gap-6 animate-in fade-in duration-700">
-                <LogoLoading width={180} height={180} />
+                <LoadingScreen width={180} height={180} />
                 <div className="space-y-1 text-center">
                     <p className="text-[10px] uppercase tracking-[0.3em] font-black animate-pulse bg-linear-to-r from-gray-400 via-gray-600 to-gray-400 bg-clip-text text-transparent">
                         Menghubungkan ke Pusat Data...

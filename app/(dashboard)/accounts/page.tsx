@@ -85,7 +85,7 @@ function PasswordInput({ value, onChange, placeholder, id }: {
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder ?? "Password"}
-                className="w-full px-3 pr-9 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 transition-all"
+                className="w-full px-3 pr-9 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 transition-all"
             />
             <button type="button" onClick={() => setShow(!show)}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -127,7 +127,7 @@ function Field({ label, children, error }: { label: string; children: React.Reac
 }
 
 function inputClass() {
-    return "w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 transition-all";
+    return "w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 transition-all";
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
@@ -287,29 +287,29 @@ export default function AccountsPage() {
 
     return (
         <div className="min-h-screen bg-gray-50/60">
-            <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-5">
+            <div className="p-4 sm:p-6 w-full mx-auto space-y-4 sm:space-y-5">
 
                 {/* ── Header ── */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-violet-600 flex items-center justify-center shadow-sm">
+                        <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
                             <Users className="w-4.5 h-4.5 text-white" strokeWidth={2} />
                         </div>
                         <div>
-                            <h1 className="text-lg font-semibold text-gray-900 leading-none">Akun</h1>
-                            <p className="text-[12px] text-gray-400 mt-0.5">
+                            <h1 className="text-xl font-black text-gray-900 leading-none tracking-tight uppercase">Manajemen Akun</h1>
+                            <p className="text-[11px] text-gray-400 mt-1 font-medium italic">
                                 {data ? `${data.total} pengguna terdaftar` : "Memuat data…"}
                             </p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2 self-start sm:self-auto">
                         <button onClick={fetchUsers}
-                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-gray-500 bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[11px] font-bold text-gray-500 bg-white border border-gray-200 hover:bg-gray-50 transition-all shadow-sm active:scale-95">
                             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-                            Refresh
+                            REFRESH
                         </button>
                         <button onClick={() => { setAddOpen(true); setFormError(""); }}
-                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-violet-600 text-white hover:bg-violet-700 transition-colors shadow-sm">
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[11px] font-bold bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-md shadow-blue-600/20 active:scale-95 uppercase tracking-wider">
                             <Plus className="w-3.5 h-3.5" />
                             Tambah Akun
                         </button>
@@ -317,21 +317,21 @@ export default function AccountsPage() {
                 </div>
 
                 {/* ── Filters ── */}
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 flex flex-col sm:flex-row gap-2">
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col sm:flex-row gap-3">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-                        <input type="text" placeholder="Cari nama atau email…" value={search}
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                        <input type="text" placeholder="Cari nama atau email pengguna…" value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 placeholder:text-gray-400 transition-all" />
+                            className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 placeholder:text-gray-400 transition-all font-medium" />
                     </div>
                     <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}
-                        className="px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 text-gray-600 transition-all cursor-pointer">
+                        className="px-4 py-2.5 text-sm bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 text-gray-600 transition-all cursor-pointer font-medium min-w-[140px]">
                         <option value="">Semua Tipe</option>
-                        <option value="admin">Admin</option>
-                        <option value="staff">Staff</option>
+                        <option value="admin">Administrator</option>
+                        <option value="staff">Staff Kafe</option>
                     </select>
                     <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
-                        className="px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 text-gray-600 transition-all cursor-pointer">
+                        className="px-4 py-2.5 text-sm bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 text-gray-600 transition-all cursor-pointer font-medium min-w-[140px]">
                         <option value="">Semua Status</option>
                         <option value="ACTIVE">Aktif</option>
                         <option value="INACTIVE">Nonaktif</option>
@@ -362,8 +362,8 @@ export default function AccountsPage() {
                                                 <span className="text-sm font-medium">Tidak ada data</span>
                                                 {(debouncedSearch || typeFilter || statusFilter) && (
                                                     <button onClick={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); }}
-                                                        className="text-violet-500 text-xs mt-1 hover:underline">
-                                                        Hapus filter
+                                                        className="text-blue-500 font-bold text-xs mt-1 hover:underline uppercase tracking-tighter">
+                                                        Hapus Filter
                                                     </button>
                                                 )}
                                             </div>
@@ -463,7 +463,7 @@ export default function AccountsPage() {
                                             </span>
                                         ) : (
                                             <button key={p} onClick={() => setPage(p as number)}
-                                                className={`w-8 h-8 flex items-center justify-center rounded-lg text-[12px] font-medium transition-colors ${page === p ? "bg-violet-600 text-white" : "text-gray-500 hover:bg-gray-100"}`}>
+                                                className={`w-8 h-8 flex items-center justify-center rounded-lg text-[12px] font-black transition-all active:scale-90 ${page === p ? "bg-blue-600 text-white shadow-md shadow-blue-600/30" : "text-gray-500 hover:bg-gray-100"}`}>
                                                 {p}
                                             </button>
                                         )
@@ -531,7 +531,7 @@ export default function AccountsPage() {
                                 Batal
                             </button>
                             <button type="submit" disabled={submitting}
-                                className="flex-1 py-2 text-sm font-semibold text-white bg-violet-600 rounded-lg hover:bg-violet-700 disabled:opacity-60 transition-colors">
+                                className="flex-1 py-2.5 text-sm font-black uppercase tracking-wider text-white bg-blue-600 rounded-xl hover:bg-blue-700 disabled:opacity-60 transition-all shadow-md shadow-blue-600/20 active:scale-95">
                                 {submitting ? "Menyimpan…" : "Buat Akun"}
                             </button>
                         </div>
@@ -598,7 +598,7 @@ export default function AccountsPage() {
                                 Batal
                             </button>
                             <button type="submit" disabled={submitting}
-                                className="flex-1 py-2 text-sm font-semibold text-white bg-violet-600 rounded-lg hover:bg-violet-700 disabled:opacity-60 transition-colors">
+                                className="flex-1 py-2.5 text-sm font-black uppercase tracking-wider text-white bg-blue-600 rounded-xl hover:bg-blue-700 disabled:opacity-60 transition-all shadow-md shadow-blue-600/20 active:scale-95">
                                 {submitting ? "Menyimpan…" : "Simpan"}
                             </button>
                         </div>

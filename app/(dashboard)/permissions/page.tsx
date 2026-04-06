@@ -8,7 +8,6 @@ import {
     Lock,
     Unlock,
     Loader2,
-    ListFilter,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -100,7 +99,7 @@ export default function PermissionsPage() {
         <div className="flex-1 space-y-4 p-3 md:p-4 pt-2 mb-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-0.5">
-                    <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-400 to-indigo-600 bg-clip-text text-transparent">
+                    <h2 className="text-xl font-bold tracking-tight bg-linear-to-r from-blue-400 to-indigo-600 bg-clip-text text-transparent">
                         Management Permissions
                     </h2>
                     <p className="text-sm text-muted-foreground">
@@ -141,7 +140,7 @@ export default function PermissionsPage() {
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center">
+                                <TableCell colSpan={4} className="h-24 text-center">
                                     <Loader2 className="h-6 w-6 animate-spin mx-auto text-zinc-400" />
                                 </TableCell>
                             </TableRow>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
     TrendingUp,
@@ -11,7 +11,18 @@ import {
     Search,
     Star,
     ArrowRight,
-    Package
+    Package,
+    Activity,
+    Calendar,
+    ArrowUpRight,
+    Utensils,
+    Zap,
+    Clock,
+    Tag,
+    AlertTriangle,
+    Inbox,
+    Ticket,
+    Percent
 } from "lucide-react";
 import {
     Table,
@@ -26,21 +37,22 @@ import { TopCategoryChart } from "@/components/Ppe-chart-donut-topCategory";
 import { ChartBarOrder } from "@/components/chart-bar-order";
 import { ChartPieTopVariant } from "@/components/chart-pie-top-variant";
 import { ImageHelper } from "@/lib/image-helper";
+import Link from "next/link";
 
-export default function DashboardPage() {
+export default function DashboardPageV2() {
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const response = await fetch("/api/dashboard");
+                const response = await fetch("/api/dashboard/v2/stats");
                 const data = await response.json();
                 setStats(data);
             } catch (error) {
                 console.error("Failed to fetch dashboard stats:", error);
             } finally {
-                setLoading(false);
+                setTimeout(() => setLoading(false), 500);
             }
         };
         fetchStats();
@@ -58,260 +70,370 @@ export default function DashboardPage() {
         }).format(amount || 0);
     };
 
+    const currentHour = new Date().getHours();
+    const getGreeting = () => {
+        if (currentHour >= 5 && currentHour < 12) return { text: "Good Morning", icon: "☀️" };
+        if (currentHour >= 12 && currentHour < 17) return { text: "Good Afternoon", icon: "🌤️" };
+        if (currentHour >= 17 && currentHour < 21) return { text: "Good Evening", icon: "🌇" };
+        return { text: "Good Night", icon: "🌙" };
+    };
+    const greeting = getGreeting();
+
     return (
-        <div className="flex flex-col gap-5 pb-8">
-            {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="md:text-2xl text-xl font-black tracking-tight text-zinc-900 dark:text-zinc-100">Dashboard</h1>
+        <div className="flex flex-col gap-4 pb-8 animate-in fade-in duration-700">
+
+            {/* ── COMPACT HEADER ── */}
+            <div className="relative overflow-hidden rounded-xl bg-indigo-950 px-6 py-6 shadow-xl border border-white/5">
+                <div className="absolute top-0 right-0 -mr-8 -mt-8 h-32 w-32 bg-white/5 blur-2xl rounded-full" />
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-0.5">
+                        <div className="flex items-center gap-1.5">
+                            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                            <p className="text-[9px] font-black uppercase tracking-widest text-indigo-400">Weekly Performance (Sen - Min)</p>
+                        </div>
+                        <h1 className="text-xl lg:text-2xl font-black tracking-tight text-white animate-in slide-in-from-left duration-500">
+                            {greeting.text}, <span className="text-indigo-200">Persija Admin</span>
+                        </h1>
+                        <p className="text-indigo-200/50 text-[10px] font-medium max-w-sm italic">
+                            Live operational metrics for the current 7-day cycle.
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-3 bg-black/30 backdrop-blur-sm p-1 rounded-xl border border-white/10">
+                        <div className="px-4 py-1 text-center border-r border-white/5">
+                            <p className="text-[8px] font-black text-indigo-400/70 uppercase tracking-widest leading-none mb-0.5">Revenue</p>
+                            <p className="text-base font-black text-white tabular-nums leading-none">
+                                {formatCurrency(stats?.revenue)}
+                            </p>
+                        </div>
+                        <div className="px-4 py-1 text-center">
+                            <p className="text-[8px] font-black text-indigo-400/70 uppercase tracking-widest leading-none mb-0.5">Orders</p>
+                            <p className="text-base font-black text-white tabular-nums leading-none">
+                                {formatNumber(stats?.orders)}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
-            {/* Main Layout Grid - Sidebar wraps to bottom on <lg (iPad/Tablet range) */}
-            <div className="grid grid-cols-12 gap-8">
 
-                {/* LEFT CONTENT AREA */}
-                <div className="col-span-12 lg:col-span-9 flex flex-col gap-8">
+            {/* ── COMPACT GRID (9+3) ── */}
+            <div className="grid grid-cols-12 gap-5">
 
-                    {/* Stat Cards - 3 Columns on md+ */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
-                        <Card className="border-none shadow-sm bg-orange-50/50 dark:bg-orange-950/10 rounded-base md:rounded-base overflow-hidden">
-                            <CardContent className="p-4 md:p-5">
-                                <div className="flex items-center gap-3 md:gap-4">
-                                    <div className="h-10 w-10 md:h-12 md:w-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl md:rounded-2xl flex items-center justify-center text-orange-600">
-                                        <ShoppingCart className="h-5 w-5 md:h-6 md:w-6" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.15em] md:tracking-[0.2em] text-zinc-400">
-                                            Total Orders
-                                        </span>
-                                        <div className="flex items-center gap-1.5 md:gap-2">
-                                            <span className="text-lg md:text-xl lg:text-2xl font-black text-zinc-900 dark:text-zinc-100">
-                                                {loading ? "..." : formatNumber(stats?.orders?.total)}
-                                            </span>
-                                            <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/20 border-none text-[8px] md:text-[10px] font-black flex items-center gap-0.5 px-1.5 py-0.5 md:px-2">
-                                                <TrendingUp className="h-2.5 w-2.5 md:h-3 md:w-3" /> {stats?.orders?.trending || "0"}%
-                                            </Badge>
+                {/* ── LEFT AREA (COL 9) ── */}
+                <div className="col-span-12 lg:col-span-9 flex flex-col gap-5">
+
+                    {/* KPI Cards (More compact p-4) */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {[
+                            { label: "Total Order", val: formatNumber(stats?.orders), icon: ShoppingCart, trend: stats?.orderTrend || "0", color: "from-orange-500 to-rose-500" },
+                            { label: "Items Sold", val: formatNumber(stats?.totalQty || 0), icon: Utensils, trend: "0", color: "from-emerald-500 to-teal-500" },
+                            { label: "Total Revenue", val: formatCurrency(stats?.revenue), icon: DollarSign, trend: stats?.revenueTrend || "0", color: "from-blue-600 to-indigo-600" },
+                        ].map((kpi, idx) => (
+                            <Card key={idx} className="group border-none shadow-sm hover:shadow-md transition-all rounded-xl bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md">
+                                <CardContent className="p-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`h-11 w-11 shrink-0 bg-linear-to-br ${kpi.color} rounded-lg flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform`}>
+                                            <kpi.icon className="h-5 w-5" />
+                                        </div>
+                                        <div className="space-y-0.5">
+                                            <p className="text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-none">{kpi.label}</p>
+                                            <div className="flex items-center gap-1.5">
+                                                <h3 className="text-base font-black text-zinc-900 dark:text-zinc-100 leading-none">{kpi.val}</h3>
+                                                <span className={`text-[8px] font-black px-1 rounded-sm leading-none py-0.5 ${Number(kpi.trend) >= 0 ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' : 'text-rose-500 bg-rose-50 dark:bg-rose-900/20'}`}>
+                                                    {Number(kpi.trend) >= 0 ? '+' : ''}{kpi.trend}%
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="border-none shadow-sm bg-blue-50/50 dark:bg-blue-950/10 rounded-base md:rounded-base overflow-hidden">
-                            <CardContent className="p-4 md:p-5">
-                                <div className="flex items-center gap-3 md:gap-4">
-                                    <div className="h-10 w-10 md:h-12 md:w-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl md:rounded-2xl flex items-center justify-center text-blue-600">
-                                        <Package className="h-5 w-5 md:h-6 md:w-6" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.15em] md:tracking-[0.2em] text-zinc-400">
-                                            Total Products
-                                        </span>
-                                        <div className="flex items-center gap-1.5 md:gap-2">
-                                            <span className="text-lg md:text-xl lg:text-2xl font-black text-zinc-900 dark:text-zinc-100">
-                                                {loading ? "..." : formatNumber(stats?.products?.total)}
-                                            </span>
-                                            <Badge className="bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 border-none text-[8px] md:text-[10px] font-black flex items-center gap-0.5 px-1.5 py-0.5 md:px-2">
-                                                <TrendingUp className="h-2.5 w-2.5 md:h-3 md:w-3" /> {stats?.products?.trending || "0"}%
-                                            </Badge>
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="border-none shadow-sm bg-purple-50/50 dark:bg-purple-950/10 rounded-base md:rounded-base overflow-hidden">
-                            <CardContent className="p-4 md:p-5">
-                                <div className="flex items-center gap-3 md:gap-4">
-                                    <div className="h-10 w-10 md:h-12 md:w-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl md:rounded-2xl flex items-center justify-center text-purple-600">
-                                        <DollarSign className="h-5 w-5 md:h-6 md:w-6" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.15em] md:tracking-[0.2em] text-zinc-400">
-                                            Total Revenue
-                                        </span>
-                                        <div className="flex items-center gap-1.5 md:gap-2">
-                                            <span className="text-lg md:text-xl lg:text-2xl font-black text-zinc-900 dark:text-zinc-100">
-                                                {loading ? "..." : formatCurrency(stats?.orders?.revenue)}
-                                            </span>
-                                            <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/20 border-none text-[8px] md:text-[10px] font-black flex items-center gap-0.5 px-1.5 py-0.5 md:px-2">
-                                                <TrendingUp className="h-2.5 w-2.5 md:h-3 md:w-3" /> {stats?.orders?.trending || "0"}%
-                                            </Badge>
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                </CardContent>
+                            </Card>
+                        ))}
                     </div>
 
-                    {/* Chart Distribution Grid - Using Order Classes for Responsive Reordering */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8">
-
-                        {/* 1. Total Revenue Chart */}
-                        <div className="col-span-1 md:col-span-2 lg:col-span-8 order-1">
-                            <ChartAreaTotalRevenue data={stats?.charts?.revenue} />
+                    {/* Chart Grid (V1 Style but Compact) */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                        <div className="col-span-12 lg:col-span-8 min-h-[380px] lg:min-h-[420px]">
+                            <ChartAreaTotalRevenue data={stats?.charts?.revenue || []} />
                         </div>
-
-                        {/* 2. Top Categories Chart */}
-                        <div className="col-span-1 md:col-span-1 lg:col-span-4 order-4 lg:order-2">
-                            <TopCategoryChart data={stats?.charts?.categories} />
+                        <div className="col-span-12 lg:col-span-4 min-h-[380px] lg:min-h-[420px]">
+                            <TopCategoryChart data={stats?.charts?.categories || []} />
                         </div>
-
-                        {/* 3. Orders Overview Chart */}
-                        <div className="col-span-1 md:col-span-2 lg:col-span-8 order-2 lg:order-3">
-                            <ChartBarOrder data={stats?.charts?.orders} />
+                        <div className="col-span-12 lg:col-span-8 min-h-[350px]">
+                            <ChartBarOrder data={stats?.charts?.orders || []} />
                         </div>
-
-                        {/* 4. Recent Orders Today */}
-                        <div className="col-span-1 md:col-span-1 lg:col-span-4 order-3 lg:order-4">
-                            <ChartPieTopVariant data={stats?.charts?.variants} />
+                        <div className="col-span-12 lg:col-span-4 min-h-[350px]">
+                            <ChartPieTopVariant data={stats?.charts?.variants || []} />
                         </div>
                     </div>
-                    {/* Recent Orders Table */}
-                    <Card className="border-none shadow-sm bg-white dark:bg-zinc-900/50 rounded-base overflow-hidden">
-                        <CardHeader className="p-8 pb-2 flex flex-row items-center justify-between">
-                            <CardTitle className="text-xl font-black">Recent Orders</CardTitle>
-                            <button className="text-xs font-black text-[#ff3535] hover:opacity-80 flex items-center gap-1 transition-all group">
-                                See All Orders <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
-                            </button>
+
+                    {/* Compact Table */}
+                    {/* <Card className="border-none shadow-sm rounded-xl bg-white dark:bg-zinc-900/70 backdrop-blur-md overflow-hidden">
+                        <CardHeader className="p-5 pb-2 flex flex-row items-center justify-between">
+                            <CardTitle className="text-sm font-black tracking-tighter uppercase text-zinc-400 dark:text-zinc-500">Recent Items Today</CardTitle>
+                            <Link href="/product" className="text-[9px] font-black text-indigo-600 dark:text-indigo-400 hover:opacity-80 transition-opacity">
+                                SEE ALL LOGS
+                            </Link>
                         </CardHeader>
-                        <CardContent className="p-8 pt-0">
+                        <CardContent className="px-5 pb-4 pt-1">
                             <Table>
                                 <TableHeader>
-                                    <TableRow className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-transparent">
-                                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-zinc-400 h-12">Order ID</TableHead>
-                                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-zinc-400 h-12">Menu</TableHead>
-                                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-zinc-400 h-12">Qty</TableHead>
-                                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-zinc-400 h-12">Amount</TableHead>
-                                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-zinc-400 h-12">Status</TableHead>
+                                    <TableRow className="border-b border-zinc-50 dark:border-zinc-800 hover:bg-transparent">
+                                        <TableHead className="text-[8px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest h-10 w-16">ID</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest h-10">Selection</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest h-10">Amount</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase text-zinc-400 dark:text-zinc-500 tracking-widest h-10 text-right">Status</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {stats?.recentItems && stats.recentItems.length > 0 ? (
-                                        stats.recentItems.map((item: any, i: number) => (
-                                            <TableRow key={item.full_order_id + i} className="border-b border-zinc-50 dark:border-zinc-800/50 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20 transition-colors group">
-                                                <TableCell className="font-bold text-xs py-5 text-zinc-500">{item.order_id}</TableCell>
-                                                <TableCell className="py-5">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="h-10 w-10 rounded-xl bg-orange-100 dark:bg-orange-950 flex items-center justify-center font-black text-orange-600 text-xs">
-                                                            {item.initials}
-                                                        </div>
-                                                        <div className="flex flex-col">
-                                                            <span className="font-black text-sm text-zinc-900 dark:text-zinc-100">{item.name}</span>
-                                                            <div className="flex items-center gap-1.5 mt-0.5">
-                                                                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">{item.category}</span>
-                                                                {item.variant && (
-                                                                    <>
-                                                                        <span className="text-zinc-300">•</span>
-                                                                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">{item.variant}</span>
-                                                                    </>
-                                                                )}
-                                                            </div>
-                                                        </div>
+                                    {(stats?.recentItems || []).slice(0, 6).map((item: any, i: number) => (
+                                        <TableRow key={i} className="group border-b border-zinc-50/50 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+                                            <TableCell className="font-bold text-[10px] text-zinc-400 dark:text-zinc-500 py-3">#{item.order_id}</TableCell>
+                                            <TableCell className="py-3">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="h-8 w-8 shrink-0 rounded-lg bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center font-black text-zinc-300 dark:text-zinc-600 text-[8px] border border-zinc-100 dark:border-zinc-700 uppercase">
+                                                        {item.initials}
                                                     </div>
-                                                </TableCell>
-                                                <TableCell className="font-black text-sm text-zinc-900 dark:text-zinc-100 py-5">{item.qty}</TableCell>
-                                                <TableCell className="font-black text-sm text-zinc-900 dark:text-zinc-100 py-5">
-                                                    {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(item.amount)}
-                                                </TableCell>
-                                                <TableCell className="py-5">
-                                                    <Badge className={`border-none px-3 py-1 rounded-full font-black text-[9px] uppercase tracking-wider ${item.status === 'COMPLETED' ? 'bg-green-100 text-green-600' :
-                                                        item.status === 'CANCELLED' ? 'bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500' :
-                                                            'bg-orange-500/10 text-orange-600'
-                                                        }`}>
-                                                        {item.status}
-                                                    </Badge>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell colSpan={5} className="py-10 text-center opacity-40 font-black uppercase text-xs tracking-widest">
-                                                No recent items today
+                                                    <div className="flex flex-col min-w-0">
+                                                        <span className="font-black text-[11px] text-zinc-900 dark:text-zinc-100 truncate leading-tight">{item.name}</span>
+                                                        <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-tighter truncate">{item.variant || 'Standard'}</span>
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="font-black text-[11px] text-zinc-900 dark:text-zinc-100 py-3 tabular-nums">{formatCurrency(item.amount)}</TableCell>
+                                            <TableCell className="py-3 text-right">
+                                                <Badge className={`border-none px-2 py-0.5 rounded-md font-black text-[8px] uppercase tracking-wider ${item.status === 'COMPLETED' ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400' :
+                                                    item.status === 'CANCELLED' ? 'bg-rose-50 dark:bg-rose-900/20 text-rose-500 dark:text-rose-400' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400'
+                                                    }`}>
+                                                    {item.status}
+                                                </Badge>
                                             </TableCell>
                                         </TableRow>
-                                    )}
+                                    ))}
                                 </TableBody>
                             </Table>
                         </CardContent>
-                    </Card>
+                    </Card> */}
                 </div>
 
-                {/* RIGHT SIDEBAR - Wraps below on Tablets (<lg) */}
-                <div className="col-span-12 lg:col-span-3 flex flex-col gap-8">
+                {/* ── RIGHT AREA (COL 3) ── */}
+                <div className="col-span-12 lg:col-span-3 flex flex-col gap-5">
 
-                    {/* Trending Menus Section */}
-                    <Card className="border-none shadow-sm bg-white dark:bg-zinc-900/50 rounded-base overflow-hidden">
-                        <CardHeader className="p-4 pt-0 pb-4">
-                            <CardTitle className="text-lg font-black">Trending Menus</CardTitle>
+                    {/* Trending (Simplified V1 Style) */}
+                    <Card className="border-none shadow-sm rounded-xl bg-white dark:bg-zinc-900/70 backdrop-blur-md overflow-hidden">
+                        <CardHeader>
+                            <CardTitle className="text-xs font-black uppercase text-zinc-400 dark:text-zinc-500 flex items-center gap-1.5">
+                                <TrendingUp className="h-3 w-3 text-[#ff3535]" /> Trending Menu Today
+                            </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-4 pt-2 flex flex-col gap-6">
-                            {stats?.trendingMenus && stats.trendingMenus.length > 0 ? (
-                                stats.trendingMenus.map((item: any, i: number) => (
+                        <CardContent className="p-5 pt-0 space-y-6">
+                            {(() => {
+                                const displayMenus = (stats?.trending && stats.trending.length > 0)
+                                    ? stats.trending
+                                    : [];
+
+                                if (displayMenus.length === 0) {
+                                    return (
+                                        <div className="flex flex-col items-center justify-center py-10 opacity-30">
+                                            <Utensils className="h-10 w-10 mb-2" />
+                                            <p className="text-[10px] font-black uppercase">No Sales This Week</p>
+                                        </div>
+                                    );
+                                }
+
+                                return displayMenus.slice(0, 3).map((item: any, i: number) => (
                                     <div key={i} className="group cursor-pointer">
-                                        <div className={`h-40 w-full rounded-[1.5rem] bg-gradient-to-br ${item.color} flex items-center justify-center mb-4 transition-transform group-hover:scale-105 duration-500 shadow-md relative overflow-hidden`}>
+                                        <div className="relative h-40 w-full rounded-[1.5rem] overflow-hidden bg-zinc-100 dark:bg-zinc-800 shadow-md mb-3 border border-zinc-50 dark:border-zinc-800">
                                             {item.image ? (
                                                 <img
                                                     src={ImageHelper.getUrl(item.image, "variant")}
                                                     alt={item.name}
-                                                    className="w-full h-full object-cover"
-                                                    onError={(e: any) => {
-                                                        e.target.style.display = 'none';
-                                                        e.target.nextSibling.style.display = 'flex';
-                                                    }}
+                                                    className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
                                                 />
-                                            ) : null}
-                                            <div className="h-16 w-16 bg-white/60 backdrop-blur-md rounded-full shadow-lg flex items-center justify-center text-zinc-800 z-10" style={{ display: item.image ? 'none' : 'flex' }}>
-                                                <ShoppingCart className="h-8 w-8" />
+                                            ) : (
+                                                <div className="h-full w-full flex items-center justify-center text-orange-200 dark:text-orange-900 bg-orange-50 dark:bg-orange-950/20">
+                                                    <ShoppingCart className="h-10 w-10" />
+                                                </div>
+                                            )}
+                                            <div className="absolute top-3 left-3">
+                                                <span className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md px-3 py-1 rounded-lg text-[9px] font-black text-zinc-900 dark:text-zinc-100 shadow-sm uppercase tracking-widest flex items-center gap-1.5 border border-zinc-100/50 dark:border-zinc-700/50">
+                                                    <div className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
+                                                    Trend
+                                                </span>
                                             </div>
                                         </div>
-                                        <div className="flex justify-between items-start mb-2 px-1">
+                                        <div className="flex justify-between items-start px-1">
                                             <div className="flex flex-col min-w-0 flex-1 pr-2">
-                                                <span className="font-black text-sm text-zinc-900 dark:text-zinc-100 group-hover:text-[#ff3535] transition-colors truncate">{item.name}</span>
-                                                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">{item.type}</span>
+                                                <span className="font-black text-[13px] text-zinc-900 dark:text-zinc-100 group-hover:text-[#ff3535] transition-colors truncate leading-tight">{item.name}</span>
+                                                <div className="flex items-center gap-1.5 mt-1 text-zinc-400 dark:text-zinc-500">
+                                                    <Users className="h-2.5 w-2.5" />
+                                                    <span className="text-[9px] font-black uppercase tracking-tight">{item.sales} Sales</span>
+                                                </div>
                                             </div>
-                                            <span className="font-black text-[#ff3535] text-sm whitespace-nowrap">{item.price}</span>
-                                        </div>
-                                        <div className="flex items-center gap-4 px-1">
-                                            <div className="flex items-center gap-1.5 text-[10px] font-black text-zinc-400">
-                                                <Users className="h-3 w-3" />
-                                                <span>{item.orders} <span className="text-[8px] font-bold uppercase ml-0.5">Orders</span></span>
+                                            <div className="flex flex-col items-end">
+                                                <span className="font-black text-[#ff3535] text-[13px] whitespace-nowrap bg-rose-50 dark:bg-rose-900/20 px-2 py-1 rounded-lg">
+                                                    {item.price ? (item.price > 0 ? (item.price / 1000).toFixed(0) + 'k' : formatCurrency(item.price)) : '🔥'}
+                                                </span>
+                                                <span className="text-[7px] font-black uppercase text-zinc-300 dark:text-zinc-600 mt-1">{item.type || 'Trending'}</span>
                                             </div>
                                         </div>
                                     </div>
-                                ))
-                            ) : (
-                                <div className="py-20 text-center opacity-40 font-black uppercase text-xs tracking-widest">
-                                    No trending data
-                                </div>
-                            )}
+                                ));
+                            })()}
                         </CardContent>
                     </Card>
 
-                    {/* Recent Activity Section */}
-                    <Card className="border-none shadow-sm bg-white dark:bg-zinc-900/50 rounded-[2.5rem] overflow-hidden">
-                        <CardHeader className="p-8 pb-4">
-                            <CardTitle className="text-lg font-black">Recent Activity</CardTitle>
+                    {/* Inventory Insight (Stok Menipis) */}
+                    <Card className="border-none shadow-sm rounded-xl bg-white dark:bg-zinc-900/70 backdrop-blur-md overflow-hidden">
+                        <CardHeader className="p-5 pb-3">
+                            <CardTitle className="text-xs font-black uppercase text-rose-500 flex items-center gap-2">
+                                <AlertTriangle className="h-3 w-3" /> Inventory Insight
+                            </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-8 pt-2 flex flex-col gap-8">
-                            {[
-                                { user: "Sylvester", action: "updated inventory", target: "Chicken", initial: "SQ", color: "bg-blue-100 text-blue-600" },
-                                { user: "Maria", action: "completed order", target: "#ORD1028", initial: "MK", color: "bg-orange-100 text-orange-600" }
-                            ].map((activity, i) => (
-                                <div key={i} className="flex gap-4">
-                                    <div className={`h-10 w-10 shrink-0 rounded-xl ${activity.color} flex items-center justify-center font-black text-xs shadow-sm shadow-current/20`}>
-                                        {activity.initial}
+                        <CardContent className="p-5 pt-0 space-y-4">
+                            {(() => {
+                                const lowStock = stats?.lowStock || [];
+                                if (lowStock.length === 0) {
+                                    return (
+                                        <div className="flex flex-col items-center justify-center py-6 opacity-40">
+                                            <Inbox className="h-8 w-8 mb-2" />
+                                            <p className="text-[9px] font-black uppercase">Stok Amannn!</p>
+                                        </div>
+                                    );
+                                }
+                                return lowStock.map((item: any, i: number) => (
+                                    <div key={i} className="flex items-center justify-between group">
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="font-black text-[11px] text-zinc-900 dark:text-zinc-100 truncate leading-tight group-hover:text-rose-500 transition-colors">
+                                                {item.name}
+                                            </span>
+                                            <span className="text-[8px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-tighter">
+                                                {item.variant}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex flex-col items-end">
+                                                <span className="font-black text-rose-500 text-[11px] tabular-nums">
+                                                    {item.stok}
+                                                </span>
+                                                <span className="text-[7px] font-black uppercase text-zinc-300 dark:text-zinc-600">
+                                                    Remaining
+                                                </span>
+                                            </div>
+                                            <div className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col gap-1">
-                                        <p className="text-[11px] leading-relaxed text-zinc-500 dark:text-zinc-400">
-                                            <span className="font-black text-zinc-900 dark:text-zinc-100">{activity.user}</span> {activity.action} <span className="font-bold text-zinc-800 dark:text-zinc-200">"{activity.target}"</span>
+                                ));
+                            })()}
+                        </CardContent>
+                    </Card>
+
+                    {/* Active Promos (Campaigns) */}
+                    <Card className="border-none shadow-sm rounded-xl bg-linear-to-br from-indigo-600 to-blue-700 overflow-hidden text-white">
+                        <CardHeader className="p-5 pb-3">
+                            <CardTitle className="text-xs font-black uppercase flex items-center gap-2">
+                                <Ticket className="h-3 w-3" /> Active Promos
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-5 pt-0 space-y-4">
+                            {(() => {
+                                const promos = stats?.activePromoList || [];
+                                if (promos.length === 0) {
+                                    return (
+                                        <div className="flex flex-col items-center justify-center py-4 opacity-70">
+                                            <p className="text-[9px] font-black uppercase tracking-widest">No active promos</p>
+                                        </div>
+                                    );
+                                }
+                                return promos.map((p: any, i: number) => (
+                                    <div key={i} className="flex items-center justify-between border-b border-white/10 pb-3 last:border-0 last:pb-0 group">
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="font-black text-[11px] truncate leading-tight group-hover:text-indigo-200 transition-colors">
+                                                {p.name}
+                                            </span>
+                                            <span className="text-[7px] font-black px-1.5 py-0.5 rounded-sm w-fit mt-1 bg-white/20 uppercase tracking-tighter">
+                                                Voucher
+                                            </span>
+                                        </div>
+                                        <div className="bg-white/20 px-2 py-1 rounded-md border border-white/10">
+                                            <span className="font-black text-[10px] whitespace-nowrap">
+                                                {p.discount}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ));
+                            })()}
+                        </CardContent>
+                    </Card>
+
+                    {/* Active Discounts (Global) */}
+                    <Card className="border-none shadow-sm rounded-xl bg-linear-to-br from-amber-500 to-orange-600 overflow-hidden text-white">
+                        <CardHeader className="p-5 pb-3">
+                            <CardTitle className="text-xs font-black uppercase flex items-center gap-2">
+                                <Percent className="h-3 w-3" /> Active Discounts
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-5 pt-0 space-y-4">
+                            {(() => {
+                                const discounts = stats?.activeDiscountList || [];
+                                if (discounts.length === 0) {
+                                    return (
+                                        <div className="flex flex-col items-center justify-center py-4 opacity-70">
+                                            <p className="text-[9px] font-black uppercase tracking-widest">No active discounts</p>
+                                        </div>
+                                    );
+                                }
+                                return discounts.map((d: any, i: number) => (
+                                    <div key={i} className="flex items-center justify-between border-b border-white/10 pb-3 last:border-0 last:pb-0 group">
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="font-black text-[11px] truncate leading-tight group-hover:text-amber-200 transition-colors">
+                                                {d.name}
+                                            </span>
+                                            <span className="text-[7px] font-black px-1.5 py-0.5 rounded-sm w-fit mt-1 bg-black/20 uppercase tracking-tighter">
+                                                Discount
+                                            </span>
+                                        </div>
+                                        <div className="bg-white/20 px-2 py-1 rounded-md border border-white/10">
+                                            <span className="font-black text-[10px] whitespace-nowrap">
+                                                {d.discount}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ));
+                            })()}
+                        </CardContent>
+                    </Card>
+
+                    {/* Activity (Compact Sidebar) */}
+                    {/* <Card className="border-none shadow-sm rounded-xl bg-zinc-900 overflow-hidden text-white">
+                        <CardHeader className="p-5 pb-3">
+                            <CardTitle className="text-xs font-black uppercase text-zinc-500 tracking-widest">Feed</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-5 pt-0 space-y-5">
+                            {[
+                                { user: "Sylvester", action: "restock", target: "Meat", initial: "SY", color: "bg-indigo-500" },
+                                { user: "Maria", action: "order", target: "Table 04", initial: "MK", color: "bg-rose-500" }
+                            ].map((act, i) => (
+                                <div key={i} className="flex gap-3">
+                                    <div className={`h-8 w-8 shrink-0 rounded-lg ${act.color} flex items-center justify-center font-black text-[10px] shadow-lg`}>
+                                        {act.initial}
+                                    </div>
+                                    <div className="space-y-0.5 min-w-0">
+                                        <p className="text-[10px] leading-tight text-zinc-400 truncate">
+                                            <span className="font-black text-white">{act.user}</span> {act.action} <span className="font-bold text-white">"{act.target}"</span>
                                         </p>
+                                        <p className="text-[8px] text-zinc-600 font-black uppercase tracking-widest">Just Now</p>
                                     </div>
                                 </div>
                             ))}
                         </CardContent>
-                    </Card>
+                    </Card> */}
+
                 </div>
+            </div>
+
+            {/* ── FOOTER ── */}
+            <div className="mt-8 flex items-center justify-center">
+                <div className="h-0.5 w-12 bg-zinc-100 dark:bg-zinc-800 rounded-full" />
             </div>
         </div>
     );

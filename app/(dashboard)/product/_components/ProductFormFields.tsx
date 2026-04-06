@@ -41,14 +41,14 @@ export function ProductFieldWrapper({
   return (
     <Field className={className}>
       {label && (
-        <FieldLabel className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1 mb-1.5">
+        <FieldLabel className="text-xs font-bold text-slate-700 dark:text-zinc-300 uppercase tracking-wider flex items-center gap-1 mb-1.5">
           {label}
           {required && <span className="text-red-500 font-black">*</span>}
         </FieldLabel>
       )}
       {children}
       {description && (
-        <FieldDescription className="text-[10px] text-slate-400 italic mt-1">
+        <FieldDescription className="text-[10px] text-slate-400 dark:text-zinc-500 italic mt-1">
           {description}
         </FieldDescription>
       )}
@@ -68,13 +68,13 @@ export function ProductInputField({ label, required, description, leftIcon, ...p
     <ProductFieldWrapper label={label} required={required} description={description}>
       <div className="relative group">
         {leftIcon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-600 group-focus-within:text-indigo-500 transition-colors">
             {leftIcon}
           </div>
         )}
         <Input
           {...props}
-          className={`h-9 text-xs border-slate-200 focus:border-indigo-500 transition-all rounded-lg shadow-sm font-medium ${leftIcon ? "pl-9" : ""} ${props.className || ""}`}
+          className={`h-9 text-xs border-slate-200 dark:border-zinc-800 focus:border-indigo-500 dark:focus:border-indigo-500 transition-all rounded-lg shadow-sm font-medium ${leftIcon ? "pl-9" : ""} ${props.className || ""}`}
         />
       </div>
     </ProductFieldWrapper>
@@ -92,7 +92,7 @@ export function ProductTextareaField({ label, required, description, ...props }:
     <ProductFieldWrapper label={label} required={required} description={description}>
       <Textarea
         {...props}
-        className={`text-xs border-slate-200 focus:border-indigo-500 transition-all rounded-lg shadow-sm font-medium ${props.className || ""}`}
+        className={`text-xs border-slate-200 dark:border-zinc-800 focus:border-indigo-500 dark:focus:border-indigo-500 transition-all rounded-lg shadow-sm font-medium ${props.className || ""}`}
       />
     </ProductFieldWrapper>
   );
@@ -122,10 +122,10 @@ export function ProductSelectField({
   return (
     <ProductFieldWrapper label={label} required={required} className={className}>
       <Select value={value} onValueChange={onValueChange} disabled={disabled}>
-        <SelectTrigger className="h-9 text-xs border-slate-200 focus:border-indigo-500 transition-all rounded-lg shadow-sm font-medium bg-white">
+        <SelectTrigger className="h-9 text-xs border-slate-200 dark:border-zinc-800 focus:border-indigo-500 transition-all rounded-lg shadow-sm font-medium bg-white dark:bg-zinc-900">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        <SelectContent className="rounded-xl shadow-xl border-slate-100">
+        <SelectContent className="rounded-xl shadow-xl border-slate-100 dark:border-zinc-800 dark:bg-zinc-950">
           {options.map((opt) => (
             <SelectItem key={opt.value} value={opt.value} className="text-xs font-medium">
               {opt.label}
@@ -161,7 +161,7 @@ export function ProductCategoryMultiSelect({
           <Button
             variant="outline"
             disabled={disabled}
-            className="w-full justify-between font-medium h-9 text-xs border-slate-200 hover:bg-slate-50 transition-all rounded-lg shadow-sm bg-white"
+            className="w-full justify-between font-medium h-9 text-xs border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-all rounded-lg shadow-sm bg-white dark:bg-zinc-900"
           >
             {selectedCategories.length > 0
               ? selectedCategories.join(", ")
@@ -169,8 +169,8 @@ export function ProductCategoryMultiSelect({
             <ChevronDown className="h-3.5 w-3.5 opacity-50 text-indigo-500" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-[220px] rounded-xl shadow-xl p-1 border-slate-100">
-          <DropdownMenuLabel className="text-[10px] font-black uppercase text-slate-400 p-2 tracking-widest">Kategori Produk</DropdownMenuLabel>
+        <DropdownMenuContent className="w-[220px] rounded-xl shadow-xl p-1 border-slate-100 dark:border-zinc-800 dark:bg-zinc-950">
+          <DropdownMenuLabel className="text-[10px] font-black uppercase text-slate-400 dark:text-zinc-500 p-2 tracking-widest">Kategori Produk</DropdownMenuLabel>
           <DropdownMenuSeparator className="mx-1" />
           <div className="max-h-[250px] overflow-y-auto">
             {categoriesList.map((category) => (

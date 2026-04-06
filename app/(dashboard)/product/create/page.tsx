@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { LogoLoading } from "@/components/logo-loading";
 import { ButtonsComponentsBack, ButtonsComponentsSave } from "@/components/buttons-conponents";
 
 import { ProductInfoSection } from "../_components/ProductInfoSection";
@@ -14,7 +13,6 @@ import { useProductForm } from "../_hooks/useProductForm";
 export default function CreateProductPage() {
   const {
     loading, setLoading,
-    minLoading, setMinLoading,
     saving,
     formData, setFormData,
     variants,
@@ -30,8 +28,6 @@ export default function CreateProductPage() {
   } = useProductForm();
 
   useEffect(() => {
-    const timer = setTimeout(() => setMinLoading(false), 1000);
-    
     const fetchCategories = async () => {
       try {
         const res = await fetch("/api/categories");
@@ -47,14 +43,16 @@ export default function CreateProductPage() {
     };
     
     fetchCategories();
-    return () => clearTimeout(timer);
-  }, [setLoading, setMinLoading, setCategoriesList]);
+  }, [setLoading, setCategoriesList]);
 
-  if (loading || minLoading) {
+  if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-6">
-        <LogoLoading width={150} height={150} />
-        <p className="text-[10px] text-muted-foreground uppercase tracking-widest animate-pulse">Loading Product Form...</p>
+      <div className="p-6 space-y-6">
+        <div className="h-10 w-full bg-zinc-100 animate-pulse rounded-xl" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="h-[400px] bg-zinc-50 animate-pulse rounded-2xl" />
+          <div className="h-[400px] bg-zinc-50 animate-pulse rounded-2xl" />
+        </div>
       </div>
     );
   }

@@ -39,7 +39,7 @@ import { ProductVariantHeader } from "../../_components/variants/ProductVariantH
 import { AddVariantForm } from "../../_components/variants/AddVariantForm";
 import { VariantTable } from "../../_components/variants/VariantTable";
 import { VariantSummary } from "../../_components/variants/VariantSummary";
-import { LogoLoading } from "@/components/logo-loading";
+import LoadingScreen from "@/components/LoadingScrean";
 
 import { usePermissions } from "@/hooks/use-permissions";
 import { ShieldAlert } from "lucide-react";
@@ -291,7 +291,7 @@ export default function ProductVariantsPage() {
   if (loading || permissionsLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-6">
-        <LogoLoading width={150} height={150} />
+        <LoadingScreen width={150} height={150} />
         <p className="text-[10px] text-muted-foreground uppercase tracking-widest animate-pulse">
           Validating sessions and permissions...
         </p>

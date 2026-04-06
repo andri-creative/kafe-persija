@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
     Search, RefreshCw, Tag, X, AlertTriangle,
-    PercentIcon, Hash, ShieldAlert, ArrowLeft
+    PercentIcon, Hash, ShieldAlert, ArrowLeft, Loader2
 } from "lucide-react";
 import { ButtonsComponentsAdd } from "@/components/buttons-conponents";
 import ActionsButtons from "@/components/acctions-buttons";
 import { AccessControl } from "@/components/rbac/AccessControl";
 import { usePermissions } from "@/hooks/use-permissions";
-import { LogoLoading } from "@/components/logo-loading";
+import LoadingScreen from "@/components/LoadingScrean";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Discount {
@@ -195,13 +195,11 @@ export default function DiscountPage() {
         } catch { }
     }
 
-    if (loading && permissionsLoading) {
+    if (loading || permissionsLoading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[400px] gap-6">
-                <LogoLoading width={150} height={150} />
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest animate-pulse font-black">
-                    Validating sessions and permissions...
-                </p>
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                <p className="text-sm text-muted-foreground animate-pulse">Memuat data diskon...</p>
             </div>
         );
     }

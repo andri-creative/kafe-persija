@@ -52,7 +52,23 @@ export default function LayarTv({ role = "STAFF" }: { role?: "ADMIN" | "STAFF" |
         fetchData();
     }, []);
 
-    const initialOrders = useMemo(() => data?.rows || [], [data]);
+    const initialOrders = useMemo(() => {
+        const rawRows = data?.rows || [];
+
+        // --- FILTER: HANYA TAMPILKAN ORDER HARI INI (24 JAM) ---
+        const now = new Date();
+        const todayStr = now.toLocaleDateString("en-CA"); // Format YYYY-MM-DD (WIB/Lokal)
+
+        return rawRows.filter((o: any) => {
+            // Cek berbagai kemungkinan nama field tanggal (Backend vs Socket)
+            const timestamp = o.created || o.created_at || o.updated_at || o.updated;
+            if (!timestamp) return false;
+
+            const orderDate = new Date(timestamp).toLocaleDateString("en-CA");
+            return orderDate === todayStr;
+        });
+    }, [data]);
+
     const { orders: rows, isConnected } = useSocketOrders(initialOrders);
 
     const getOrdersByProductStatus = (status: string) => {
@@ -141,7 +157,7 @@ export default function LayarTv({ role = "STAFF" }: { role?: "ADMIN" | "STAFF" |
                     </div>
                 ) : (
                     orders.map(order => (
-                        <div key={order._id} className="bg-white rounded-lg p-4 shadow-sm border-l-4 border-l-current" style={{ borderColor: textColor }}>
+                        <div key={order._id || order.order_number} className="bg-white rounded-lg p-4 shadow-sm border-l-4 border-l-current" style={{ borderColor: textColor }}>
                             {/* Order Header */}
                             <div className="flex justify-between items-start mb-3 border-b pb-2 border-dashed border-gray-100">
                                 <div>
@@ -153,7 +169,7 @@ export default function LayarTv({ role = "STAFF" }: { role?: "ADMIN" | "STAFF" |
                                 <div className="text-right">
                                     <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5">TIME</div>
                                     <div className="text-sm font-mono text-gray-600">
-                                        {new Date(order.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                        {new Date(order.created || order.created_at || order.updated_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                                     </div>
                                 </div>
                             </div>
@@ -179,7 +195,7 @@ export default function LayarTv({ role = "STAFF" }: { role?: "ADMIN" | "STAFF" |
 
                             {/* Footer */}
                             <div className="mt-3 pt-2 border-t border-gray-100 flex justify-between items-center text-xs text-gray-400">
-                                <div>{getTotalItems(order)} Items</div>
+                                <div>{getTotalItems(order)} Items Total</div>
                                 <div className={`font-bold ${order.payment?.status === 'PAID' ? 'text-green-500' : 'text-orange-500'}`}>
                                     {order.payment?.status || 'UNPAID'}
                                 </div>

@@ -7,7 +7,7 @@ import Link from "next/link";
 import { ButtonsComponentsBack, ButtonsComponentsSave } from "@/components/buttons-conponents";
 import { Separator } from "@/components/ui/separator";
 import { usePermissions } from "@/hooks/use-permissions";
-import { LogoLoading } from "@/components/logo-loading";
+import LoadingScreen from "@/components/LoadingScrean";
 
 const ic = "w-full px-3 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 transition-all";
 
@@ -94,7 +94,7 @@ export default function DiscountEditPage({ params }: { params: Promise<{ id: str
     if (loading || permissionsLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-6">
-                <LogoLoading width={150} height={150} />
+                <LoadingScreen width={150} height={150} />
                 <p className="text-[10px] text-muted-foreground uppercase tracking-widest animate-pulse font-black">
                     Validating session and permissions...
                 </p>

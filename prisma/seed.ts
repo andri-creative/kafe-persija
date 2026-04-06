@@ -180,7 +180,7 @@ async function main() {
     }
   }
 
-  console.log("🎉 SEED BERHASIL");
+  console.log("🎉 SEED RBAC BERHASIL");
 }
 
 main()

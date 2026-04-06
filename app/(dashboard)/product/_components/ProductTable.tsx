@@ -36,19 +36,19 @@ export const ProductTable = ({ products, onStatusChange, onDelete }: ProductTabl
         const variantImage = getVariantImage(product.product_variants);
         return (
           <div className="flex items-center gap-3">
-            <div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden bg-gray-100 border">
+            <div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden bg-gray-100 dark:bg-zinc-800 border dark:border-zinc-700">
               {variantImage ? (
                 <Image src={variantImage} alt={product.name} fill className="object-cover" />
               ) : (
                 <div className="h-full w-full flex items-center justify-center">
-                  <Package className="h-5 w-5 text-gray-300" />
+                  <Package className="h-5 w-5 text-gray-300 dark:text-zinc-600" />
                 </div>
               )}
             </div>
             <div className="min-w-0">
-              <div className="font-semibold text-gray-900 truncate max-w-[150px]">{product.name}</div>
+              <div className="font-semibold text-gray-900 dark:text-zinc-100 truncate max-w-[150px]">{product.name}</div>
               {product.description && (
-                <div className="text-[10px] text-gray-400 truncate max-w-[150px]">{product.description}</div>
+                <div className="text-[10px] text-gray-400 dark:text-zinc-500 truncate max-w-[150px]">{product.description}</div>
               )}
             </div>
           </div>
@@ -62,11 +62,11 @@ export const ProductTable = ({ products, onStatusChange, onDelete }: ProductTabl
         return (
           <div className="flex flex-wrap gap-1">
             {categories.slice(0, 2).map((cat, i) => (
-              <span key={i} className="bg-blue-50 text-blue-600 text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-blue-100">
+              <span key={i} className="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-blue-100 dark:border-blue-900/30">
                 {cat}
               </span>
             ))}
-            {categories.length > 2 && <span className="text-[9px] text-gray-400">+{categories.length - 2}</span>}
+            {categories.length > 2 && <span className="text-[9px] text-gray-400 dark:text-zinc-500">+{categories.length - 2}</span>}
           </div>
         );
       },
@@ -79,12 +79,12 @@ export const ProductTable = ({ products, onStatusChange, onDelete }: ProductTabl
           <div className="space-y-0.5">
             {activeVariants.slice(0, 2).map((v) => (
               <div key={v.id} className="text-[11px]">
-                <span className="text-gray-500">{v.desc || "Std"}:</span>{" "}
-                <span className="font-semibold text-gray-800">{formatPrice(v.price)}</span>
+                <span className="text-gray-500 dark:text-zinc-400">{v.desc || "Std"}:</span>{" "}
+                <span className="font-semibold text-gray-800 dark:text-zinc-200">{formatPrice(v.price)}</span>
               </div>
             ))}
-            {activeVariants.length > 2 && <div className="text-[10px] text-gray-400">+{activeVariants.length - 2} variants</div>}
-            {activeVariants.length === 0 && <div className="text-[10px] text-gray-300 italic">No variant</div>}
+            {activeVariants.length > 2 && <div className="text-[10px] text-gray-400 dark:text-zinc-500">+{activeVariants.length - 2} variants</div>}
+            {activeVariants.length === 0 && <div className="text-[10px] text-gray-300 dark:text-zinc-600 italic">No variant</div>}
           </div>
         );
       },
@@ -109,9 +109,9 @@ export const ProductTable = ({ products, onStatusChange, onDelete }: ProductTabl
       header: "Date",
       render: (product) => (
         <div className="text-[10px]">
-          <div className="text-gray-600">{formatDate(product.created_at)}</div>
+          <div className="text-gray-600 dark:text-zinc-400">{formatDate(product.created_at)}</div>
           {product.updated_at !== product.created_at && (
-            <div className="text-gray-400 italic">Upd: {formatDate(product.updated_at)}</div>
+            <div className="text-gray-400 dark:text-zinc-500 italic">Upd: {formatDate(product.updated_at)}</div>
           )}
         </div>
       ),
@@ -122,11 +122,11 @@ export const ProductTable = ({ products, onStatusChange, onDelete }: ProductTabl
       render: (product) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-7 w-7 focus:ring-0">
+            <Button variant="ghost" size="icon" className="h-7 w-7 focus:ring-0 dark:text-zinc-400 dark:hover:text-zinc-100">
               <MoreHorizontal className="h-3.5 w-3.5" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[140px] shadow-lg rounded-xl p-1">
+          <DropdownMenuContent align="end" className="w-[140px] shadow-lg rounded-xl p-1 dark:bg-zinc-950 dark:border-zinc-800">
             <AccessControl permission="product_view">
               <DropdownMenuItem asChild>
                 <Link href={`/product/${product.id}/view`} className="text-xs cursor-pointer rounded-lg">View</Link>

@@ -24,7 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { usePermissions } from "@/hooks/use-permissions";
-import { LogoLoading } from "@/components/logo-loading";
+import LoadingScreen from "@/components/LoadingScrean";
 import { AccessControl } from "@/components/rbac/AccessControl";
 
 interface Discount {
@@ -82,7 +82,7 @@ export default function DiscountViewPage({ params }: { params: Promise<{ id: str
 
     if (loading || permissionsLoading) return (
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-6">
-            <LogoLoading width={150} height={150} />
+            <LoadingScreen width={150} height={150} />
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest animate-pulse font-black">
                 Validating permissions and fetching data...
             </p>
