@@ -72,7 +72,7 @@ export const navCafe = [
       { title: "TV Display", url: "/layar-tv", icon: "Tv", permission: "order_view" },
       { title: "Sales Reports", url: "/sales-reports", icon: "BarChart3", permission: "report_view" },
       // { title: "Inventory", url: "/inventory", icon: "Archive", permission: "product_view" },
-      { title: "Settings", url: "/settings", icon: "Settings", permission: "settings_view" },
+      { title: "Settings", url: "/settings", icon: "Settings", permission: "setting_view" },
       // { title: "Audit Logs", url: "/audit-logs", icon: "History", permission: "rbac_view" },
       // { title: "Admin Manage", url: "/admin-manage", icon: "UserCog", permission: "user_view" },
       { title: "Accounts", url: "/accounts", icon: "Users", permission: "user_view" },
