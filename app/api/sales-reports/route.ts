@@ -22,7 +22,6 @@ export async function GET(req: Request) {
             }
         } catch (cacheErr) {
             console.error("⚠️ [REDIS] Cache Get Error:", cacheErr);
-            // Continue to fetch from backend if redis fails
         }
 
         const response = await getOrders();
