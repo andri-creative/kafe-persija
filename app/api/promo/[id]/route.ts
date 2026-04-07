@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 type Params = { params: Promise<{ id: string }> };
 
 export async function GET(
-    request: NextRequest,
+    request: NextRequest,   
     { params }: Params
 ) {
     try {

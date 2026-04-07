@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { syncRolePermissions } from "@/services/role.service";
 
 type Params = { params: Promise<{ id: string }> };
 
-export async function PUT(req: Request, { params }: Params) {
+export async function PUT(req: NextRequest, { params }: Params) {
     try {
         const { id } = await params;
         const body = await req.json();

@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { syncRolePermissions, deleteRole, updateRole, getRoleById } from "@/services/role.service";
 
 type Params = { params: Promise<{ id: string }> };
 
-export async function GET(req: Request, { params }: Params) {
+export async function GET(req: NextRequest, { params }: Params) {
     try {
         const { id } = await params;
         const role = await getRoleById(Number(id));
@@ -17,7 +17,7 @@ export async function GET(req: Request, { params }: Params) {
     }
 }
 
-export async function PUT(req: Request, { params }: Params) {
+export async function PUT(req: NextRequest, { params }: Params) {
     try {
         const { id } = await params;
         const body = await req.json();
@@ -29,7 +29,7 @@ export async function PUT(req: Request, { params }: Params) {
     }
 }
 
-export async function DELETE(req: Request, { params }: Params) {
+export async function DELETE(req: NextRequest, { params }: Params) {
     try {
         const { id } = await params;
         await deleteRole(Number(id));

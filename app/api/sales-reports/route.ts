@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { getOrders } from "@/lib/order-api";
 import redis from "@/lib/redis";
 
 /**
  * GET Sales Reports Data from Backend API (External)
  */
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
     try {
-        const { searchParams } = new URL(req.url);
+        const { searchParams } = req.nextUrl;
         const startDateParam = searchParams.get("startDate");
         const endDateParam = searchParams.get("endDate");
 

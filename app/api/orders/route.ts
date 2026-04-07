@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 
 const API_BASE = "https://api.dev.accolaplay.id/v2/kafe/dashboard/orders";
@@ -6,7 +6,7 @@ const API_BASE = "https://api.dev.accolaplay.id/v2/kafe/dashboard/orders";
 /**
  * GET ORDERS
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const res = await fetch(API_BASE, {
       method: "GET",
@@ -32,7 +32,7 @@ export async function GET() {
 /**
  * CREATE ORDER (POST)
  */
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
