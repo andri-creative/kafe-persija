@@ -3,9 +3,11 @@ import { getPermissionById, updatePermission, deletePermission } from "@/service
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 type Params = { params: Promise<{ id: string }> }
 
-export async function GET(req: Request, { params }: Params) {
+export async function GET(req: NextRequest, { params }: Params) {
     try {
         const { id } = await params;
         const permission = await getPermissionById(Number(id));

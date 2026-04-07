@@ -1,6 +1,8 @@
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 const API_BASE = "https://api.dev.accolaplay.id/v2/kafe/dashboard/orders";
 
 /**

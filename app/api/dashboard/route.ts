@@ -3,6 +3,8 @@ import prisma from "@/lib/prisma";
 import redis from "@/lib/redis";
 import { getOrders } from "@/lib/order-api";
 
+export const dynamic = "force-dynamic";
+
 const CACHE_KEY = "cache:dashboard:stats";
 const CACHE_TTL = 300; // 5 minutes
 

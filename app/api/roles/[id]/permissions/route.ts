@@ -1,6 +1,8 @@
 import { NextResponse, NextRequest } from "next/server";
 import { syncRolePermissions } from "@/services/role.service";
 
+export const dynamic = "force-dynamic";
+
 type Params = { params: Promise<{ id: string }> };
 
 export async function PUT(req: NextRequest, { params }: Params) {

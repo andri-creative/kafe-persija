@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
+
+export const dynamic = "force-dynamic";
 import redis from "@/lib/redis";
 import prisma from "@/lib/prisma";
 

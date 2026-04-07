@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserById, updateUser, deleteUser } from "@/services/user.service";
 
+export const dynamic = "force-dynamic";
+
 type Params = {
     params: Promise<{ id: string }>;
 };

@@ -1,5 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getOrders } from "@/lib/order-api";
+
+export const dynamic = "force-dynamic";
 import redis from "@/lib/redis";
 
 /**
