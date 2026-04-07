@@ -5,6 +5,8 @@ export const dynamic = "force-dynamic";
 
 type Params = { params: Promise<{ id: string }> };
 
+
+
 export async function PUT(
   request: NextRequest,
   { params }: Params

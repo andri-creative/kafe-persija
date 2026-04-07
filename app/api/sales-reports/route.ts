@@ -13,7 +13,7 @@ export async function GET(req: Request) {
 
         // --- REDIS CACHE LOGIC ---
         const cacheKey = `sales_report:${startDateParam || 'default'}:${endDateParam || 'default'}`;
-        
+
         try {
             const cachedBody = await redis.get(cacheKey);
             if (cachedBody) {
@@ -25,7 +25,7 @@ export async function GET(req: Request) {
         }
 
         const response = await getOrders();
-        
+
         // DEBUG: Logging untuk melihat struktur data asli dari backend Accolaplay
         console.log("📦 Backend Response:", JSON.stringify(response).slice(0, 500) + "...");
 
@@ -35,13 +35,13 @@ export async function GET(req: Request) {
         const formattedData = rawOrders
             .filter((order: any) => {
                 if (!order) return false;
-                
+
                 // Cari tanggal yang tersedia (fallback logic)
                 const timestamp = order.created || order.created_at || order.updated_at || order.updated;
                 if (!timestamp) return false;
 
                 if (!startDateParam || !endDateParam) return true;
-                
+
                 try {
                     const orderDate = new Date(timestamp).toLocaleDateString("en-CA");
                     return orderDate >= startDateParam && orderDate <= endDateParam;
@@ -53,7 +53,7 @@ export async function GET(req: Request) {
                 try {
                     const timestamp = order.created || order.created_at || order.updated_at || order.updated;
                     const dateObj = new Date(timestamp || Date.now());
-                    
+
                     // Calculate Total Items (QTY)
                     const products = Array.isArray(order.products) ? order.products : [];
                     const totalQty = products.reduce((sum: number, p: any) => {
@@ -84,7 +84,7 @@ export async function GET(req: Request) {
                 }
             })
             .filter(Boolean);
- // Remove null items from map error
+        // Remove null items from map error
 
         // --- SAVE TO REDIS CACHE (TTL: 5 Minutes / 300s) ---
         try {
