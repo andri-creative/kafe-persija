@@ -18,6 +18,10 @@ type RouteContext = {
    GET BY ID
 ===================== */
 export async function GET(_: NextRequest, { params }: RouteContext) {
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return NextResponse.json({ message: "Build phase" });
+  }
+
   try {
     const { id } = await params;
     const category = await getCategoryById(id);
@@ -31,6 +35,10 @@ export async function GET(_: NextRequest, { params }: RouteContext) {
    UPDATE
 ===================== */
 export async function PUT(req: NextRequest, { params }: RouteContext) {
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return NextResponse.json({ message: "Build phase" });
+  }
+
   try {
     const { id } = await params;
     const formData = await req.formData();

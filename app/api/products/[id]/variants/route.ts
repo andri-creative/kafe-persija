@@ -15,6 +15,10 @@ export async function GET(
   request: NextRequest,
   { params }: RouteContext,
 ) {
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return NextResponse.json({ message: "Build phase" });
+  }
+
   try {
     const resolvedParams = await params;
     const productId = parseInt(resolvedParams.id);
@@ -52,6 +56,10 @@ export async function POST(
   request: NextRequest,
   { params }: RouteContext
 ) {
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return NextResponse.json({ message: "Build phase" });
+  }
+
   try {
     const resolvedParams = await params;
     const productId = parseInt(resolvedParams.id);

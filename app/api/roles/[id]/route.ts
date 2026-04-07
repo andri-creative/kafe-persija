@@ -6,6 +6,10 @@ export const dynamic = "force-dynamic";
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function GET(req: NextRequest, { params }: RouteContext) {
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+        return NextResponse.json({ message: "Build phase" });
+    }
+
     try {
         const { id } = await params;
         const role = await getRoleById(Number(id));
@@ -20,6 +24,10 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
 }
 
 export async function PUT(req: NextRequest, { params }: RouteContext) {
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+        return NextResponse.json({ message: "Build phase" });
+    }
+
     try {
         const { id } = await params;
         const body = await req.json();

@@ -8,6 +8,10 @@ type RouteContext = {
 };
 
 export async function GET(_: NextRequest, { params }: RouteContext) {
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+        return NextResponse.json({ message: "Build phase" });
+    }
+
     try {
         const { id } = await params;
         const user = await getUserById(parseInt(id));
@@ -23,6 +27,10 @@ export async function GET(_: NextRequest, { params }: RouteContext) {
 }
 
 export async function PUT(req: NextRequest, { params }: RouteContext) {
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+        return NextResponse.json({ message: "Build phase" });
+    }
+
     try {
         const { id } = await params;
         const body = await req.json();
