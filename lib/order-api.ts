@@ -1,9 +1,12 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://api.dev.accolaplay.id/v2/kafe/dashboard';
+// const BASE_URL = 'https://api.dev.accolaplay.id/v2/kafe/dashboard';
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_ORDERS;
 
 const orderApi = axios.create({
     baseURL: BASE_URL,
+    withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
     }

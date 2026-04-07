@@ -1,32 +1,28 @@
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
+import orderApi from "@/lib/order-api";
 
 export const dynamic = "force-dynamic";
-
-const API_BASE = "https://api.dev.accolaplay.id/v2/kafe/dashboard/orders";
 
 /**
  * GET ORDERS
  */
 export async function GET(req: NextRequest) {
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return NextResponse.json({ message: "Build phase" });
+  }
+
   try {
-    const res = await fetch(API_BASE, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
+    const response = await orderApi.get("/orders");
+    
+    return NextResponse.json(response.data, {
+      status: response.status,
     });
-
-    const data = await res.json();
-
-    return NextResponse.json(data, {
-      status: res.status,
-    });
-  } catch (error) {
+  } catch (error: any) {
+    console.error("GET Orders Error:", error.response?.data || error.message);
     return NextResponse.json(
       { message: "Gagal mengambil data order" },
-      { status: 500 },
+      { status: error.response?.status || 500 },
     );
   }
 }
@@ -35,57 +31,61 @@ export async function GET(req: NextRequest) {
  * CREATE ORDER (POST)
  */
 export async function POST(req: NextRequest) {
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return NextResponse.json({ message: "Build phase" });
+  }
+
   try {
     const body = await req.json();
 
-    const res = await fetch(API_BASE, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
+    // Log URL yang dipanggil
+    const fullUrl = `${orderApi.defaults.baseURL}/orders`;
+    console.log(`📡 Sending POST Order to: ${fullUrl}`);
 
-    const data = await res.json();
+    // Use axios (orderApi) for POST
+    const response = await orderApi.post("/orders", body);
+    const data = response.data;
+    
+    console.log("🚀 ~ POST ~ data:", data);
 
     // Deduct stock locally if order was successful
-    if (res.ok && body.products) {
-      try {
-        console.log("📦 Order success, deducting stock locally...");
-        for (const product of body.products) {
-          if (product.variants) {
-            for (const variant of product.variants) {
-              const variantId = Number(variant.id || variant.variant_id);
-              const qty = Number(variant.quantity || variant.qty);
+    if (response.status === 201 || response.status === 200) {
+      if (body.items && Array.isArray(body.items)) {
+        try {
+          console.log("📦 Order success, deducting stock locally...");
+          for (const item of body.items) {
+            const variantId = Number(item.variantId || item.variant_id);
+            const qty = Number(item.quantity || item.qty);
 
-              if (variantId && qty) {
-                console.log(`📉 Deducting variant ${variantId} by ${qty}`);
-                await prisma.product_variants.update({
-                  where: { id: variantId },
-                  data: {
-                    stok: {
-                      decrement: qty
-                    }
+            if (variantId && qty) {
+              console.log(`📉 Deducting variant ${variantId} by ${qty}`);
+              await prisma.product_variants.update({
+                where: { id: variantId },
+                data: {
+                  stok: {
+                    decrement: qty
                   }
-                });
-              }
+                }
+              });
             }
           }
+        } catch (stockError) {
+          console.error("🚨 Failed to deduct stock locally:", stockError);
         }
-      } catch (stockError) {
-        console.error("🚨 Failed to deduct stock locally:", stockError);
-        // We still return the order response since the order was successfully created on external server
       }
     }
 
     return NextResponse.json(data, {
-      status: res.status,
+      status: response.status,
     });
-  } catch (error) {
-    console.error("Order creation error:", error);
+  } catch (error: any) {
+    console.error("POST Order Error:", error.response?.data || error.message);
     return NextResponse.json(
-      { message: "Gagal membuat order" },
-      { status: 500 },
+      { 
+        message: "Gagal membuat order", 
+        detail: error.response?.data || error.message 
+      },
+      { status: error.response?.status || 500 },
     );
   }
 }

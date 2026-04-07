@@ -1,12 +1,6 @@
-import axios from "axios";
 
-// Menggunakan rute lokal sesuai api-client.ts
-const promoApi = axios.create({
-    baseURL: "/api/promo",
-    headers: {
-        "Content-Type": "application/json",
-    },
-});
+
+const BASE_URL = "/api/promo";
 
 export interface PromoPayload {
     id?: number;
@@ -28,12 +22,31 @@ export interface PromoPayload {
 }
 
 /**
+ * Helper untuk fetch data tanpa axios
+ */
+async function fetcher<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+        ...options,
+        headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+        },
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `API error: ${response.statusText}`);
+    }
+
+    return response.json();
+}
+
+/**
  * Mengambil daftar promo dari API lokal
  */
 export const getPromos = async () => {
     try {
-        const response = await promoApi.get("");
-        return response.data;
+        return await fetcher<any>("");
     } catch (error) {
         console.error("Error fetching promos:", error);
         throw error;
@@ -45,8 +58,7 @@ export const getPromos = async () => {
  */
 export const getPromoById = async (id: string | number) => {
     try {
-        const response = await promoApi.get(`/${id}`);
-        return response.data;
+        return await fetcher<any>(`/${id}`);
     } catch (error) {
         console.error("Error fetching promo by id:", error);
         throw error;
@@ -58,8 +70,10 @@ export const getPromoById = async (id: string | number) => {
  */
 export const createPromo = async (payload: PromoPayload) => {
     try {
-        const response = await promoApi.post("", payload);
-        return response.data;
+        return await fetcher<any>("", {
+            method: "POST",
+            body: JSON.stringify(payload),
+        });
     } catch (error) {
         console.error("Error creating promo:", error);
         throw error;
@@ -72,8 +86,10 @@ export const createPromo = async (payload: PromoPayload) => {
 export const updatePromo = async (payload: PromoPayload) => {
     try {
         const { id, ...data } = payload;
-        const response = await promoApi.put(`/${id}`, data);
-        return response.data;
+        return await fetcher<any>(`/${id}`, {
+            method: "PUT",
+            body: JSON.stringify(data),
+        });
     } catch (error) {
         console.error("Error updating promo:", error);
         throw error;
@@ -85,12 +101,11 @@ export const updatePromo = async (payload: PromoPayload) => {
  */
 export const deletePromo = async (id: number) => {
     try {
-        const response = await promoApi.delete(`/${id}`);
-        return response.data;
+        return await fetcher<any>(`/${id}`, {
+            method: "DELETE",
+        });
     } catch (error) {
         console.error("Error deleting promo:", error);
         throw error;
     }
 };
-
-export default promoApi;

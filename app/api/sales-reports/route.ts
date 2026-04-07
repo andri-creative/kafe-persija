@@ -8,6 +8,10 @@ import redis from "@/lib/redis";
  * GET Sales Reports Data from Backend API (External)
  */
 export async function GET(req: NextRequest) {
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+        return NextResponse.json({ message: "Build phase" });
+    }
+
     try {
         const { searchParams } = req.nextUrl;
         const startDateParam = searchParams.get("startDate");

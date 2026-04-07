@@ -6,6 +6,10 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+        return NextResponse.json({ message: "Build phase" });
+    }
+
     try {
         const { searchParams } = new URL(request.url);
         const search = searchParams.get("search") || "";
@@ -37,6 +41,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+        return NextResponse.json({ message: "Build phase" });
+    }
+
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.email) {

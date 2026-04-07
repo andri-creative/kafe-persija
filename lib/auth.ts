@@ -9,17 +9,6 @@ import redis from "./redis";
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    // GOOGLE
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-
-    // APPLE
-    AppleProvider({
-      clientId: process.env.APPLE_CLIENT_ID!,
-      clientSecret: process.env.APPLE_CLIENT_SECRET!,
-    }),
 
     // EMAIL & PASSWORD
     Credentials({
@@ -118,7 +107,7 @@ export const authOptions: NextAuthOptions = {
             `persistent_session:${sessionId}`,
             JSON.stringify(userData),
             "EX",
-            30 * 24 * 60 * 60
+            1 * 24 * 60 * 60
           );
         } catch (e) {
           console.error("[REDIS ERROR]", e);

@@ -183,6 +183,10 @@ export async function DELETE(
   request: NextRequest,
   { params }: RouteContext,
 ) {
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return NextResponse.json({ message: "Build phase" });
+  }
+
   try {
     const resolvedParams = await params;
     const variantId = parseInt(resolvedParams.id);
@@ -227,6 +231,10 @@ export async function PATCH(
   request: NextRequest,
   { params }: RouteContext,
 ) {
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return NextResponse.json({ message: "Build phase" });
+  }
+
   try {
     const resolvedParams = await params;
     const variantId = parseInt(resolvedParams.id);

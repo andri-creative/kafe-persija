@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { LoginForm } from "@/components/login-form";
 import prisma from "@/lib/prisma";
 import redis from "@/lib/redis";

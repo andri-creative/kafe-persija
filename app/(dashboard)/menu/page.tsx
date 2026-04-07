@@ -10,6 +10,7 @@ import { ProductGrid } from "./components/ProductGrid";
 import { OrderSummary } from "./components/OrderSummary";
 import { ProductVariantDialog } from "./components/ProductVariantDialog";
 import LoadingScreen from "@/components/LoadingScrean";
+import { getSocket } from "@/lib/socket";
 
 // Types
 import { Category, Product, ProductVariant, CartItem } from "./types";
@@ -30,7 +31,7 @@ export default function MenuPage() {
     const [selectedDiscountId, setSelectedDiscountId] = useState('none');
     const [promos, setPromos] = useState<any[]>([]);
     const [selectedPromoId, setSelectedPromoId] = useState("");
-    const [paymentMethod, setPaymentMethod] = useState('cash'); // netzme | cash
+    const [paymentMethod, setPaymentMethod] = useState('cash');
     const [cashReceived, setCashReceived] = useState<number | "">("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [transactionId, setTransactionId] = useState("");
@@ -243,6 +244,18 @@ export default function MenuPage() {
             const result = await res.json();
 
             if (res.ok) {
+                // Emit socket event for real-time update
+                const socket = getSocket(session?.user?.auth_token, session?.user?.id);
+                if (socket) {
+                    socket.emit("order_created", { 
+                        action: "created", 
+                        order: {
+                            ...payload,
+                            id: result.id || result.data?.id // Ensure ID is included if returned from API
+                        } 
+                    });
+                }
+
                 toast.success("Pesanan berhasil dibuat!");
                 setCart([]);
                 setCustomerName("");

@@ -15,7 +15,6 @@ export async function PUT(
   request: NextRequest,
   { params }: RouteContext
 ) {
-  // Proteksi Total untuk Docker/Build Phase
   if (process.env.NEXT_PHASE === 'phase-production-build') {
     return NextResponse.json({ message: "Build phase" });
   }
@@ -54,7 +53,6 @@ export async function DELETE(
   request: NextRequest,
   { params }: RouteContext
 ) {
-  // Proteksi Total untuk Docker/Build Phase
   if (process.env.NEXT_PHASE === 'phase-production-build') {
     return NextResponse.json({ message: "Build phase" });
   }
