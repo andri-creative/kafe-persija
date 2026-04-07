@@ -15,17 +15,28 @@ export async function PUT(
   request: NextRequest,
   { params }: RouteContext
 ) {
+  // Proteksi Total untuk Docker/Build Phase
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return NextResponse.json({ message: "Build phase" });
+  }
+
   try {
     const { id } = await params;
+    
+    if (!id || id === "[id]") {
+       return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
+
     const body = await request.json();
     const { value, description } = body;
 
-    if (!id) {
-      return NextResponse.json({ error: "ID wajib disertakan" }, { status: 400 });
+    const settingId = Number(id);
+    if (isNaN(settingId)) {
+        return NextResponse.json({ error: "ID must be a number" }, { status: 400 });
     }
 
     const updatedSetting = await prisma.setting.update({
-      where: { id: Number(id) },
+      where: { id: settingId },
       data: {
         value,
         description,
@@ -33,9 +44,9 @@ export async function PUT(
     });
 
     return NextResponse.json(updatedSetting);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Settings PUT error:", error);
-    return NextResponse.json({ error: "Gagal memperbarui pengaturan" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Gagal memperbarui pengaturan" }, { status: 500 });
   }
 }
 
@@ -43,20 +54,30 @@ export async function DELETE(
   request: NextRequest,
   { params }: RouteContext
 ) {
+  // Proteksi Total untuk Docker/Build Phase
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return NextResponse.json({ message: "Build phase" });
+  }
+
   try {
     const { id } = await params;
 
-    if (!id) {
-      return NextResponse.json({ error: "ID wajib disertakan" }, { status: 400 });
+    if (!id || id === "[id]") {
+        return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
+
+    const settingId = Number(id);
+    if (isNaN(settingId)) {
+        return NextResponse.json({ error: "ID must be a number" }, { status: 400 });
     }
 
     await prisma.setting.delete({
-      where: { id: Number(id) },
+      where: { id: settingId },
     });
 
     return NextResponse.json({ message: "Pengaturan berhasil dihapus" });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Settings DELETE error:", error);
-    return NextResponse.json({ error: "Gagal menghapus pengaturan" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Gagal menghapus pengaturan" }, { status: 500 });
   }
 }
