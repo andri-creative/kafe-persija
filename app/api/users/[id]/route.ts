@@ -3,11 +3,11 @@ import { getUserById, updateUser, deleteUser } from "@/services/user.service";
 
 export const dynamic = "force-dynamic";
 
-type Params = {
+type RouteContext = {
     params: Promise<{ id: string }>;
 };
 
-export async function GET(_: NextRequest, { params }: Params) {
+export async function GET(_: NextRequest, { params }: RouteContext) {
     try {
         const { id } = await params;
         const user = await getUserById(parseInt(id));
@@ -22,7 +22,7 @@ export async function GET(_: NextRequest, { params }: Params) {
     }
 }
 
-export async function PUT(req: NextRequest, { params }: Params) {
+export async function PUT(req: NextRequest, { params }: RouteContext) {
     try {
         const { id } = await params;
         const body = await req.json();
@@ -36,7 +36,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     }
 }
 
-export async function DELETE(_: NextRequest, { params }: Params) {
+export async function DELETE(_: NextRequest, { params }: RouteContext) {
     try {
         const { id } = await params;
         await deleteUser(parseInt(id));

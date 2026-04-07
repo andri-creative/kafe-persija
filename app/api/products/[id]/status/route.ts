@@ -1,17 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
+export async function GET() {
+  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
+}
+
 export async function PATCH(
   req: NextRequest,
-  context: RouteContext
+  { params }: RouteContext
 ) {
   try {
-    const params = await context.params;
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     const { status } = await req.json();
 
     if (!["active", "inactive"].includes(status)) {

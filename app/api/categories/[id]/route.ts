@@ -10,14 +10,14 @@ import { authOptions } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-type Params = {
+type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
 /* =====================
    GET BY ID
 ===================== */
-export async function GET(_: NextRequest, { params }: Params) {
+export async function GET(_: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params;
     const category = await getCategoryById(id);
@@ -30,7 +30,7 @@ export async function GET(_: NextRequest, { params }: Params) {
 /* =====================
    UPDATE
 ===================== */
-export async function PUT(req: NextRequest, { params }: Params) {
+export async function PUT(req: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params;
     const formData = await req.formData();
@@ -70,7 +70,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
 /* =====================
    DELETE
 ===================== */
-export async function DELETE(_: NextRequest, { params }: Params) {
+export async function DELETE(_: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params;
     await deleteCategory(id);

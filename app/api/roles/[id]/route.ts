@@ -3,9 +3,9 @@ import { syncRolePermissions, deleteRole, updateRole, getRoleById } from "@/serv
 
 export const dynamic = "force-dynamic";
 
-type Params = { params: Promise<{ id: string }> };
+type RouteContext = { params: Promise<{ id: string }> };
 
-export async function GET(req: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, { params }: RouteContext) {
     try {
         const { id } = await params;
         const role = await getRoleById(Number(id));
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     }
 }
 
-export async function PUT(req: NextRequest, { params }: Params) {
+export async function PUT(req: NextRequest, { params }: RouteContext) {
     try {
         const { id } = await params;
         const body = await req.json();
@@ -31,7 +31,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     }
 }
 
-export async function DELETE(req: NextRequest, { params }: Params) {
+export async function DELETE(req: NextRequest, { params }: RouteContext) {
     try {
         const { id } = await params;
         await deleteRole(Number(id));

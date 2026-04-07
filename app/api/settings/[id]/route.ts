@@ -3,13 +3,17 @@ import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-type Params = { params: Promise<{ id: string }> };
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
 
-
+export async function GET() {
+  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
+}
 
 export async function PUT(
   request: NextRequest,
-  { params }: Params
+  { params }: RouteContext
 ) {
   try {
     const { id } = await params;
@@ -37,7 +41,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: Params
+  { params }: RouteContext
 ) {
   try {
     const { id } = await params;

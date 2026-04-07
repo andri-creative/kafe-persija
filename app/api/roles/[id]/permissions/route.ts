@@ -3,9 +3,19 @@ import { syncRolePermissions } from "@/services/role.service";
 
 export const dynamic = "force-dynamic";
 
-type Params = { params: Promise<{ id: string }> };
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
 
-export async function PUT(req: NextRequest, { params }: Params) {
+
+export async function GET() {
+    return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
+}
+
+export async function PUT(
+    req: NextRequest,
+    { params }: RouteContext
+) {
     try {
         const { id } = await params;
         const body = await req.json();

@@ -5,9 +5,9 @@ export const dynamic = "force-dynamic";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
-type Params = { params: Promise<{ id: string }> };
+type RouteContext = { params: Promise<{ id: string }> };
 
-export async function GET(_: NextRequest, { params }: Params) {
+export async function GET(_: NextRequest, { params }: RouteContext) {
     try {
         const { id } = await params;
         const discount = await prisma.discount.findUnique({ where: { id: parseInt(id) } });
@@ -18,7 +18,7 @@ export async function GET(_: NextRequest, { params }: Params) {
     }
 }
 
-export async function PUT(req: NextRequest, { params }: Params) {
+export async function PUT(req: NextRequest, { params }: RouteContext) {
     try {
         const { id } = await params;
         const body = await req.json();
@@ -55,7 +55,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
 }
 
 
-export async function DELETE(_: NextRequest, { params }: Params) {
+export async function DELETE(_: NextRequest, { params }: RouteContext) {
     try {
         const { id } = await params;
         await prisma.discount.delete({ where: { id: parseInt(id) } });
