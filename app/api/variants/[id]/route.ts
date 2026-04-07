@@ -13,11 +13,11 @@ type RouteContext = {
 // GET
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  { params }: RouteContext,
 ) {
   try {
-    const params = await context.params;
-    const variantId = parseInt(params.id);
+    const resolvedParams = await params;
+    const variantId = parseInt(resolvedParams.id);
 
     const variant = await prisma.product_variants.findUnique({
       where: { id: variantId },
@@ -51,11 +51,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  context: RouteContext,
+  { params }: RouteContext,
 ) {
   try {
-    const params = await context.params;
-    const variantId = parseInt(params.id);
+    const resolvedParams = await params;
+    const variantId = parseInt(resolvedParams.id);
     const formData = await request.formData();
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
@@ -173,11 +173,11 @@ export async function PUT(
 // DELETE
 export async function DELETE(
   request: NextRequest,
-  context: RouteContext,
+  { params }: RouteContext,
 ) {
   try {
-    const params = await context.params;
-    const variantId = parseInt(params.id);
+    const resolvedParams = await params;
+    const variantId = parseInt(resolvedParams.id);
 
     const variant = await prisma.product_variants.findUnique({
       where: { id: variantId },
@@ -217,11 +217,11 @@ export async function DELETE(
 // PATCH
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  { params }: RouteContext,
 ) {
   try {
-    const params = await context.params;
-    const variantId = parseInt(params.id);
+    const resolvedParams = await params;
+    const variantId = parseInt(resolvedParams.id);
     const body = await request.json();
     const { status } = body;
 

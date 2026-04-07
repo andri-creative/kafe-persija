@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-
-export const dynamic = "force-dynamic";
 import { ImageHelperServer as ImageHelper } from "@/lib/image-helper.server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -13,12 +13,11 @@ type RouteContext = {
 // GET: Get product by ID
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  { params }: RouteContext,
 ) {
   try {
-    const params = await context.params;
-    
-    const productId = parseInt(params.id);
+    const resolvedParams = await params;
+    const productId = parseInt(resolvedParams.id);
 
     const product = await prisma.product.findUnique({
       where: { id: productId },
@@ -57,11 +56,11 @@ export async function GET(
 // PUT: Update product
 export async function PUT(
   request: NextRequest,
-  context: RouteContext,
+  { params }: RouteContext,
 ) {
   try {
-    const params = await context.params;
-    const productId = parseInt(params.id);
+    const resolvedParams = await params;
+    const productId = parseInt(resolvedParams.id);
     const formData = await request.formData();
 
     const session = await getServerSession(authOptions);
@@ -157,15 +156,7 @@ export async function PUT(
 
       const newImageFiles = formData.getAll(`variants[${index}][images]`) as File[];
 
-      // Fallback for old single image if needed (optional, but good for safety)
-      // const singleImage = formData.get(`variants[${index}][image]`) as File;
-      // if (singleImage && singleImage.size > 0 && newImageFiles.length === 0) newImageFiles.push(singleImage);
-
-
       if (!desc) {
-        // If desc is missing but ID exists, maybe it's the end of list? 
-        // But checking just 'desc' might be risky if there are gaps (though UI sends array). 
-        // Assuming packed array from 0.
         if (!formData.has(`variants[${index}][desc]`)) break;
       }
 
@@ -260,7 +251,6 @@ export async function PUT(
       });
     }
 
-    // Emit socket event for real-time update
     if ((global as any).io) {
       (global as any).io.emit("product_updated", { action: "updated", product: updatedProduct });
     }
@@ -285,11 +275,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  context: RouteContext,
+  { params }: RouteContext,
 ) {
   try {
-    const params = await context.params;
-    const productId = parseInt(params.id);
+    const resolvedParams = await params;
+    const productId = parseInt(resolvedParams.id);
 
     const product = await prisma.product.findUnique({
       where: { id: productId },
@@ -306,7 +296,6 @@ export async function DELETE(
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    // 1. Delete all images from storage and DB
     for (const variant of product.product_variants) {
       for (const image of variant.product_variant_images) {
         await ImageHelper.delete(image.image, "variant");
@@ -316,22 +305,18 @@ export async function DELETE(
       });
     }
 
-    // 2. Delete related category transactions
     await prisma.product_category_trx.deleteMany({
       where: { product_id: productId }
     });
 
-    // 3. Delete related variants
     await prisma.product_variants.deleteMany({
       where: { product_id: productId }
     });
 
-    // 4. Finally delete the product
     await prisma.product.delete({
       where: { id: productId },
     });
 
-    // Emit socket event for real-time update
     if ((global as any).io) {
       (global as any).io.emit("product_updated", { action: "deleted", id: productId });
     }
@@ -355,11 +340,11 @@ export async function DELETE(
 
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext,
+  { params }: RouteContext,
 ) {
   try {
-    const params = await context.params;
-    const productId = parseInt(params.id);
+    const resolvedParams = await params;
+    const productId = parseInt(resolvedParams.id);
     const body = await request.json();
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
@@ -385,7 +370,6 @@ export async function PATCH(
       },
     });
 
-    // Emit socket event for real-time update
     if ((global as any).io) {
       (global as any).io.emit("product_updated", { action: "status_updated", id: productId, status });
     }

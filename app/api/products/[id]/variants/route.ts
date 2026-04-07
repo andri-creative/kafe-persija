@@ -4,6 +4,8 @@ import { ImageHelperServer as ImageHelper } from "@/lib/image-helper.server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
@@ -11,11 +13,11 @@ type RouteContext = {
 // GET: Get all variants for a product
 export async function GET(
   request: NextRequest,
-  context: RouteContext,
+  { params }: RouteContext,
 ) {
   try {
-    const params = await context.params;
-    const productId = parseInt(params.id);
+    const resolvedParams = await params;
+    const productId = parseInt(resolvedParams.id);
 
     const product = await prisma.product.findUnique({
       where: { id: productId },
@@ -48,11 +50,11 @@ export async function GET(
 // POST:
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  { params }: RouteContext
 ) {
   try {
-    const params = await context.params;
-    const productId = parseInt(params.id);
+    const resolvedParams = await params;
+    const productId = parseInt(resolvedParams.id);
     const formData = await request.formData();
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
